@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npx vite:*)",
+      "Bash(./node_modules/.bin/vite build:*)",
+      "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" status)",
+      "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" remote -v)",
+      "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" log --oneline -5)"
+    ]
+  }
+}
