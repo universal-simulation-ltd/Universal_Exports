@@ -1,3 +1,5 @@
-# Welcome to your Lovable project
+# eboxy
 
-TODO: Document your project here
+An electronic bill of exchange, made easy.
+
+100% free for new UK startups
