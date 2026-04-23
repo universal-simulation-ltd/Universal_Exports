@@ -32,6 +32,7 @@ interface ProductDetailsProps {
   formData: Record<string, string>;
   onFieldChange: (field: string, value: string) => void;
   onSave: () => void;
+  extraCatalogue?: CatalogueProduct[];
 }
 
 function parseLines(formData: Record<string, string>): LineItem[] {
@@ -42,12 +43,23 @@ function parseLines(formData: Record<string, string>): LineItem[] {
   return [];
 }
 
-const ProductDetails = ({ formData, onFieldChange, onSave }: ProductDetailsProps) => {
+const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: ProductDetailsProps) => {
   const { t } = useI18n();
-  const [catalogue, setCatalogue] = useState<CatalogueProduct[]>([]);
+  const [catalogueBase, setCatalogueBase] = useState<CatalogueProduct[]>([]);
 
   useEffect(() => {
-    loadCatalogue().then(setCatalogue);
+    loadCatalogue().then(setCatalogueBase);
+  }, []);
+
+  const catalogue = useMemo(() => {
+    if (!extraCatalogue?.length) return catalogueBase;
+    const baseIds = new Set(catalogueBase.map((p) => p.id));
+    const extra = extraCatalogue.filter((p) => !baseIds.has(p.id));
+    return [...extra, ...catalogueBase];
+  }, [extraCatalogue, catalogueBase]);
+
+  const refreshCatalogue = useCallback(() => {
+    loadCatalogue().then(setCatalogueBase);
   }, []);
   const [catalogueOpen, setCatalogueOpen] = useState(false);
   const [catalogueSearch, setCatalogueSearch] = useState("");
@@ -70,26 +82,30 @@ const ProductDetails = ({ formData, onFieldChange, onSave }: ProductDetailsProps
       toast.error("Enter a product name");
       return;
     }
-    const product = await addToCatalogue({
-      code: newProduct.code,
-      hsCode: newProduct.hsCode,
-      name: newProduct.name,
-      description: newProduct.description,
-      unitPrice: parseFloat(newProduct.unitPrice) || 0,
-      vatPercent: parseFloat(newProduct.vatPercent) || 0,
-    });
-    loadCatalogue().then(setCatalogue);
-    setNewProduct({ code: "", hsCode: "", name: "", description: "", unitPrice: "", vatPercent: "" });
-    setShowAddForm(false);
-    // Also add as a line item
-    const updated = [...lines, { catalogueId: product.id, units: "1", discount: "", discountAmount: "" }];
-    updateLines(updated);
-    toast.success(`${product.name} added to catalogue and order`);
+    try {
+      const product = await addToCatalogue({
+        code: newProduct.code,
+        hsCode: newProduct.hsCode,
+        name: newProduct.name,
+        description: newProduct.description,
+        unitPrice: parseFloat(newProduct.unitPrice) || 0,
+        vatPercent: parseFloat(newProduct.vatPercent) || 0,
+      });
+      refreshCatalogue();
+      setNewProduct({ code: "", hsCode: "", name: "", description: "", unitPrice: "", vatPercent: "" });
+      setShowAddForm(false);
+      // Also add as a line item
+      const updated = [...lines, { catalogueId: product.id, units: "1", discount: "", discountAmount: "" }];
+      updateLines(updated);
+      toast.success(`${product.name} added to catalogue and order`);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to save to catalogue");
+    }
   }, [newProduct, lines, updateLines]);
 
   const handleRemoveFromCatalogue = useCallback(async (id: string) => {
     await removeFromCatalogue(id);
-    loadCatalogue().then(setCatalogue);
+    refreshCatalogue();
     // Also remove any line items using this product
     const updated = lines.filter((l) => l.catalogueId !== id);
     updateLines(updated);
@@ -218,7 +234,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave }: ProductDetailsProps
                                 unitPrice: parseFloat(editProduct.unitPrice) || 0,
                                 vatPercent: parseFloat(editProduct.vatPercent) || 0,
                               });
-                              loadCatalogue().then(setCatalogue);
+                              refreshCatalogue();
                               setEditingId(null);
                               toast.success("Product updated");
                             }}>

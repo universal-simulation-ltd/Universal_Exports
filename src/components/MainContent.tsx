@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,16 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowRight, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2 } from "lucide-react";
 import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
 import SignaturePad from "@/components/SignaturePad";
 import LockedSectionView from "@/components/LockedSectionView";
+import eboxyIcon from "@/assets/eboxy_icon.png";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
 import { ProjectData, saveProject, createProjectId, deleteProject } from "@/lib/projectStore";
 import { CompanyDetails, loadYourDetails, saveYourDetails, loadContacts, saveContact, deleteContact, emptyDetails } from "@/lib/contactStore";
 import { loadCatalogue, catalogueDisplayTitle } from "@/lib/productCatalogueStore";
+import { DEMO_CATALOGUE } from "@/lib/demoProject";
 import { BankAccount, emptyBankAccount, loadYourBanks, saveYourBanks, loadPartyBanks, savePartyBanks } from "@/lib/bankStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -388,6 +392,8 @@ const MainContent = ({
   onLoadDemo,
 }: MainContentProps) => {
   const { t } = useI18n();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const renderSectionButtons = (sectionId: string, saveLabel: string) => {
     const isReEditing = editingSections.has(sectionId);
@@ -418,11 +424,35 @@ const MainContent = ({
   const [showSetupOtherParty, setShowSetupOtherParty] = useState(false);
   const [tradeTypeOverride, setTradeTypeOverride] = useState<"domestic" | "international" | null>(null);
   
+  const [yourDetailsMode, setYourDetailsMode] = useState<"" | "form">("");
   const [otherPartyMode, setOtherPartyMode] = useState<"" | "addressbook" | "create">("");
   const [contactSearch, setContactSearch] = useState("");
   const [editingOtherParty, setEditingOtherParty] = useState(false);
   const [editingYourDetails, setEditingYourDetails] = useState(false);
   const [shipmentIfKnownOpen, setShipmentIfKnownOpen] = useState(false);
+
+  // Getting Started checklist open/close — starts closed if all items already ticked (e.g. demo)
+  const [gsOpen, setGsOpen] = useState(() => {
+    const raw = (allForms["handy-tools"] || {})["gettingStartedChecked"];
+    if (!raw) return true;
+    try { return !(JSON.parse(raw) as boolean[]).every(Boolean); } catch { return true; }
+  });
+  const GS_ITEMS = [
+    { label: "Register Your Business", url: "https://www.gov.uk/set-up-business", desc: "Choose your business structure and register with Companies House and HMRC." },
+    { label: "Register for VAT", url: "https://www.gov.uk/vat-registration", desc: "Register your business for VAT if your taxable turnover exceeds the threshold." },
+    { label: "Get an EORI Number", url: "https://www.gov.uk/eori", desc: "Apply for an Economic Operators Registration and Identification number — required for all imports/exports." },
+    { label: "Customs Declaration Service Setup", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "Set up access to HMRC's Customs Declaration Service." },
+  ] as const;
+  const gsChecked = useMemo((): boolean[] => {
+    const raw = allForms["handy-tools"]?.gettingStartedChecked;
+    try { return JSON.parse(raw || "[]"); } catch { return []; }
+  }, [allForms]);
+  const gsAllChecked = gsChecked.length >= GS_ITEMS.length && gsChecked.every(Boolean);
+  const handleGsCheck = useCallback((index: number, val: boolean) => {
+    const arr = GS_ITEMS.map((_, i) => (i === index ? val : (gsChecked[i] ?? false)));
+    onFieldChange?.("gettingStartedChecked", JSON.stringify(arr));
+    if (arr.every(Boolean)) setGsOpen(false);
+  }, [gsChecked, onFieldChange]);
 
   const resetSetupState = useCallback(() => {
     setSetupStep("name");
@@ -466,16 +496,24 @@ const MainContent = ({
   const [contacts, setContacts] = useState<CompanyDetails[]>([]);
 
   useEffect(() => {
-    loadYourDetails().then((d) => { setYourDetails(d); setEditYourDetails(d); });
+    // If demo is active on mount, skip loading stored details — demoParties effect handles them
+    if (!demoParties) {
+      loadYourDetails().then((d) => { setYourDetails(d); setEditYourDetails(d); });
+    }
     loadContacts().then(setContacts);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Apply demo party details when a demo project is loaded
+  // Apply demo party details and catalogue when a demo project is loaded
   useEffect(() => {
     if (demoParties) {
       setYourDetails(demoParties.yourDetails as CompanyDetails);
       setEditYourDetails(demoParties.yourDetails as CompanyDetails);
       setOtherParty(demoParties.otherParty as CompanyDetails);
+      // Merge demo products into catalogue (prepend so they're found first)
+      setCatalogue((prev) => {
+        const withoutDemo = prev.filter((p) => !p.id.startsWith("demo-"));
+        return [...DEMO_CATALOGUE, ...withoutDemo];
+      });
     }
   }, [demoParties]);
   const [logoDataUrl, setLogoDataUrl] = useState<string>(() => localStorage.getItem("ebill-logo") || "");
@@ -491,7 +529,8 @@ const MainContent = ({
   const txn = allForms["transaction"] || {};
   const productTotals = useMemo(() => getProductTotals(allForms, catalogue), [allForms, catalogue]);
 
-  const preDate = txn.issueDate || "";
+  const preDate = new Date().toISOString().split("T")[0];
+  const preFrom = yourDetails.registeredName || "";
   const preCounterparty = otherParty.registeredName || (role === "seller" ? txn.drawee : role === "buyer" ? txn.drawer : (txn.drawee || txn.drawer || ""));
   const preAmount = productTotals.totalIncTax > 0 ? productTotals.totalIncTax.toFixed(2) : txn.billAmount || "";
   const preCurrency = txn.currency || "";
@@ -770,16 +809,28 @@ const MainContent = ({
                 <span className="mx-3 text-xs text-muted-foreground uppercase tracking-wider">or</span>
                 <div className="flex-1 border-t border-border" />
               </div>
-              <button
-                onClick={onLoadDemo}
-                className="w-full flex items-start gap-3 rounded-lg border border-border px-4 py-3.5 hover:bg-secondary/50 hover:border-primary/30 transition-colors text-left group"
-              >
-                <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0 group-hover:scale-110 transition-transform" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Explore with an example project</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">A pre-filled UK export sale — see every section in action</p>
-                </div>
-              </button>
+              <div className="relative rounded-lg">
+                {savedProjects.length === 0 && (
+                  <div className="absolute -inset-[2px] rounded-lg bg-gradient-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
+                )}
+                <button
+                  onClick={onLoadDemo}
+                  className={`relative w-full flex items-center gap-3 rounded-lg px-4 py-3.5 transition-colors text-left group ${
+                    savedProjects.length === 0
+                      ? "bg-card border border-primary/20 hover:bg-primary/5"
+                      : "border border-border hover:bg-secondary/50 hover:border-primary/30"
+                  }`}
+                >
+                  <img src={eboxyIcon} alt="eboxy" className="h-10 w-auto shrink-0 object-contain group-hover:scale-110 transition-transform" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Explore with an example project</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">A pre-filled UK export sale — see every section in action</p>
+                    {savedProjects.length === 0 && (
+                      <p className="text-xs text-primary mt-1 font-medium">New here? Start here ↑</p>
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -821,7 +872,11 @@ const MainContent = ({
               <div className="border-t border-border pt-5">
                 <div className="rounded-md border border-border overflow-hidden">
                   <button
-                    onClick={() => { const opening = !showSetupYourDetails; setShowSetupYourDetails(opening); }}
+                    onClick={() => {
+                      const opening = !showSetupYourDetails;
+                      setShowSetupYourDetails(opening);
+                      if (!opening) setYourDetailsMode("");
+                    }}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                   >
                     <div>
@@ -832,40 +887,83 @@ const MainContent = ({
                   </button>
                   {showSetupYourDetails && (
                     <div ref={scrollIntoViewSmooth} className="px-4 pb-4 pt-2 border-t border-border space-y-3">
-                      {/* Logo upload */}
-                      <div>
-                        <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
-                        <input
-                          ref={logoInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleLogoUpload}
-                        />
-                        {logoDataUrl ? (
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={logoDataUrl}
-                              alt="Business logo"
-                              className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
-                            />
-                            <div className="flex gap-1">
-                              <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
-                                Change
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
-                                <X className="h-3.5 w-3.5" />
-                              </Button>
+                      {/* When no details saved yet, show choice; otherwise show form */}
+                      {!yourDetails.registeredName && yourDetailsMode !== "form" ? (
+                        <div className="space-y-2 pt-1">
+                          <p className="text-xs text-muted-foreground">Choose how to set up your details:</p>
+                          <button
+                            onClick={() => {
+                              setYourDetails({
+                                registeredName: "Universal Simulation Ltd",
+                                tradingName: "UniSim",
+                                companyNumber: "12345678",
+                                vatNumber: "GB123456789",
+                                address: "1 Simulation House, Tech Park, London, EC1A 1BB",
+                                country: "United Kingdom",
+                                contactName: "Demo User",
+                                telephone: "+44 20 1234 5678",
+                                email: "demo@universal-simulation.com",
+                              } as CompanyDetails);
+                              setShowSetupYourDetails(false);
+                              setYourDetailsMode("");
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-foreground">Universal Simulation Ltd (Example)</p>
+                              <p className="text-xs text-muted-foreground">Use example company details to explore the app</p>
                             </div>
+                            <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+                          </button>
+                          <button
+                            onClick={() => setYourDetailsMode("form")}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-border hover:bg-secondary/50 transition-colors text-left"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-foreground">Add your details</p>
+                              <p className="text-xs text-muted-foreground">Enter your real company information</p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Logo upload */}
+                          <div>
+                            <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
+                            <input
+                              ref={logoInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleLogoUpload}
+                            />
+                            {logoDataUrl ? (
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={logoDataUrl}
+                                  alt="Business logo"
+                                  className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
+                                />
+                                <div className="flex gap-1">
+                                  <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+                                    Change
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+                                <Upload className="mr-1 h-3.5 w-3.5" />
+                                Upload Logo
+                              </Button>
+                            )}
                           </div>
-                        ) : (
-                          <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
-                            <Upload className="mr-1 h-3.5 w-3.5" />
-                            Upload Logo
-                          </Button>
-                        )}
-                      </div>
-                      {companyFields(yourDetails, setYourDetails, "")}
+                          {companyFields(yourDetails, setYourDetails, "")}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1391,7 +1489,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
       {selectedDoc === "new-project" ? (
         <div className="flex-1 flex flex-col items-center justify-center p-10">
-          <FolderPlus className="h-12 w-12 text-primary mb-4" />
+          <img src={eboxyIcon} alt="eboxy" className="h-12 w-12 mb-4 object-contain" />
           <h2 className="text-xl font-semibold text-foreground mb-2">Start a New Project?</h2>
           <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
             This will close your current project <span className="font-medium text-foreground">"{projectName}"</span> and start fresh.
@@ -1708,6 +1806,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <p className="text-xs text-muted-foreground italic">
               This is an example project — in a live project you would upload your own documents here.
             </p>
+            <div className="flex items-center gap-2 text-primary animate-pulse">
+              <ArrowLeft className="h-5 w-5 shrink-0" />
+              <p className="text-sm font-medium">Choose a section from the menu to get started</p>
+            </div>
           </div>
         ) : (
         <div className="space-y-5">
@@ -1818,24 +1920,43 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             }
           }
 
-          // 4. Date consistency
-          const dateSources: { label: string; docId: string; value: string }[] = [
-            { label: "Transaction", docId: "transaction", value: val("transaction", "issueDate") },
-            { label: "Estimate / Quote", docId: "estimate-quote", value: val("estimate-quote", "date") },
-            { label: "Purchase Order", docId: "purchase-order", value: val("purchase-order", "date") },
-            { label: "Invoice", docId: "invoice", value: val("invoice", "date") },
-          ].filter((s) => s.value);
+          // 4. Date ordering — documents should follow chronological sequence
+          const dateSequence: { label: string; docId: string; dateKey: string }[] = [
+            { label: "Estimate / Quote", docId: "estimate-quote", dateKey: "date" },
+            { label: "Purchase Order", docId: "purchase-order", dateKey: "date" },
+            { label: "Invoice", docId: "invoice", dateKey: "date" },
+            { label: "Delivery Note", docId: "delivery-note", dateKey: "date" },
+          ];
+          const datedDocs = dateSequence.filter((d) => val(d.docId, d.dateKey));
 
-          if (dateSources.length >= 2) {
-            const allMatch = dateSources.every((s) => s.value === dateSources[0].value);
-            if (allMatch) {
-              checks.push({ label: "Dates match", status: "pass", details: dateSources[0].value });
+          if (datedDocs.length >= 2) {
+            const orderIssues: string[] = [];
+            const orderLinks: { label: string; docId: string }[] = [];
+
+            for (let i = 0; i < datedDocs.length - 1; i++) {
+              const a = datedDocs[i];
+              const b = datedDocs[i + 1];
+              const dA = new Date(val(a.docId, a.dateKey));
+              const dB = new Date(val(b.docId, b.dateKey));
+              if (dA > dB) {
+                orderIssues.push(`${a.label} (${val(a.docId, a.dateKey)}) is after ${b.label} (${val(b.docId, b.dateKey)})`);
+                if (!orderLinks.find((l) => l.docId === a.docId)) orderLinks.push({ label: a.label, docId: a.docId });
+                if (!orderLinks.find((l) => l.docId === b.docId)) orderLinks.push({ label: b.label, docId: b.docId });
+              }
+            }
+
+            if (orderIssues.length === 0) {
+              checks.push({
+                label: "Document dates in order",
+                status: "pass",
+                details: datedDocs.map((d) => `${d.label}: ${val(d.docId, d.dateKey)}`).join(" → "),
+              });
             } else {
               checks.push({
-                label: "Date differences found",
+                label: `Date order issue${orderIssues.length > 1 ? "s" : ""}`,
                 status: "warn",
-                details: dateSources.map((s) => `${s.label}: ${s.value}`).join(" · "),
-                links: dateSources.map((s) => ({ label: s.label, docId: s.docId })),
+                details: orderIssues.join(" · "),
+                links: orderLinks,
               });
             }
           }
@@ -1973,11 +2094,21 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
               {/* Actions */}
               <div className="flex flex-col gap-3 max-w-xs pt-2 border-t border-border">
+                {!user && (
+                  <p className="text-xs text-muted-foreground">
+                    You need to{" "}
+                    <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
+                    {" "}to generate or upload an eboxy.
+                  </p>
+                )}
                 <Button
                   variant="default"
                   className="w-full justify-start"
                   disabled={missing.length > 0}
-                  onClick={() => toast.info(`${t("eboxy.generate")} — ${t("toast.comingSoon")}`)}
+                  onClick={() => {
+                    if (!user) { navigate("/auth"); return; }
+                    toast.info(`${t("eboxy.generate")} — ${t("toast.comingSoon")}`);
+                  }}
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
                   {t("eboxy.generate")}
@@ -1985,7 +2116,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => toast.info(`${t("eboxy.upload")} — ${t("toast.comingSoon")}`)}
+                  onClick={() => {
+                    if (!user) { navigate("/auth"); return; }
+                    toast.info(`${t("eboxy.upload")} — ${t("toast.comingSoon")}`);
+                  }}
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   {t("eboxy.upload")}
@@ -2021,64 +2155,158 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         )
       ) : selectedDoc === "customs" ? (
         lockedSections.has("customs") ? (
-          <LockedSectionView title="Tariffs" fields={[["Status", "Tariff lookup completed"]]} onEdit={() => onUnlockSection?.("customs")} />
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <h2 className="text-base font-semibold text-foreground">Tariffs &amp; Customs</h2>
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
+              </span>
+            </div>
+
+            {/* Applied Tariff Rules */}
+            {(() => {
+              let applied: { hsCode: string; productName: string; description: string; thirdCountryDuty: string; preferentialDuty?: string | null; vat: string }[] = [];
+              try { applied = JSON.parse(field("appliedRules") || "[]"); } catch { applied = []; }
+              return applied.length > 0 ? (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" /> Applied Tariff Rules ({applied.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {applied.map((rule, i) => (
+                      <div key={i} className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
+                        <p className="text-sm font-medium text-foreground">{rule.productName}</p>
+                        <p className="text-xs text-muted-foreground mb-1.5">{rule.description} · HS: {rule.hsCode}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                          <span><span className="text-muted-foreground">Duty:</span> <span className="font-medium">{rule.thirdCountryDuty}</span></span>
+                          {rule.preferentialDuty && <span><span className="text-muted-foreground">Pref:</span> <span className="font-medium">{rule.preferentialDuty}</span></span>}
+                          <span><span className="text-muted-foreground">VAT:</span> <span className="font-medium">{rule.vat}</span></span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No tariff rules applied.</p>
+              );
+            })()}
+
+            {/* Compliance Checklist Summary */}
+            {(() => {
+              const exportItems = [
+                { key: "exportCds", label: "CDS export declaration submitted" },
+                { key: "exportLicence", label: "Export licence obtained (if required)" },
+                { key: "exportEori", label: "EORI number included on documents" },
+                { key: "exportInvoice", label: "Commercial invoice matches declaration" },
+                { key: "exportSanctions", label: "Sanctions & export controls checked" },
+              ];
+              const importItems = [
+                { key: "importCds", label: "CDS import declaration submitted" },
+                { key: "importDuty", label: "Import duty paid / deferred" },
+                { key: "importVat", label: "Import VAT accounted for" },
+                { key: "importEori", label: "EORI number included on documents" },
+                { key: "importLicence", label: "Import licence obtained (if required)" },
+                { key: "importSafety", label: "Safety & security declaration filed" },
+                { key: "importPhyto", label: "Phytosanitary / health certificates (if applicable)" },
+              ];
+              const relevantItems = role !== "buyer" ? exportItems : importItems;
+              const checkedItems = relevantItems.filter((it) => field(it.key) === "true");
+              const uncheckedItems = relevantItems.filter((it) => field(it.key) !== "true");
+              return (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {role !== "buyer" ? "Export" : "Import"} Compliance Checklist
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      {checkedItems.length}/{relevantItems.length} completed
+                    </span>
+                  </h3>
+                  <div className="rounded-md border border-border divide-y divide-border overflow-hidden">
+                    {relevantItems.map((it) => {
+                      const done = field(it.key) === "true";
+                      return (
+                        <div key={it.key} className={cn("flex items-center gap-3 px-4 py-2.5 text-sm", done ? "bg-green-500/5" : "bg-secondary/10")}>
+                          {done
+                            ? <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                            : <Circle className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />}
+                          <span className={done ? "text-foreground" : "text-muted-foreground"}>{it.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {uncheckedItems.length > 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3 shrink-0" />
+                      {uncheckedItems.length} item{uncheckedItems.length > 1 ? "s" : ""} not yet confirmed — edit to update
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("customs")}>
+              <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
+            </Button>
+          </div>
         ) : (
         <div className="space-y-5">
-          <CustomsLookup allForms={allForms} formData={formData} onFieldChange={onFieldChange} />
+          <CustomsLookup allForms={allForms} formData={formData} onFieldChange={onFieldChange} extraProducts={demoParties ? DEMO_CATALOGUE : undefined} originCountry={yourDetails.country} destCountry={otherParty.country} />
 
           {/* Customs Checklists */}
           <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-sm font-semibold text-foreground">Compliance Checklists</h3>
-            <Collapsible defaultOpen={role === "seller"}>
-              <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
-                <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-                Export Checklist
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pl-5 space-y-2 pb-3">
-                {[
-                  { key: "exportCds", label: "CDS export declaration submitted" },
-                  { key: "exportLicence", label: "Export licence obtained (if required)" },
-                  { key: "exportEori", label: "EORI number included on documents" },
-                  { key: "exportCoo", label: "Certificate of Origin prepared" },
-                  { key: "exportInvoice", label: "Commercial invoice matches declaration" },
-                  { key: "exportPacking", label: "Packing list completed" },
-                  { key: "exportSanctions", label: "Sanctions & export controls checked" },
-                ].map((item) => (
-                  <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
-                    <Checkbox
-                      checked={field(item.key) === "true"}
-                      onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
-                    />
-                    <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
-                  </label>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
-            <Collapsible defaultOpen={role === "buyer"}>
-              <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
-                <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-                Import Checklist
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pl-5 space-y-2 pb-3">
-                {[
-                  { key: "importCds", label: "CDS import declaration submitted" },
-                  { key: "importDuty", label: "Import duty paid / deferred" },
-                  { key: "importVat", label: "Import VAT accounted for" },
-                  { key: "importEori", label: "EORI number included on documents" },
-                  { key: "importLicence", label: "Import licence obtained (if required)" },
-                  { key: "importSafety", label: "Safety & security declaration filed" },
-                  { key: "importPhyto", label: "Phytosanitary / health certificates (if applicable)" },
-                ].map((item) => (
-                  <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
-                    <Checkbox
-                      checked={field(item.key) === "true"}
-                      onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
-                    />
-                    <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
-                  </label>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
+            {role !== "buyer" && (
+              <Collapsible defaultOpen>
+                <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
+                  Export Checklist
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pl-5 space-y-2 pb-3">
+                  {[
+                    { key: "exportCds", label: "CDS export declaration submitted" },
+                    { key: "exportLicence", label: "Export licence obtained (if required)" },
+                    { key: "exportEori", label: "EORI number included on documents" },
+                    { key: "exportInvoice", label: "Commercial invoice matches declaration" },
+                    { key: "exportSanctions", label: "Sanctions & export controls checked" },
+                  ].map((item) => (
+                    <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
+                      <Checkbox
+                        checked={field(item.key) === "true"}
+                        onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
+                      />
+                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
+                    </label>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+            {role !== "seller" && (
+              <Collapsible defaultOpen>
+                <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
+                  Import Checklist
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pl-5 space-y-2 pb-3">
+                  {[
+                    { key: "importCds", label: "CDS import declaration submitted" },
+                    { key: "importDuty", label: "Import duty paid / deferred" },
+                    { key: "importVat", label: "Import VAT accounted for" },
+                    { key: "importEori", label: "EORI number included on documents" },
+                    { key: "importLicence", label: "Import licence obtained (if required)" },
+                    { key: "importSafety", label: "Safety & security declaration filed" },
+                    { key: "importPhyto", label: "Phytosanitary / health certificates (if applicable)" },
+                  ].map((item) => (
+                    <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
+                      <Checkbox
+                        checked={field(item.key) === "true"}
+                        onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
+                      />
+                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
+                    </label>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </div>
 
           {renderSectionButtons("customs", t("save.tariffs"))}
@@ -2092,20 +2320,37 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           </p>
 
           {/* Getting Started */}
-          <Collapsible>
+          <Collapsible open={gsOpen} onOpenChange={setGsOpen}>
             <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-foreground hover:text-primary transition-colors py-2 border-b border-border">
-              <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
+              {gsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               Getting Started — One-Time Setup
+              {gsAllChecked && <Check className="h-3.5 w-3.5 text-green-500 ml-1 shrink-0" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 pb-1">
               <div className="grid gap-3 max-w-lg">
-                {[
-                  { label: "Register Your Business", url: "https://www.gov.uk/set-up-business", desc: "Choose your business structure and register with Companies House and HMRC." },
-                  { label: "Register for VAT", url: "https://www.gov.uk/vat-registration", desc: "Register your business for VAT if your taxable turnover exceeds the threshold." },
-                  { label: "Get an EORI Number", url: "https://www.gov.uk/eori", desc: "Apply for an Economic Operators Registration and Identification number — required for all imports/exports." },
-                  { label: "Customs Declaration Service Setup", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "Set up access to HMRC's Customs Declaration Service." },
-                ].map((tool) => (
-                  <ToolLink key={tool.url} {...tool} />
+                {GS_ITEMS.map((item, i) => (
+                  <div key={item.url} className="flex items-start gap-3">
+                    <Checkbox
+                      id={`gs-${i}`}
+                      checked={gsChecked[i] ?? false}
+                      onCheckedChange={(checked) => handleGsCheck(i, !!checked)}
+                      className="mt-0.5 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "text-sm font-medium hover:underline inline-flex items-center gap-1",
+                          gsChecked[i] ? "line-through text-muted-foreground" : "text-primary"
+                        )}
+                      >
+                        {item.label} <ExternalLink className="h-3 w-3 shrink-0" />
+                      </a>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             </CollapsibleContent>
@@ -2175,10 +2420,54 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         </div>
       ) : selectedDoc === "product-details" ? (
         lockedSections.has("product-details") ? (
-          <LockedSectionView title="Products" fields={[["Products", "Product details completed"]]} onEdit={() => onUnlockSection?.("product-details")} />
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <h2 className="text-base font-semibold text-foreground">Products</h2>
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">Product</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">HS Code</th>
+                    <th className="text-right text-xs text-muted-foreground font-medium pb-2">Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    try {
+                      const lines: { catalogueId: string; units: string }[] = JSON.parse(allForms["product-details"]?.["productLines"] || "[]");
+                      const effectiveCatalogue = demoParties
+                        ? [...DEMO_CATALOGUE, ...catalogue.filter(p => !p.id.startsWith("demo-"))]
+                        : catalogue;
+                      return lines.map((line, i) => {
+                        const product = effectiveCatalogue.find((p) => p.id === line.catalogueId);
+                        if (!product) return null;
+                        return (
+                          <tr key={i} className="border-b border-border/50 last:border-0">
+                            <td className="py-2 pr-4 font-medium text-foreground">{product.name}</td>
+                            <td className="py-2 pr-4 text-muted-foreground font-mono text-xs">{product.hsCode || "—"}</td>
+                            <td className="py-2 text-right text-foreground">{line.units}</td>
+                          </tr>
+                        );
+                      });
+                    } catch { return null; }
+                  })()}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex gap-2 mt-2">
+              <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("product-details")}>
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
+              </Button>
+            </div>
+          </div>
         ) : (
         <div className="space-y-5">
-          <ProductDetails formData={formData || {}} onFieldChange={onFieldChange} onSave={onSave} />
+          <ProductDetails formData={formData || {}} onFieldChange={onFieldChange} onSave={onSave} extraCatalogue={demoParties ? DEMO_CATALOGUE : undefined} />
           {renderSectionButtons("product-details", t("save.products"))}
         </div>
         )
@@ -2410,7 +2699,6 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                return JSON.parse(raw) as { catalogueId: string; units: string }[];
              } catch { return []; }
            })();
-           const catalogue = loadCatalogue();
            const pickedMap: Record<number, boolean> = (() => {
              try {
                const raw = field("pickedItems");
@@ -2598,7 +2886,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
          )
        ) : isDocumentType ? (
           lockedSections.has(selectedDoc!) ? (
-            <LockedSectionView title={selectedDoc!.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())} fields={[["Reference No", field("referenceNo")], ["Date", field("date") || preDate], [counterpartyLabel, field("counterparty") || preCounterparty], ["Amount", field("amount") || preAmount], ["Currency", field("docCurrency") || preCurrency || "GBP"]]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["Notes"]} />
+            <LockedSectionView title={selectedDoc!.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())} fields={[["Reference No", field("referenceNo")], ["Date", field("date") || preDate], ["Issued By", field("issuedBy") || preFrom], [counterpartyLabel, field("counterparty") || preCounterparty], ["Amount", field("amount") || preAmount], ["Currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["Notes", field("notes")] as [string, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["Notes"]} />
           ) :
           (() => {
             // Determine if this doc is upload-only based on role
@@ -2619,6 +2907,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       {t("doc.preFilled")}
                     </p>
                     <div className="grid grid-cols-2 gap-4 max-w-lg">
+                      <div className="col-span-2">
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">Issued By</label>
+                        <Input placeholder="Your company name" className="bg-secondary/50" value={docField("issuedBy", preFrom)} onChange={set("issuedBy")} />
+                      </div>
                       <div>
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.referenceNo")}</label>
                         <Input placeholder="e.g. INV-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
@@ -2688,7 +2980,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   </Button>
                   {!isUploadOnly && (
                     <Button
-                      variant="default"
+                      variant="outline"
                       className="flex-1 justify-center"
                       onClick={() => toast.info(`${t("doc.generate")} — ${t("toast.comingSoon")}`)}
                     >
@@ -2699,7 +2991,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 </div>
 
                 <div className="border-t border-border pt-5 max-w-md">
-                  {renderSectionButtons(selectedDoc!, t("lock.acceptLock"))}
+                  {renderSectionButtons(selectedDoc!, t("doc.save"))}
                 </div>
               </div>
             );
