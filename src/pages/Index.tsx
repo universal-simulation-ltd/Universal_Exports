@@ -218,8 +218,8 @@ const Index = () => {
     setEditingSections(new Set());
     setStarted(true);
     setAccepted(true);
-    setSelectedDoc(null);
     setShowSavedList(false);
+    setSelectedDoc("ai-import");
     setDemoParties({ yourDetails: DEMO_YOUR_DETAILS as CompanyDetails, otherParty: DEMO_OTHER_PARTY as CompanyDetails });
     setDemoExpand(true);
     setLoadCounter((c) => c + 1);
@@ -324,7 +324,11 @@ const Index = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-3 md:p-6">
       {/* Language flags + sign out */}
       <div className="w-full max-w-3xl flex justify-between items-center mb-2">
-        <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+        {user ? (
+          <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+        ) : (
+          <span />
+        )}
         <div className="flex items-center gap-2">
           {languages.map((l) => (
             <button
@@ -338,12 +342,21 @@ const Index = () => {
               {l.flag}
             </button>
           ))}
-          <button
-            onClick={signOut}
-            className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border ml-1"
-          >
-            Sign out
-          </button>
+          {user ? (
+            <button
+              onClick={signOut}
+              className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border ml-1"
+            >
+              Sign out
+            </button>
+          ) : (
+            <a
+              href="/auth"
+              className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border ml-1"
+            >
+              Sign in
+            </a>
+          )}
         </div>
       </div>
 

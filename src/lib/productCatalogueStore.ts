@@ -10,6 +10,20 @@ export interface CatalogueProduct {
   vatPercent: number
 }
 
+const LOCAL_KEY = 'eboxy_catalogue'
+
+function getLocal(): CatalogueProduct[] {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function setLocal(products: CatalogueProduct[]) {
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(products))
+}
+
 function rowToProduct(row: Record<string, string | number>): CatalogueProduct {
   return {
     id: row.id as string,
@@ -22,7 +36,14 @@ function rowToProduct(row: Record<string, string | number>): CatalogueProduct {
   }
 }
 
+async function isAuthenticated(): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser()
+  return !!user
+}
+
 export async function loadCatalogue(): Promise<CatalogueProduct[]> {
+  if (!(await isAuthenticated())) return getLocal()
+
   const { data, error } = await supabase
     .from('product_catalogue')
     .select('*')
@@ -30,23 +51,28 @@ export async function loadCatalogue(): Promise<CatalogueProduct[]> {
 
   if (error) {
     console.error('Error loading catalogue:', error)
-    return []
+    return getLocal()
   }
 
   return data.map(rowToProduct)
 }
 
 export async function addToCatalogue(product: Omit<CatalogueProduct, 'id'>): Promise<CatalogueProduct> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+
+  if (!(await isAuthenticated())) {
+    const newProduct = { ...product, id }
+    setLocal([...getLocal(), newProduct])
+    return newProduct
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data, error } = await supabase
     .from('product_catalogue')
     .insert({
       id,
-      user_id: user.id,
+      user_id: user!.id,
       code: product.code,
       hs_code: product.hsCode,
       name: product.name,
@@ -66,11 +92,21 @@ export async function addToCatalogue(product: Omit<CatalogueProduct, 'id'>): Pro
 }
 
 export async function removeFromCatalogue(id: string): Promise<void> {
+  if (!(await isAuthenticated())) {
+    setLocal(getLocal().filter((p) => p.id !== id))
+    return
+  }
+
   const { error } = await supabase.from('product_catalogue').delete().eq('id', id)
   if (error) console.error('Error removing product:', error)
 }
 
 export async function updateCatalogueProduct(updated: CatalogueProduct): Promise<void> {
+  if (!(await isAuthenticated())) {
+    setLocal(getLocal().map((p) => p.id === updated.id ? updated : p))
+    return
+  }
+
   const { error } = await supabase
     .from('product_catalogue')
     .update({

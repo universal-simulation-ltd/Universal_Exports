@@ -6,7 +6,28 @@
       "Bash(./node_modules/.bin/vite build:*)",
       "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" status)",
       "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" remote -v)",
-      "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" log --oneline -5)"
+      "Bash(git -C \"/Users/jamesmarkey/Library/CloudStorage/ProtonDrive-inbox@jamesmarkey.co.uk-folder/Projects/eboxy\" log --oneline -5)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(node -e ':*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(powershell.exe -Command \"Get-Command bun, npm, node -ErrorAction SilentlyContinue | Select-Object Name, Source\")",
+      "Bash(cmd /c \"where bun & where npm & where node\")",
+      "Bash(cmd /c \"where /r C:\\\\Users\\\\inbox bun.exe\")",
+      "Read(//c/Users/inbox/.bun/**)",
+      "Read(//c/Users/inbox/scoop/**)",
+      "PowerShell(Get-Command bun, npm, node -ErrorAction SilentlyContinue)",
+      "PowerShell($env:PATH -split \";\" | Where-Object { $_ -match \"node|bun|npm\" })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\inbox\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"bun|node|npm\" } | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"D:\\\\Proton\\\\My files\\\\Projects\\\\eboxy\\\\node_modules\\\\.bin\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"vite\" } | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"D:\\\\Proton\\\\My files\\\\Projects\\\\eboxy\\\\node_modules\\\\.bin\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"vite\" } | Select-Object Name, Target)",
+      "PowerShell(\\(Get-ChildItem \"D:\\\\Proton\\\\My files\\\\Projects\\\\eboxy\\\\node_modules\\\\.bin\" -ErrorAction SilentlyContinue\\).Count)",
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"node|bun\" } | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"node|bun\" } | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"$env:APPDATA\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"node|bun|npm\" } | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"D:\\\\\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"node|bun|tools|dev\" } | Select-Object Name)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/node.exe\" --version)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/npm.cmd\" install @rollup/rollup-win32-x64-msvc --no-save)",
+      "Bash('/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/npm.cmd' install @rollup/rollup-win32-x64-msvc --no-save)"
     ]
   }
 }

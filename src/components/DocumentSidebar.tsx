@@ -24,7 +24,8 @@ import {
   Menu,
 } from "lucide-react";
 import { Check } from "lucide-react";
-import eboxyLogo from "@/assets/logo-2.png";
+import eboxyLogo from "@/assets/logo.png";
+import eboxyIconWhite from "@/assets/eboxy_icon_white.png";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -233,6 +234,9 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     { id: "estimate-quote", label: t("sidebar.estimateQuote"), icon: FileText },
     { id: "purchase-order", label: t("sidebar.purchaseOrder"), icon: Package },
     { id: "invoice", label: t("sidebar.invoice"), icon: FileText },
+  ];
+
+  const shipmentDocTypes = [
     { id: "picking-list", label: t("sidebar.pickingList"), icon: ClipboardList },
     { id: "delivery-note", label: t("sidebar.deliveryNote"), icon: Truck },
   ];
@@ -262,9 +266,15 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     (item) => disabledDocs.includes(item.id) || lockedSections.has(item.id) || getDocStatus(allForms[item.id], item.id, role, savedSections) === "complete"
   ) && productDetailItems.some((item) => !disabledDocs.includes(item.id));
 
+  useEffect(() => {
+    if (allProductDetailsComplete && !forceExpandSections) {
+      setProductDetailsOpen(false);
+    }
+  }, [allProductDetailsComplete, forceExpandSections]);
+
   if (collapsed) {
     return (
-      <aside className="w-12 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col items-center py-3">
+      <aside className="w-12 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col items-center py-3 gap-3">
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
@@ -272,6 +282,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         >
           <Menu className="h-5 w-5" />
         </button>
+        <img src={eboxyIconWhite} alt="eboxy" className="w-7 h-7 object-contain" />
       </aside>
     );
   }
@@ -459,6 +470,15 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                       <span className="flex-1 text-left">{t("sidebar.shipmentDetails")}</span>
                       {statusIndicator("shipment")}
                     </button>
+                    {shipmentDocTypes
+                      .filter((doc) => !disabledDocs.includes(doc.id))
+                      .map((doc) => (
+                        <button key={doc.id} onClick={() => onSelect(doc.id)} className={btnClass(doc.id)}>
+                          <doc.icon className="h-4 w-4" />
+                          <span className="flex-1 text-left">{doc.label}</span>
+                          {statusIndicator(doc.id)}
+                        </button>
+                      ))}
                   </nav>
                 )}
               </div>

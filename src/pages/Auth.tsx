@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import logo from '@/assets/logo-2.png'
+import logo from '@/assets/logo.png'
+import iconWhite from '@/assets/eboxy_icon_white.png'
 
 export default function Auth() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -42,8 +43,11 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         {/* Logo */}
-        <div className="flex justify-center">
-          <img src={logo} alt="eboxy" className="h-12 object-contain" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
+            <img src={iconWhite} alt="eboxy icon" className="h-9 w-9 object-contain" />
+          </div>
+          <img src={logo} alt="eboxy" className="h-10 object-contain" />
         </div>
 
         {/* Card */}
