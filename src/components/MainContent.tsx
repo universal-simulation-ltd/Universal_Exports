@@ -418,7 +418,9 @@ const MainContent = ({
       </div>
     );
   };
-  const [setupStep, setSetupStep] = useState<"name" | "role">("name");
+  const [setupStep, setSetupStep] = useState<"name" | "role">(
+    projectName.trim() ? "role" : "name"
+  );
   const [expandedParty, setExpandedParty] = useState<"you" | "other" | null>("other");
   const [showSetupYourDetails, setShowSetupYourDetails] = useState(false);
   const [showSetupOtherParty, setShowSetupOtherParty] = useState(false);

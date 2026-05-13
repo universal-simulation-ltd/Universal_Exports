@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import DocumentSidebar from "@/components/DocumentSidebar";
 import MainContent from "@/components/MainContent";
 import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
@@ -11,6 +12,8 @@ import type { CompanyDetails } from "@/lib/contactStore";
 
 const Index = () => {
   const { signOut, user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [projectId, setProjectId] = useState<string>("");
   const [projectName, setProjectName] = useState("");
@@ -49,6 +52,20 @@ const Index = () => {
   // Load saved projects on mount
   useEffect(() => {
     loadProjects().then(setSavedProjects);
+  }, []);
+
+  // Handle navigation state from the landing page (preset project name or demo load)
+  useEffect(() => {
+    const state = location.state as { projectName?: string; loadDemo?: boolean } | null;
+    if (!state) return;
+    if (state.loadDemo) {
+      handleLoadDemo();
+    } else if (state.projectName) {
+      setProjectName(state.projectName);
+      setResetKey((k) => k + 1);
+    }
+    navigate(location.pathname, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refreshSavedProjects = useCallback(() => {

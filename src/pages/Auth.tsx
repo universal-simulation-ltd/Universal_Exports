@@ -25,7 +25,7 @@ export default function Auth() {
       if (error) {
         toast.error(error.message)
       } else {
-        navigate('/')
+        navigate('/app')
       }
     } else {
       const { error } = await signUp(email, password)
