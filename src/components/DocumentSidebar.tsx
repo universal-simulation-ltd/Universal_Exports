@@ -24,10 +24,11 @@ import {
   Menu,
 } from "lucide-react";
 import { Check } from "lucide-react";
-import eboxyLogo from "@/assets/logo.png";
-import eboxyIconWhite from "@/assets/eboxy_icon_white.png";
+import ueLogo from "@/assets/universal-exports-logo.svg";
+import ueIconWhite from "@/assets/universal-exports-icon-white.svg";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import BrandFooter from "@/components/BrandFooter";
 
 interface DocumentSidebarProps {
   selected: string | null;
@@ -218,7 +219,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     } disabled:opacity-40 disabled:cursor-not-allowed`;
   };
 
-  const eboxyBtnClass = (id: string) => {
+  const primaryBtnClass = (id: string) => {
     const isActive = selected === id;
     const isDisabled = !accepted;
     return `w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -282,17 +283,20 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         >
           <Menu className="h-5 w-5" />
         </button>
-        <img src={eboxyIconWhite} alt="eboxy" className="w-7 h-7 object-contain" />
+        <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shadow-sm">
+          <img src={ueIconWhite} alt="Universal Exports" className="w-5 h-5 object-contain" />
+        </div>
       </aside>
     );
   }
 
   return (
     <aside className="w-56 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col min-h-0 relative">
+      <div className="flex-1 min-h-0 relative">
       {/* Scroll fade overlays */}
       <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-card to-transparent transition-opacity duration-300 z-10 rounded-tl-lg ${fadeTop ? "opacity-100" : "opacity-0"}`} />
-      <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card to-transparent transition-opacity duration-300 z-10 rounded-bl-lg ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card to-transparent transition-opacity duration-300 z-10 ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
+      <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden">
       <div className="px-4 pt-2 pb-0 flex justify-end">
         <button
           onClick={onToggleCollapse}
@@ -303,13 +307,13 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         </button>
       </div>
       <div className="px-4 pt-0 pb-2">
-        <img src={userLogo || eboxyLogo} alt="eboxy logo" className="w-full max-h-24 object-contain" />
+        <img src={userLogo || ueLogo} alt="Universal Exports logo" className="w-full max-h-24 object-contain" />
       </div>
       <div className="px-4 pb-4 space-y-5">
         {/* eboxy AI - always visible */}
         <div>
           <nav className="space-y-1">
-            <button onClick={() => { if (!accepted) { toast.info(t("toast.createProject")); return; } onSelect("ai-import"); }} className={eboxyBtnClass("ai-import")} disabled={!accepted}>
+            <button onClick={() => { if (!accepted) { toast.info(t("toast.createProject")); return; } onSelect("ai-import"); }} className={primaryBtnClass("ai-import")} disabled={!accepted}>
               <Sparkles className="h-4 w-4" />
               <span className="flex-1 text-left">{t("sidebar.eboxyAI")}</span>
             </button>
@@ -537,7 +541,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
             {!disabledDocs.includes("eboxy") && (
               <div className="animate-fade-in">
                 <nav className="space-y-1">
-                  <button onClick={() => onSelect("eboxy")} disabled={disabledDocs.includes("eboxy")} className={eboxyBtnClass("eboxy")}>
+                  <button onClick={() => onSelect("eboxy")} disabled={disabledDocs.includes("eboxy")} className={primaryBtnClass("eboxy")}>
                     <Stamp className="h-4 w-4" />
                     <span>{t("sidebar.eboxy")}</span>
                   </button>
@@ -547,20 +551,11 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
           </>
         )}
       </div>
-      {userLogo && (
-        <div className="px-4 py-3 border-t border-border mt-auto">
-          <p className="text-[10px] text-muted-foreground leading-tight">
-            eboxy is a{" "}
-            <a href="https://www.unisim.co.uk" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-              unisim
-            </a>{" "}
-            product.
-            <br />
-            We hope you like it 🧡
-          </p>
-        </div>
-      )}
       </div>{/* end scroll wrapper */}
+      </div>{/* end scrollable region */}
+      <div className="px-4 py-3 border-t border-border bg-card rounded-bl-lg">
+        <BrandFooter variant="sidebar" />
+      </div>
     </aside>
   );
 };

@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import logo from '@/assets/logo.png'
-import iconWhite from '@/assets/eboxy_icon_white.png'
+import logo from '@/assets/universal-exports-logo.svg'
+import iconWhite from '@/assets/universal-exports-icon-white.svg'
+import BrandFooter from '@/components/BrandFooter'
 
 export default function Auth() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -45,9 +46,9 @@ export default function Auth() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
-            <img src={iconWhite} alt="eboxy icon" className="h-9 w-9 object-contain" />
+            <img src={iconWhite} alt="Universal Exports icon" className="h-9 w-9 object-contain" />
           </div>
-          <img src={logo} alt="eboxy" className="h-10 object-contain" />
+          <img src={logo} alt="Universal Exports" className="h-10 object-contain" />
         </div>
 
         {/* Card */}
@@ -58,8 +59,8 @@ export default function Auth() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {mode === 'signin'
-                ? 'Welcome back to eboxy'
-                : 'Start managing your eBill of Exchange documents'}
+                ? 'Welcome back to Universal Exports'
+                : 'Start managing your Bill of Exchange documents'}
             </p>
           </div>
 
@@ -105,6 +106,8 @@ export default function Auth() {
             </button>
           </p>
         </div>
+
+        <BrandFooter variant="auth" className="pt-2" />
       </div>
     </div>
   )

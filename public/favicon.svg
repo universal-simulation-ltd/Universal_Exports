@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="ueFav" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F76A1F"/>
+      <stop offset="1" stop-color="#E54E0F"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#ueFav)"/>
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="27" cy="36" r="13" stroke-width="2.6"/>
+    <ellipse cx="27" cy="36" rx="13" ry="4.6" stroke-width="1.6" opacity="0.6"/>
+    <line x1="27" y1="23" x2="27" y2="49" stroke-width="1.6" opacity="0.6"/>
+    <path d="M40 22 L54 8" stroke-width="3.2"/>
+    <path d="M44 8 L54 8 L54 18" stroke-width="3.2"/>
+  </g>
+</svg>
