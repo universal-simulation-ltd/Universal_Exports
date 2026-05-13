@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" width="360" height="96" role="img" aria-label="Universal Imports">
+  <defs>
+    <linearGradient id="uiLogoTile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2EA9C7"/>
+      <stop offset="1" stop-color="#1A7A92"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 16)">
+    <rect width="64" height="64" rx="14" fill="url(#uiLogoTile)"/>
+    <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="27" cy="36" r="13" stroke-width="2.4"/>
+      <ellipse cx="27" cy="36" rx="13" ry="4.6" stroke-width="1.4" opacity="0.55"/>
+      <line x1="27" y1="23" x2="27" y2="49" stroke-width="1.4" opacity="0.55"/>
+      <path d="M27 23c4.6 3.6 4.6 22.4 0 26" stroke-width="1.4" opacity="0.55"/>
+      <path d="M27 23c-4.6 3.6-4.6 22.4 0 26" stroke-width="1.4" opacity="0.55"/>
+      <path d="M54 8 L40 22" stroke-width="3"/>
+      <path d="M40 12 L40 22 L50 22" stroke-width="3"/>
+    </g>
+  </g>
+  <g font-family="'Inter','Helvetica Neue',Arial,sans-serif" font-weight="700">
+    <text x="86" y="50" font-size="22" letter-spacing="0.5" fill="#1A1F2C">UNIVERSAL</text>
+    <text x="86" y="76" font-size="22" letter-spacing="0.5" fill="#1A7A92">IMPORTS</text>
+  </g>
+</svg>
