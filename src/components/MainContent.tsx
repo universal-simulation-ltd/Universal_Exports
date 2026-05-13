@@ -14,7 +14,7 @@ import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
 import SignaturePad from "@/components/SignaturePad";
 import LockedSectionView from "@/components/LockedSectionView";
-import eboxyIcon from "@/assets/eboxy_icon.png";
+import ueIcon from "@/assets/universal-exports-icon.svg";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
 import { ProjectData, saveProject, createProjectId, deleteProject } from "@/lib/projectStore";
 import { CompanyDetails, loadYourDetails, saveYourDetails, loadContacts, saveContact, deleteContact, emptyDetails } from "@/lib/contactStore";
@@ -821,7 +821,7 @@ const MainContent = ({
                       : "border border-border hover:bg-secondary/50 hover:border-primary/30"
                   }`}
                 >
-                  <img src={eboxyIcon} alt="eboxy" className="h-10 w-auto shrink-0 object-contain group-hover:scale-110 transition-transform" />
+                  <img src={ueIcon} alt="Universal Exports" className="h-10 w-auto shrink-0 object-contain group-hover:scale-110 transition-transform" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Explore with an example project</p>
                     <p className="text-xs text-muted-foreground mt-0.5">A pre-filled UK export sale — see every section in action</p>
@@ -1489,7 +1489,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
       {selectedDoc === "new-project" ? (
         <div className="flex-1 flex flex-col items-center justify-center p-10">
-          <img src={eboxyIcon} alt="eboxy" className="h-12 w-12 mb-4 object-contain" />
+          <img src={ueIcon} alt="Universal Exports" className="h-12 w-12 mb-4 object-contain" />
           <h2 className="text-xl font-semibold text-foreground mb-2">Start a New Project?</h2>
           <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
             This will close your current project <span className="font-medium text-foreground">"{projectName}"</span> and start fresh.
@@ -1786,7 +1786,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-foreground">Documents already extracted</h2>
               <p className="text-sm text-muted-foreground">
-                eboxy AI has already processed and imported all documents for this project. Every section has been pre-filled from the uploaded trade documents.
+                Universal Exports AI has already processed and imported all documents for this project. Every section has been pre-filled from the uploaded trade documents.
               </p>
             </div>
             <div className="w-full rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-left space-y-1.5">
@@ -2098,7 +2098,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <p className="text-xs text-muted-foreground">
                     You need to{" "}
                     <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
-                    {" "}to generate or upload an eboxy.
+                    {" "}to generate or upload a Bill of Exchange.
                   </p>
                 )}
                 <Button
