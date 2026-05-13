@@ -57,22 +57,23 @@ export default function Landing() {
       {/* Header */}
       <header className="relative w-full border-b border-border/60 bg-card/60 backdrop-blur-sm">
         <div className="relative max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 group">
-            <img
-              src={logo}
-              alt="Universal Exports"
-              className="h-7 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
-            />
-          </a>
           <div className="flex items-center gap-3 md:gap-4">
+            <a href="/" className="flex items-center group">
+              <img
+                src={logo}
+                alt="Universal Exports"
+                className="h-7 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
+              />
+            </a>
             <div className="hidden md:flex items-center group" aria-label="Universal Imports">
               <img
                 src={importsLogo}
                 alt="Universal Imports"
-                className="h-7 w-auto transition-transform duration-200 ease-out origin-right group-hover:scale-110"
+                className="h-7 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
               />
             </div>
-            <div className="flex items-center gap-2">
+          </div>
+          <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1">
               {languages.map((l) => (
                 <button
@@ -132,7 +133,6 @@ export default function Landing() {
               />
             </a>
           </div>
-          </div>
         </div>
       </header>
 
@@ -140,17 +140,17 @@ export default function Landing() {
       <main className="flex-1 w-full">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
           {/* Hero title — spans both columns */}
-          <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-semibold tracking-tight text-foreground leading-[1.15] text-center mb-8 md:mb-10">
+          <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-semibold tracking-tight text-foreground leading-[1.15] text-center mb-3 md:mb-4">
             Export, Import, <span className="text-primary">With Peace of Mind.</span>
           </h1>
+          {/* Subheader — straddles both columns */}
+          <p className="text-sm md:text-base text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-10">
+            Whether you're buying or selling across borders, generate, sign and share Bills of Exchange,
+            invoices and delivery notes — with live tariff data and AI-assisted document import.
+          </p>
           <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-12 items-start lg:items-center">
           {/* LEFT — pitch + animation + features */}
           <div className="flex flex-col">
-            <p className="text-sm md:text-base text-muted-foreground max-w-md">
-              Whether you're buying or selling across borders, generate, sign and share Bills of Exchange,
-              invoices and delivery notes — with live tariff data and AI-assisted document import.
-            </p>
-
             {/* Workflow animation */}
             <div className="mt-6 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
               <WorkflowAnimation />
