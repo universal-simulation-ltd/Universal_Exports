@@ -1,6 +1,38 @@
+import { useCallback, useRef, useState } from "react";
+
+const AI_CENTER_X = 300;
+const AI_CENTER_Y = 180;
+const FOLLOW_STRENGTH = 0.1; // 10% of distance from AI centre to cursor
+const FOLLOW_MAX = 28; // hard cap in SVG units
+
+const clamp = (v: number, max: number) => Math.max(-max, Math.min(max, v));
+
 const WorkflowAnimation = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [aiOffset, setAiOffset] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    // Convert client coords to SVG viewBox coords (viewBox is 600 × 360)
+    const svgX = ((e.clientX - rect.left) / rect.width) * 600;
+    const svgY = ((e.clientY - rect.top) / rect.height) * 360;
+    const dx = (svgX - AI_CENTER_X) * FOLLOW_STRENGTH;
+    const dy = (svgY - AI_CENTER_Y) * FOLLOW_STRENGTH;
+    setAiOffset({ x: clamp(dx, FOLLOW_MAX), y: clamp(dy, FOLLOW_MAX) });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setAiOffset({ x: 0, y: 0 });
+  }, []);
+
   return (
-    <div className="relative w-full aspect-[5/3] bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.06]">
+    <div
+      ref={containerRef}
+      className="relative w-full aspect-[5/3] bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.06]"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <svg
         viewBox="0 0 600 360"
         xmlns="http://www.w3.org/2000/svg"
@@ -149,8 +181,13 @@ const WorkflowAnimation = () => {
           </animateMotion>
         </circle>
 
-        {/* AI PROCESSOR */}
-        <g>
+        {/* AI PROCESSOR — leans toward the mouse on hover */}
+        <g
+          style={{
+            transform: `translate(${aiOffset.x}px, ${aiOffset.y}px)`,
+            transition: "transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1)",
+          }}
+        >
           <circle cx="300" cy="180" r="80" fill="url(#aiGlow)" />
           <circle className="ue-ai-pulse" cx="300" cy="180" r="58" fill="none" stroke="hsl(20 93% 54%)" strokeWidth="1.5" opacity="0.4" />
           <circle cx="300" cy="180" r="48" fill="url(#aiGrad)" filter="url(#softShadow)" />

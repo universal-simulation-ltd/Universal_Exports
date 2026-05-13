@@ -18,9 +18,10 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          title="Fully open source — self-host for free"
         >
           <Github className="h-3 w-3" />
-          <span>Open source</span>
+          <span>Open source — self-host free</span>
         </a>
         <span aria-hidden="true">·</span>
         <a
@@ -28,8 +29,9 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          title="Or use UNI SIM's hosted PRO plan"
         >
-          <span>Hosted by</span>
+          <span>or PRO hosted by</span>
           <img
             src={unisimMark}
             alt="UNI SIM"
@@ -65,9 +67,9 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-          title="Hosted by UNI SIM"
+          title="Or use UNI SIM's hosted PRO plan"
         >
-          <span>Hosted by</span>
+          <span>or PRO hosted by</span>
           <img
             src={unisimMark}
             alt="UNI SIM"
@@ -110,9 +112,9 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors group"
-        title="Hosted by UNI SIM — visit unisim.co.uk"
+        title="Or use UNI SIM's hosted PRO plan — visit unisim.co.uk"
       >
-        <span>Hosted by</span>
+        <span>or PRO hosted by</span>
         <img
           src={unisimMark}
           alt="UNI SIM"
