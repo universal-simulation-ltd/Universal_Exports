@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useChangelog, type ProductCode } from "@unisim/sdk";
 
 const CHANGELOG_REPO_URL = "https://github.com/JamesmarkeyUK/universal-suite-changelog";
@@ -23,15 +24,47 @@ const TYPE_BADGE: Record<string, string> = {
 
 export function VersionChip() {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
   const { releases, currentVersion, loading } = useChangelog({ limit: 10 });
 
   const versionLabel = currentVersion ?? "…";
 
+  // Position the portal'd popover relative to the button
+  useLayoutEffect(() => {
+    if (!open || !buttonRef.current) {
+      setCoords(null);
+      return;
+    }
+    function place() {
+      const rect = buttonRef.current!.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open]);
+
+  // Click-outside / Esc to close
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (
+        buttonRef.current?.contains(target) ||
+        popoverRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -45,8 +78,9 @@ export function VersionChip() {
   }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
+    <>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         title={`Universal Suite v${versionLabel} — what's new`}
@@ -57,8 +91,12 @@ export function VersionChip() {
         v{versionLabel}
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+      {open && coords && createPortal(
+        <div
+          ref={popoverRef}
+          style={{ position: "fixed", top: coords.top, right: coords.right, zIndex: 9999 }}
+          className="w-96 max-w-[calc(100vw-2rem)] bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-200 overflow-hidden"
+        >
           <div className="px-4 py-3 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
             <div className="text-xs uppercase tracking-wide opacity-70">What's new in the Universal Suite</div>
             <div className="text-sm font-semibold mt-0.5">Suite v{versionLabel}</div>
@@ -114,8 +152,9 @@ export function VersionChip() {
               view source ↗
             </a>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
