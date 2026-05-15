@@ -7,6 +7,7 @@ import { languages, useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import BrandFooter from "@/components/BrandFooter";
 import WorkflowAnimation from "@/components/WorkflowAnimation";
+import { VersionChip } from "@/components/VersionChip";
 import logo from "@/assets/universal-exports-logo.svg";
 import importsLogo from "@/assets/universal-imports-logo.svg";
 import ueIcon from "@/assets/universal-exports-icon.svg";
@@ -74,6 +75,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <VersionChip />
             <div className="hidden sm:flex items-center gap-1">
               {languages.map((l) => (
                 <button
