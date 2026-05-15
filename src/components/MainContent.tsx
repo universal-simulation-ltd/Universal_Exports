@@ -19,7 +19,7 @@ import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
 import { ProjectData, saveProject, createProjectId, deleteProject } from "@/lib/projectStore";
 import { CompanyDetails, loadYourDetails, saveYourDetails, loadContacts, saveContact, deleteContact, emptyDetails } from "@/lib/contactStore";
 import { loadCatalogue, catalogueDisplayTitle } from "@/lib/productCatalogueStore";
-import { DEMO_CATALOGUE } from "@/lib/demoProject";
+import { DEMO_CATALOGUE, DEMO_OTHER_PARTY } from "@/lib/demoProject";
 import { BankAccount, emptyBankAccount, loadYourBanks, saveYourBanks, loadPartyBanks, savePartyBanks } from "@/lib/bankStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -1006,6 +1006,20 @@ const MainContent = ({
 
                         return (
                           <div className="space-y-3">
+                            <button
+                              onClick={() => {
+                                setOtherParty(DEMO_OTHER_PARTY as CompanyDetails);
+                                setOtherPartyMode("create");
+                                setShowSetupOtherParty(false);
+                              }}
+                              className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-foreground">Dubois Équipements SAS (Example)</p>
+                                <p className="text-xs text-muted-foreground">Use example {role === "buyer" ? t("setup.seller") : t("setup.buyer")} details to explore the app</p>
+                              </div>
+                              <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+                            </button>
                             <div className="flex gap-3">
                               <Button variant="outline" className="flex-1" onClick={() => setOtherPartyMode("addressbook")}>
                                 {t("setup.addressBook")}
