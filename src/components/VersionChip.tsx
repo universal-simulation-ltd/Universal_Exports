@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useChangelog, type ProductCode } from "@unisim/sdk";
 
-const CHANGELOG_REPO_URL = "https://github.com/JamesmarkeyUK/universal-suite-changelog";
+const CHANGELOG_REPO_URL = "https://github.com/universal-simulation-ltd/universal-suite-changelog";
 
 const PRODUCT_CHIP: Record<ProductCode | "suite", { label: string; classes: string }> = {
   pdf:          { label: "PDF",          classes: "bg-orange-100 text-orange-700 ring-orange-200" },
