@@ -9,29 +9,32 @@ interface BrandFooterProps {
   className?: string;
 }
 
+// One canonical message across every variant — "100% Open source and free.
+// Hosted by UNI SIM" — with the source link on the open-source half and the
+// UNI SIM link on the host half. Variants only adjust size / orientation /
+// whether to show the GitHub icon, never the copy.
 const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) => {
   if (variant === "compact") {
     return (
-      <div className={`flex items-center justify-center gap-2 text-[10px] text-muted-foreground ${className}`}>
+      <div className={`flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground ${className}`}>
         <a
           href={GITHUB_REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-          title="Fully open source — self-host for free"
+          title="100% Open source — view on GitHub"
         >
           <Github className="h-3 w-3" />
-          <span>Open source — self-host free</span>
+          <span>100% Open source and free.</span>
         </a>
-        <span aria-hidden="true">·</span>
         <a
           href={UNISIM_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-          title="Or use UNI SIM's hosted PRO plan"
+          title="Hosted by UNI SIM"
         >
-          <span>or PRO hosted by</span>
+          <span>Hosted by</span>
           <img
             src={unisimMark}
             alt="UNI SIM"
@@ -44,32 +47,25 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
 
   if (variant === "auth") {
     return (
-      <div className={`flex flex-col items-center gap-3 ${className}`}>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 font-medium text-primary">
-            100% free
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 font-medium text-primary">
-            Self-hosted
-          </span>
-          <a
-            href={GITHUB_REPO_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 font-medium text-primary hover:bg-primary/10 transition-colors"
-          >
-            <Github className="h-3 w-3" />
-            Open source
-          </a>
-        </div>
+      <div className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground ${className}`}>
+        <a
+          href={GITHUB_REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          title="100% Open source — view on GitHub"
+        >
+          <Github className="h-3 w-3" />
+          <span>100% Open source and free.</span>
+        </a>
         <a
           href={UNISIM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-          title="Or use UNI SIM's hosted PRO plan"
+          className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+          title="Hosted by UNI SIM"
         >
-          <span>or PRO hosted by</span>
+          <span>Hosted by</span>
           <img
             src={unisimMark}
             alt="UNI SIM"
@@ -80,41 +76,27 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
     );
   }
 
-  // sidebar variant — fits inside the 224px-wide sidebar footer
+  // sidebar variant — fits inside the 224px-wide sidebar footer; line wraps.
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex flex-wrap items-center gap-1">
-        <span
-          className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary"
-          title="Universal Exports is 100% free"
-        >
-          100% free
-        </span>
-        <span
-          className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary"
-          title="Universal Exports is self-hosted"
-        >
-          Self-hosted
-        </span>
-        <a
-          href={GITHUB_REPO_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary hover:bg-primary/20 transition-colors"
-          title="Open source on GitHub"
-        >
-          <Github className="h-2.5 w-2.5" />
-          Open source
-        </a>
-      </div>
+    <div className={`space-y-1 text-[10px] text-muted-foreground ${className}`}>
+      <a
+        href={GITHUB_REPO_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+        title="100% Open source — view on GitHub"
+      >
+        <Github className="h-2.5 w-2.5" />
+        <span>100% Open source and free.</span>
+      </a>
       <a
         href={UNISIM_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors group"
-        title="Or use UNI SIM's hosted PRO plan — visit unisim.co.uk"
+        className="flex items-center gap-1.5 hover:text-foreground transition-colors group"
+        title="Hosted by UNI SIM — visit unisim.co.uk"
       >
-        <span>or PRO hosted by</span>
+        <span>Hosted by</span>
         <img
           src={unisimMark}
           alt="UNI SIM"
