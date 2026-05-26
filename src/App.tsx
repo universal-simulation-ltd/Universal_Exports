@@ -37,7 +37,8 @@ const App = () => (
             <UniversalAppsNavBar
               product="exports"
               productLogo={<ProductLogo />}
-              contentMaxWidth="100%"
+              suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
+              contentMaxWidth={1152}
             />
             <Routes>
               <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
