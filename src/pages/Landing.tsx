@@ -7,11 +7,8 @@ import { languages, useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import BrandFooter from "@/components/BrandFooter";
 import WorkflowAnimation from "@/components/WorkflowAnimation";
-import { VersionChip } from "@/components/VersionChip";
-import logo from "@/assets/universal-exports-logo.svg";
 import importsLogo from "@/assets/universal-imports-logo.svg";
 import ueIcon from "@/assets/universal-exports-icon.svg";
-import unisimIcon from "@/assets/unisim-icon.png";
 
 const features = [
   {
@@ -55,27 +52,19 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
+      {/* Secondary strip: sibling-product wordmark, language picker, auth.
+          Sits below the unified <UniversalAppsNavBar /> rendered in App.tsx;
+          the Universal Exports logo and changelog mark moved there. */}
       <header className="relative w-full border-b border-border/60 bg-card/60 backdrop-blur-sm">
-        <div className="relative max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-4">
-            <a href="/" className="flex items-center group">
-              <img
-                src={logo}
-                alt="Universal Exports"
-                className="h-7 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
-              />
-            </a>
-            <div className="hidden md:flex items-center group" aria-label="Universal Imports">
-              <img
-                src={importsLogo}
-                alt="Universal Imports"
-                className="h-7 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
-              />
-            </div>
+        <div className="relative max-w-6xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
+          <div className="hidden md:flex items-center group" aria-label="Universal Imports">
+            <img
+              src={importsLogo}
+              alt="Universal Imports"
+              className="h-6 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <VersionChip />
+          <div className="flex items-center gap-2 ml-auto">
             <div className="hidden sm:flex items-center gap-1">
               {languages.map((l) => (
                 <button
@@ -116,24 +105,6 @@ export default function Landing() {
                 Sign in
               </a>
             )}
-            {/* UNI SIM mark — sits just after the auth button */}
-            <a
-              href="https://www.unisim.co.uk"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Built by UNI SIM"
-              title="Built by UNI SIM"
-              className="ml-2 inline-flex items-center group"
-            >
-              <img
-                src={unisimIcon}
-                alt=""
-                aria-hidden
-                className="h-7 w-auto opacity-30 group-hover:opacity-90 transition-opacity select-none"
-                style={{ filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.7)) drop-shadow(0 -1px 0 rgba(0,0,0,0.25))" }}
-                draggable={false}
-              />
-            </a>
           </div>
         </div>
       </header>
