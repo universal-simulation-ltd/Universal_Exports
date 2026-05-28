@@ -7,6 +7,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { UniversalAppsNavBar } from "@unisim/sdk";
 import ProductLogo from "@/components/ProductLogo";
+import FileMenu from "@/components/FileMenu";
 import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import Auth from "./pages/Auth.tsx";
@@ -32,11 +33,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AuthProvider>
             <UniversalAppsNavBar
               product="exports"
               productLogo={<ProductLogo />}
+              fileMenu={<FileMenu variant="header" />}
               suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
               contentMaxWidth={1152}
             />
