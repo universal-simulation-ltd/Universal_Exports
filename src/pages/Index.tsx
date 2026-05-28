@@ -6,12 +6,10 @@ import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { ProjectData, loadProjects, saveProject, createProjectId } from "@/lib/projectStore";
 import { DEMO_PROJECT, DEMO_YOUR_DETAILS, DEMO_OTHER_PARTY } from "@/lib/demoProject";
 import { toast } from "sonner";
-import { languages, useI18n } from "@/lib/i18n";
-import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import type { CompanyDetails } from "@/lib/contactStore";
 
 const Index = () => {
-  const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,7 +45,7 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const pendingAction = useRef<() => void>(() => {});
 
-  const { lang, setLang, t } = useI18n();
+  const { t } = useI18n();
 
   // Load saved projects on mount
   useEffect(() => {
@@ -339,44 +337,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-3 md:p-6">
-      {/* Language flags + sign out */}
-      <div className="w-full max-w-3xl flex justify-between items-center mb-2">
-        {user ? (
-          <span className="text-xs text-muted-foreground truncate">{user.email}</span>
-        ) : (
-          <span />
-        )}
-        <div className="flex items-center gap-2">
-          {languages.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => setLang(l.code)}
-              className={`text-lg px-1 py-0.5 rounded transition-opacity hover:opacity-100 ${
-                lang === l.code ? "opacity-100 ring-1 ring-primary" : "opacity-60"
-              }`}
-              title={l.label}
-            >
-              {l.flag}
-            </button>
-          ))}
-          {user ? (
-            <button
-              onClick={signOut}
-              className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border ml-1"
-            >
-              Sign out
-            </button>
-          ) : (
-            <a
-              href="/auth"
-              className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border ml-1"
-            >
-              Sign in
-            </a>
-          )}
-        </div>
-      </div>
-
       <div className="flex w-full max-w-3xl h-[700px] rounded-lg border border-border bg-card shadow-sm overflow-hidden relative">
         <DocumentSidebar
           key={`${projectId}-${loadCounter}`}

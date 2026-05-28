@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, FileCheck, Sparkles, Globe2, PenTool, FileSignature, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { languages, useI18n } from "@/lib/i18n";
-import { useAuth } from "@/contexts/AuthContext";
 import BrandFooter from "@/components/BrandFooter";
 import WorkflowAnimation from "@/components/WorkflowAnimation";
-import importsLogo from "@/assets/universal-imports-logo.svg";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 
 const features = [
@@ -38,8 +35,6 @@ const features = [
 export default function Landing() {
   const navigate = useNavigate();
   const [projectName, setProjectName] = useState("");
-  const { lang, setLang } = useI18n();
-  const { user, signOut } = useAuth();
 
   const handleContinue = () => {
     if (!projectName.trim()) return;
@@ -52,63 +47,6 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Secondary strip: sibling-product wordmark, language picker, auth.
-          Sits below the unified <UniversalAppsNavBar /> rendered in App.tsx;
-          the Universal Exports logo and changelog mark moved there. */}
-      <header className="relative w-full border-b border-border/60 bg-card/60 backdrop-blur-sm">
-        <div className="relative max-w-6xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
-          <div className="hidden md:flex items-center group" aria-label="Universal Imports">
-            <img
-              src={importsLogo}
-              alt="Universal Imports"
-              className="h-6 w-auto transition-transform duration-200 ease-out origin-left group-hover:scale-110"
-            />
-          </div>
-          <div className="flex items-center gap-2 ml-auto">
-            <div className="hidden sm:flex items-center gap-1">
-              {languages.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`text-base px-1 py-0.5 rounded transition-opacity hover:opacity-100 ${
-                    lang === l.code ? "opacity-100 ring-1 ring-primary" : "opacity-60"
-                  }`}
-                  title={l.label}
-                >
-                  {l.flag}
-                </button>
-              ))}
-            </div>
-            {user ? (
-              <>
-                <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[160px]">
-                  {user.email}
-                </span>
-                <button
-                  onClick={() => navigate("/app")}
-                  className="text-xs font-medium text-primary hover:text-primary/80 px-3 py-1.5 rounded border border-primary/30 hover:bg-primary/5 ml-1"
-                >
-                  Open app
-                </button>
-                <button
-                  onClick={signOut}
-                  className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5 rounded border border-border ml-1"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <a
-                href="/auth"
-                className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded border border-border ml-1"
-              >
-                Sign in
-              </a>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Hero */}
       <main className="flex-1 w-full">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -171,8 +109,9 @@ export default function Landing() {
           {/* RIGHT — start project card */}
           <div>
             <div className="relative rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-              {/* "100% Free" corner ribbon */}
-              <div className="pointer-events-none absolute top-[26px] -right-[58px] z-20 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[10px] font-bold uppercase tracking-[0.18em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none">
+              {/* "100% Free" corner ribbon — z-0 so the navbar changelog
+                  dropdown (which floats down over this card) stays on top. */}
+              <div className="pointer-events-none absolute top-[26px] -right-[58px] z-0 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[10px] font-bold uppercase tracking-[0.18em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none">
                 100% Free
               </div>
               <div className="flex flex-col items-center justify-center p-8 md:p-10">
