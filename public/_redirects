@@ -1,0 +1,21 @@
+# Cloudflare Pages rewrites — Universal Exports is served under /exports/ but the
+# built files in dist/ are flat (Vite's `base` only rewrites URLs INSIDE the
+# HTML; it does not place files in dist/exports/).
+#
+# 200 status = transparent rewrite (URL bar unchanged). Specific rules first,
+# broad SPA fallback last.
+
+# Hashed asset bundles.
+/exports/assets/*        /assets/:splat   200
+
+# Static files (favicons, placeholder, robots, navbar icon).
+/exports/favicon.ico     /favicon.ico     200
+/exports/favicon.png     /favicon.png     200
+/exports/favicon.svg     /favicon.svg     200
+/exports/placeholder.svg /placeholder.svg 200
+/exports/robots.txt      /robots.txt      200
+/exports/unisim-icon.png /unisim-icon.png 200
+
+# SPA fallback — everything else under /exports/ serves the shell, which React
+# Router routes client-side via its basename.
+/exports/*               /index.html      200

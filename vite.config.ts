@@ -5,6 +5,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Universal Exports is served at opensource.unisim.co.uk/exports in production;
+  // local dev stays "/".
+  base: mode === "production" ? "/exports/" : "/",
   server: {
     host: "::",
     port: 8080,
