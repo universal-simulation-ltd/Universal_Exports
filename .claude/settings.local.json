@@ -27,7 +27,15 @@
       "PowerShell(Get-ChildItem \"D:\\\\\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"node|bun|tools|dev\" } | Select-Object Name)",
       "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/node.exe\" --version)",
       "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/npm.cmd\" install @rollup/rollup-win32-x64-msvc --no-save)",
-      "Bash('/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/npm.cmd' install @rollup/rollup-win32-x64-msvc --no-save)"
+      "Bash('/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Microsoft/VisualStudio/NodeJs/npm.cmd' install @rollup/rollup-win32-x64-msvc --no-save)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{url_effective} -> redirect: %{redirect_url}\\\\n\" -L --max-time 15 https://opensource.unisim.co.uk/exports/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 15 https://opensource.unisim.co.uk/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -L --max-time 15 https://opensource.unisim.co.uk/exports)",
+      "Bash(curl -s --max-time 15 https://opensource.unisim.co.uk/exports/)",
+      "Bash(curl -s --max-time 15 https://opensource.unisim.co.uk/)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://__TRACKED_VAR__.pages.dev/)",
+      "Bash(gh auth *)",
+      "Bash(gh run *)"
     ]
   }
 }
