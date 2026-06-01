@@ -2019,7 +2019,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <div className="space-y-5">
               <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
               <p className="text-sm text-muted-foreground max-w-md">
-                Review the checklist below before generating your eBill of Exchange. Discrepancies are highlighted for your review.
+                Review the checklist below before generating your Export Agreement. Discrepancies are highlighted for your review.
               </p>
 
               {/* Summary */}
@@ -2114,7 +2114,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <p className="text-xs text-muted-foreground">
                     You need to{" "}
                     <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
-                    {" "}to generate or upload a Bill of Exchange.
+                    {" "}to generate or upload an Export Agreement.
                   </p>
                 )}
                 <Button

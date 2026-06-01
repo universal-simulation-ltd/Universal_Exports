@@ -33,22 +33,26 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
-            <UniversalAppsNavBar
-              product="exports"
-              productLogo={<ProductLogo />}
-              fileMenu={<FileMenu variant="header" />}
-              suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
-              contentMaxWidth={1152}
-            />
-            <Routes>
-              <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-              <Route path="/" element={<Landing />} />
-              <Route path="/app" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <div className="h-screen flex flex-col overflow-hidden">
+              <UniversalAppsNavBar
+                product="exports"
+                productLogo={<ProductLogo />}
+                fileMenu={<FileMenu variant="header" />}
+                suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
+                contentMaxWidth={1152}
+              />
+              <div className="flex-1 min-h-0 overflow-auto">
+                <Routes>
+                  <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/app" element={<Index />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </div>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

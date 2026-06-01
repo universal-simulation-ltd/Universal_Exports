@@ -41,7 +41,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div className="min-h-full flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
@@ -60,7 +60,7 @@ export default function Auth() {
             <p className="text-sm text-muted-foreground mt-1">
               {mode === 'signin'
                 ? 'Welcome back to Universal Exports'
-                : 'Start managing your Bill of Exchange documents'}
+                : 'Start managing your Export Agreement documents'}
             </p>
           </div>
 

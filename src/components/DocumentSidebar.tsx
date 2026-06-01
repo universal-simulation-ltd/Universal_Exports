@@ -512,7 +512,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               </div>
             )}
 
-            {/* E-Bill of Exchange - collapsed when disabled */}
+            {/* Export Agreement - collapsed when disabled */}
             {!disabledDocs.includes("eboxy") && (
               <div className="animate-fade-in">
                 <button

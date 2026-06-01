@@ -151,7 +151,7 @@ export const DEMO_PROJECT: ProjectData = {
       amount: '9825.00',
       docCurrency: 'GBP',
       notes:
-        'Payment due 30 days from date of invoice. Bank details as per the enclosed bill of exchange.',
+        'Payment due 30 days from date of invoice. Bank details as per the enclosed Export Agreement.',
     },
 
     // ── Delivery Note ─────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@
 
 > Open source — self-host free or PRO hosted by UNI SIM.
 
-A fully open-source platform for electronic Bills of Exchange and trade finance documents.
+A fully open-source platform for Export Agreements and trade finance documents.
 
 Two ways to run it:
 
