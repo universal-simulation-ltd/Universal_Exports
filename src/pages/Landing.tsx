@@ -22,7 +22,7 @@ const features = [
   },
   {
     icon: PenTool,
-    title: "Sign your Bill of Exchange",
+    title: "Sign your Export Agreement",
     desc: "Draw legally-recognised signatures in-browser and lock each section once buyer and seller accept it.",
   },
   {
@@ -46,7 +46,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-full flex flex-col bg-background">
       {/* Hero */}
       <main className="flex-1 w-full">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -56,7 +56,7 @@ export default function Landing() {
           </h1>
           {/* Subheader — straddles both columns */}
           <p className="text-sm md:text-base text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-10">
-            Whether you're buying or selling across borders, generate, sign and share Bills of Exchange,
+            Whether you're buying or selling across borders, generate, sign and share Export Agreements,
             invoices and delivery notes — with live tariff data and AI-assisted document import.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-12 items-start lg:items-center">
@@ -120,7 +120,7 @@ export default function Landing() {
                   Create your sales folder
                 </h2>
                 <p className="text-sm text-muted-foreground mb-8 text-center max-w-sm">
-                  A binding eBill of Exchange
+                  A binding Export Agreement
                 </p>
                 <div className="w-full max-w-xs space-y-4">
                   <div>
