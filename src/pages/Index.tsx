@@ -362,6 +362,7 @@ const Index = () => {
         />
         <MainContent
           key={resetKey}
+          projectId={projectId}
           projectName={projectName}
           setProjectName={setProjectName}
           started={started}

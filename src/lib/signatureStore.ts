@@ -1,0 +1,127 @@
+import { supabase } from './supabase'
+
+// Counter-sign tokens for the "They Sign" flow on the Export Agreement page.
+// See supabase/schema.sql → public.agreement_signatures for the table layout.
+
+export interface AgreementSignature {
+  id: string                              // uuid — used in the public /sign/:token URL
+  project_id: string
+  user_id: string
+  project_name: string
+  status: 'pending' | 'signed'
+  counter_signer_name: string
+  counter_signer_signature: string        // base64 PNG data URL, set on submit
+  counter_signed_at: string | null
+  viewed_pdf_at: string | null
+  created_at: string
+}
+
+/**
+ * Drafter creates a fresh token for a project. Returns the new row so the
+ * caller can immediately render the QR code + URL without a round-trip.
+ */
+export async function createSignatureToken(args: {
+  projectId: string
+  projectName: string
+}): Promise<AgreementSignature | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('agreement_signatures')
+    .insert({
+      project_id:   args.projectId,
+      user_id:      user.id,
+      project_name: args.projectName,
+      status:       'pending',
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[exports] createSignatureToken failed:', error)
+    return null
+  }
+  return data as AgreementSignature
+}
+
+/**
+ * List tokens for a project so the drafter can see pending / completed
+ * counter-signs (and surface the latest one in the UI).
+ */
+export async function listSignatureTokens(projectId: string): Promise<AgreementSignature[]> {
+  const { data, error } = await supabase
+    .from('agreement_signatures')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[exports] listSignatureTokens failed:', error)
+    return []
+  }
+  return (data ?? []) as AgreementSignature[]
+}
+
+/**
+ * Public lookup by token — used by the /sign/:token page. No auth required;
+ * the token in the URL is the bearer credential.
+ */
+export async function getSignatureToken(token: string): Promise<AgreementSignature | null> {
+  const { data, error } = await supabase
+    .from('agreement_signatures')
+    .select('*')
+    .eq('id', token)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[exports] getSignatureToken failed:', error)
+    return null
+  }
+  return (data as AgreementSignature) ?? null
+}
+
+/**
+ * Mark the moment the counter-signer opened the PDF. Unlocks the signature
+ * pad client-side so they can't sign without reviewing the document.
+ */
+export async function markPdfViewed(token: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('agreement_signatures')
+    .update({ viewed_pdf_at: new Date().toISOString() })
+    .eq('id', token)
+    .eq('status', 'pending')
+
+  if (error) {
+    console.error('[exports] markPdfViewed failed:', error)
+    return false
+  }
+  return true
+}
+
+/**
+ * Counter-signer submits their name + signature image. Flips status to
+ * 'signed' which the RLS policy then locks against further writes.
+ */
+export async function submitCounterSignature(args: {
+  token:     string
+  name:      string
+  signature: string
+}): Promise<boolean> {
+  const { error } = await supabase
+    .from('agreement_signatures')
+    .update({
+      counter_signer_name:      args.name,
+      counter_signer_signature: args.signature,
+      counter_signed_at:        new Date().toISOString(),
+      status:                   'signed',
+    })
+    .eq('id', args.token)
+    .eq('status', 'pending')
+
+  if (error) {
+    console.error('[exports] submitCounterSignature failed:', error)
+    return false
+  }
+  return true
+}

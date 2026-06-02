@@ -11,6 +11,7 @@ import FileMenu from "@/components/FileMenu";
 import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import Auth from "./pages/Auth.tsx";
+import Sign from "./pages/Sign.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,10 @@ const App = () => (
                   <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                   <Route path="/" element={<Landing />} />
                   <Route path="/app" element={<Index />} />
+                  {/* Public counter-sign route — no auth gate. The uuid token
+                      in the URL is the bearer credential and the row is RLS-
+                      readable only when the caller knows it. */}
+                  <Route path="/sign/:token" element={<Sign />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

@@ -13,6 +13,8 @@ import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
 import SignaturePad from "@/components/SignaturePad";
+import CounterSignPanel from "@/components/CounterSignPanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import LockedSectionView from "@/components/LockedSectionView";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
@@ -29,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface MainContentProps {
+  projectId: string;
   projectName: string;
   setProjectName: (name: string) => void;
   started: boolean;
@@ -364,6 +367,7 @@ const SavedProjectsList = ({
 };
 
 const MainContent = ({
+  projectId,
   projectName,
   setProjectName,
   started,
@@ -2059,54 +2063,91 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 </Collapsible>
               )}
 
-              {/* Confirmation Fields */}
-              <div className="max-w-lg space-y-4 pt-2 border-t border-border">
-                <h3 className="text-sm font-semibold text-foreground">Confirm & Sign</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
-                    <Input
-                      placeholder="Enter your full name"
-                      className="bg-secondary/50"
-                      value={formData["confirmName"] || ""}
-                      onChange={(e) => onFieldChange("confirmName", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Date</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal bg-secondary/50",
-                            !formData["confirmDate"] && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData["confirmDate"] || "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData["confirmDate"] ? new Date(formData["confirmDate"]) : undefined}
-                          onSelect={(date) => onFieldChange("confirmDate", date ? format(date, "yyyy-MM-dd") : "")}
-                          initialFocus
-                          className={cn("p-3 pointer-events-auto")}
+              {/* Export Agreement — collapsible with You Sign / They Sign tabs.
+                  "You Sign" keeps the original drafter-signs-here form. "They
+                  Sign" generates a one-time QR + link the drafter can send to
+                  the other party to counter-sign from any device. */}
+              <Collapsible defaultOpen className="max-w-lg pt-2 border-t border-border">
+                <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors py-2 [&[data-state=open]>svg]:rotate-180">
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                  Export Agreement
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3">
+                  <Tabs defaultValue="you" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 max-w-xs">
+                      <TabsTrigger value="you">You Sign</TabsTrigger>
+                      <TabsTrigger value="them">They Sign</TabsTrigger>
+                    </TabsList>
+
+                    {/* ── You Sign — the drafter's own signature ───────────── */}
+                    <TabsContent value="you" className="space-y-4 pt-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
+                          <Input
+                            placeholder="Enter your full name"
+                            className="bg-secondary/50"
+                            value={formData["confirmName"] || ""}
+                            onChange={(e) => onFieldChange("confirmName", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Date</label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal bg-secondary/50",
+                                  !formData["confirmDate"] && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {formData["confirmDate"] || "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={formData["confirmDate"] ? new Date(formData["confirmDate"]) : undefined}
+                                onSelect={(date) => onFieldChange("confirmDate", date ? format(date, "yyyy-MM-dd") : "")}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Signature</label>
+                        <SignaturePad
+                          value={formData["confirmSignature"] || ""}
+                          onChange={(val) => onFieldChange("confirmSignature", val)}
                         />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Signature</label>
-                  <SignaturePad
-                    value={formData["confirmSignature"] || ""}
-                    onChange={(val) => onFieldChange("confirmSignature", val)}
-                  />
-                </div>
-              </div>
+                      </div>
+                    </TabsContent>
+
+                    {/* ── They Sign — counter-sign-by-link flow ────────────── */}
+                    <TabsContent value="them" className="pt-4">
+                      {user && projectId ? (
+                        <CounterSignPanel projectId={projectId} projectName={projectName} />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          {!user ? (
+                            <>
+                              You need to{" "}
+                              <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
+                              {" "}and save the project before generating a counter-sign link.
+                            </>
+                          ) : (
+                            "Save the project first so we can attach the counter-sign link to it."
+                          )}
+                        </p>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Actions */}
               <div className="flex flex-col gap-3 max-w-xs pt-2 border-t border-border">

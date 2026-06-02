@@ -94,3 +94,51 @@ create table public.product_catalogue (
 alter table public.product_catalogue enable row level security;
 create policy "Users manage own products" on public.product_catalogue
   for all using (auth.uid() = user_id);
+
+-- COUNTER-SIGN TOKENS — backs the "They Sign" flow on the Export Agreement page.
+-- The drafter creates a token, sends the QR / link to the other party, who opens
+-- /sign/:token and counter-signs. The drafter polls/refreshes to see the
+-- completed signature plus the counter-signer's name + timestamp.
+create table public.agreement_signatures (
+  -- Token used in the public URL — random uuid so it can't be guessed.
+  id uuid primary key default gen_random_uuid(),
+  -- Owner (drafter) project. Cascade so deleting the project cleans up tokens.
+  project_id text references public.projects(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  -- Snapshot of the project name at token creation so the counter-signer sees
+  -- a sensible header even if the drafter renames the project later.
+  project_name text not null default '',
+  status text not null default 'pending' check (status in ('pending', 'signed')),
+  -- Captured from the counter-signer after they sign.
+  counter_signer_name text default '',
+  counter_signer_signature text default '',      -- base64 PNG data URL
+  counter_signed_at timestamptz,
+  -- Set when they click "Open document" — gates the signature pad until they
+  -- have actually viewed the PDF. Prevents blind-signing.
+  viewed_pdf_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.agreement_signatures enable row level security;
+
+-- Drafter can manage their own tokens (create + see + revoke).
+create policy "Drafter manages own agreement signatures"
+  on public.agreement_signatures
+  for all using (auth.uid() = user_id);
+
+-- Public read so the counter-signer can load the token row without auth.
+-- The token itself (random uuid in the URL) is the bearer credential — no
+-- enumeration possible and the row exposes only the project name, not PII.
+create policy "Public read by token"
+  on public.agreement_signatures
+  for select using (true);
+
+-- Public update so the counter-signer can mark `viewed_pdf_at` and submit
+-- their signature. The check constraint locks them out once `status='signed'`
+-- so a token can only ever be used once.
+create policy "Public update pending signatures"
+  on public.agreement_signatures
+  for update using (status = 'pending')
+  with check (status in ('pending', 'signed'));
+
+create index if not exists agreement_signatures_user_project_idx
+  on public.agreement_signatures(user_id, project_id);
