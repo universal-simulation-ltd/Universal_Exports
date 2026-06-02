@@ -12,6 +12,7 @@ import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import Auth from "./pages/Auth.tsx";
 import Sign from "./pages/Sign.tsx";
+import SignMobile from "./pages/SignMobile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,11 @@ const App = () => (
                       in the URL is the bearer credential and the row is RLS-
                       readable only when the caller knows it. */}
                   <Route path="/sign/:token" element={<Sign />} />
+                  {/* Mobile-signature handoff — desktop SignaturePad shows a
+                      QR that opens this page on the user's phone. Public,
+                      no auth needed (demo-only, same-device localStorage
+                      handoff for now). */}
+                  <Route path="/sign-mobile/:token" element={<SignMobile />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

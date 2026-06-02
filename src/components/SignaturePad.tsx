@@ -1,17 +1,77 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Pencil, Upload, Trash2 } from "lucide-react";
+import { Pencil, Upload, Trash2, Smartphone } from "lucide-react";
+import QRCode from "qrcode";
 
 interface SignaturePadProps {
   value: string; // base64 data URL
   onChange: (value: string) => void;
 }
 
+// LocalStorage key prefix for the Mobile-Signature handoff. The mobile page
+// at /sign-mobile/<token> writes the drawn signature here; the SignaturePad
+// listens for the storage event and pulls the value into `onChange`.
+const MOBILE_STORAGE_PREFIX = "exports:mobile-sig:";
+
+function randomToken() {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [mode, setMode] = useState<"draw" | "upload">("draw");
+  const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
+  const [mobileToken, setMobileToken] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const mobileSignUrl = mobileToken
+    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/sign-mobile/${mobileToken}`
+    : "";
+
+  // Generate a token on switching into Mobile Signature mode.
+  useEffect(() => {
+    if (mode !== "mobile") return;
+    if (!mobileToken) setMobileToken(randomToken());
+  }, [mode, mobileToken]);
+
+  // Render the QR whenever the URL changes.
+  useEffect(() => {
+    if (mode !== "mobile" || !mobileSignUrl || !qrCanvasRef.current) return;
+    QRCode.toCanvas(qrCanvasRef.current, mobileSignUrl, {
+      width: 192,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    }).catch((err) => console.error("[exports] mobile QR render failed:", err));
+  }, [mode, mobileSignUrl]);
+
+  // Listen for the mobile page to drop a signature into localStorage. Works
+  // same-device (mobile + desktop on same machine, or open in two tabs); the
+  // 6-digit PIN + cross-device sync is a planned follow-up.
+  useEffect(() => {
+    if (!mobileToken) return;
+    const key = `${MOBILE_STORAGE_PREFIX}${mobileToken}`;
+    function check() {
+      const v = localStorage.getItem(key);
+      if (v && v.startsWith("data:")) {
+        onChange(v);
+        localStorage.removeItem(key);
+        setMode("draw");
+      }
+    }
+    function onStorage(e: StorageEvent) {
+      if (e.key === key) check();
+    }
+    check();
+    window.addEventListener("storage", onStorage);
+    const interval = window.setInterval(check, 2000);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.clearInterval(interval);
+    };
+  }, [mobileToken, onChange]);
 
   // Initialize canvas
   useEffect(() => {
@@ -100,7 +160,16 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={mode === "mobile" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setMode("mobile")}
+        >
+          <Smartphone className="mr-1 h-3.5 w-3.5" />
+          Mobile Signature
+        </Button>
         <Button
           type="button"
           variant={mode === "draw" ? "default" : "outline"}
@@ -154,6 +223,28 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
       {mode === "upload" && value && (
         <div className="rounded-md border border-input bg-background p-2">
           <img src={value} alt="Signature" className="max-h-[100px] object-contain" />
+        </div>
+      )}
+
+      {mode === "mobile" && (
+        <div className="rounded-md border border-input bg-background p-3 flex flex-col sm:flex-row gap-3 items-start">
+          <div className="rounded-md border border-border bg-white p-2 shrink-0">
+            <canvas ref={qrCanvasRef} aria-label="Mobile signature QR code" />
+          </div>
+          <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Scan to sign on your phone</p>
+            <p>
+              Open the QR code on a mobile device. Draw your signature there and
+              it'll appear here automatically.
+            </p>
+            <p className="font-mono break-all bg-muted/40 rounded px-2 py-1">
+              {mobileSignUrl}
+            </p>
+            <p className="text-[10px] opacity-70">
+              Demo mode — same-device sync only. A 6-digit PIN + cross-device
+              sync is on the way.
+            </p>
+          </div>
         </div>
       )}
     </div>

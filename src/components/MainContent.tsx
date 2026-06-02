@@ -2063,6 +2063,35 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 </Collapsible>
               )}
 
+              {/* Generate / Upload — sits ABOVE the You Sign / They Sign
+                  tabs so the primary action is the one the user reaches for
+                  first. The app is free to use without sign-in; saving the
+                  generated agreement is the only thing that will be gated
+                  (later — pay per token / project / enterprise). */}
+              <div className="flex flex-col gap-3 max-w-xs pt-2 border-t border-border">
+                <Button
+                  variant="default"
+                  className="w-full justify-start"
+                  disabled={missing.length > 0}
+                  onClick={() => {
+                    toast.info(`${t("eboxy.generate")} — ${t("toast.comingSoon")}`);
+                  }}
+                >
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  {t("eboxy.generate")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    toast.info(`${t("eboxy.upload")} — ${t("toast.comingSoon")}`);
+                  }}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t("eboxy.upload")}
+                </Button>
+              </div>
+
               {/* Export Agreement — collapsible with You Sign / They Sign tabs.
                   "You Sign" keeps the original drafter-signs-here form. "They
                   Sign" generates a one-time QR + link the drafter can send to
@@ -2129,59 +2158,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
                     {/* ── They Sign — counter-sign-by-link flow ────────────── */}
                     <TabsContent value="them" className="pt-4">
-                      {user && projectId ? (
+                      {projectId ? (
                         <CounterSignPanel projectId={projectId} projectName={projectName} />
                       ) : (
                         <p className="text-sm text-muted-foreground">
-                          {!user ? (
-                            <>
-                              You need to{" "}
-                              <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
-                              {" "}and save the project before generating a counter-sign link.
-                            </>
-                          ) : (
-                            "Save the project first so we can attach the counter-sign link to it."
-                          )}
+                          Save the project first so we can attach the counter-sign link to it.
                         </p>
                       )}
                     </TabsContent>
                   </Tabs>
                 </CollapsibleContent>
               </Collapsible>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-3 max-w-xs pt-2 border-t border-border">
-                {!user && (
-                  <p className="text-xs text-muted-foreground">
-                    You need to{" "}
-                    <a href="/auth" className="text-primary underline underline-offset-2 hover:opacity-80">sign in</a>
-                    {" "}to generate or upload an Export Agreement.
-                  </p>
-                )}
-                <Button
-                  variant="default"
-                  className="w-full justify-start"
-                  disabled={missing.length > 0}
-                  onClick={() => {
-                    if (!user) { navigate("/auth"); return; }
-                    toast.info(`${t("eboxy.generate")} — ${t("toast.comingSoon")}`);
-                  }}
-                >
-                  <Wand2 className="mr-2 h-4 w-4" />
-                  {t("eboxy.generate")}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    if (!user) { navigate("/auth"); return; }
-                    toast.info(`${t("eboxy.upload")} — ${t("toast.comingSoon")}`);
-                  }}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t("eboxy.upload")}
-                </Button>
-              </div>
             </div>
           );
         })()

@@ -6,7 +6,7 @@ interface Props {
   variant?: "header" | "toolbar";
 }
 
-// Mirrors the Universal PDF File menu (header variant) — the dropdown that
+// Mirrors the Universal PDF Actions menu (header variant) — the dropdown that
 // sits next to the product logo inside <UniversalAppsNavBar />. For Exports it
 // carries the language picker and the auth controls that used to live in the
 // secondary strip above the app.
@@ -61,7 +61,7 @@ export default function FileMenu({ variant = "header" }: Props) {
         aria-haspopup="true"
         aria-expanded={open}
       >
-        File
+        Actions
         <svg viewBox="0 0 12 12" className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true">
           <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -105,8 +105,12 @@ export default function FileMenu({ variant = "header" }: Props) {
             </div>
           )}
 
-          {/* Account */}
-          {user ? (
+          {/* Account — signed-in users still see their email + sign-out so
+              they can leave the session, but anonymous visitors no longer get
+              a "Sign in" prompt. Saving projects to the cloud is currently
+              gated by sign-in elsewhere; the eventual model is to keep the
+              app free to use and only ask for payment when saving. */}
+          {user && (
             <>
               <div
                 className="px-3 py-2 text-[11px] text-muted-foreground border-t border-border truncate"
@@ -125,14 +129,6 @@ export default function FileMenu({ variant = "header" }: Props) {
                 <span className="flex-1 text-left">Sign out</span>
               </button>
             </>
-          ) : (
-            <a
-              href="/auth"
-              className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-accent text-sm border-t border-border"
-            >
-              <span aria-hidden="true">→</span>
-              <span className="flex-1 text-left">Sign in</span>
-            </a>
           )}
         </div>
       )}
