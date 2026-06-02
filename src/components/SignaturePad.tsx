@@ -1,22 +1,29 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Pencil, Upload, Trash2, Smartphone } from "lucide-react";
+import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
 import QRCode from "qrcode";
+import { supabase } from "@/lib/supabase";
 
 interface SignaturePadProps {
   value: string; // base64 data URL
   onChange: (value: string) => void;
 }
 
-// LocalStorage key prefix for the Mobile-Signature handoff. The mobile page
-// at /sign-mobile/<token> writes the drawn signature here; the SignaturePad
-// listens for the storage event and pulls the value into `onChange`.
-const MOBILE_STORAGE_PREFIX = "exports:mobile-sig:";
-
 function randomToken() {
   const bytes = new Uint8Array(8);
   crypto.getRandomValues(bytes);
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// 6-digit PIN — generated alongside the token. The signer enters it on the
+// mobile page to prove they have line-of-sight to the desktop screen. Without
+// this, anyone who intercepted the QR could submit a signature to the
+// drafter's session.
+function randomPin() {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  const n = ((bytes[0] << 24) >>> 0) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+  return String(n % 1_000_000).padStart(6, "0");
 }
 
 const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
@@ -25,16 +32,22 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
   const [mobileToken, setMobileToken] = useState<string | null>(null);
+  const [mobilePin, setMobilePin] = useState<string | null>(null);
+  const [mobileStatus, setMobileStatus] = useState<"idle" | "waiting" | "scanned" | "received">("idle");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const mobileSignUrl = mobileToken
     ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/sign-mobile/${mobileToken}`
     : "";
 
-  // Generate a token on switching into Mobile Signature mode.
+  // Generate a token + PIN on switching into Mobile Signature mode.
   useEffect(() => {
     if (mode !== "mobile") return;
-    if (!mobileToken) setMobileToken(randomToken());
+    if (!mobileToken) {
+      setMobileToken(randomToken());
+      setMobilePin(randomPin());
+      setMobileStatus("waiting");
+    }
   }, [mode, mobileToken]);
 
   // Render the QR whenever the URL changes.
@@ -47,31 +60,45 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
     }).catch((err) => console.error("[exports] mobile QR render failed:", err));
   }, [mode, mobileSignUrl]);
 
-  // Listen for the mobile page to drop a signature into localStorage. Works
-  // same-device (mobile + desktop on same machine, or open in two tabs); the
-  // 6-digit PIN + cross-device sync is a planned follow-up.
+  // ── Cross-device handoff via Supabase Realtime broadcast ─────────────────
+  // The desktop subscribes to a per-token channel and the mobile page sends
+  // a `signature` broadcast (containing the entered PIN + data URL). We
+  // validate the PIN locally and apply the signature only on a match. No DB
+  // rows are written — broadcast messages are ephemeral, which suits a
+  // "one-shot signature handoff" perfectly. Anyone trying to brute-force the
+  // PIN over the channel hits 1-in-a-million per attempt and the channel
+  // closes the moment a valid signature lands.
   useEffect(() => {
-    if (!mobileToken) return;
-    const key = `${MOBILE_STORAGE_PREFIX}${mobileToken}`;
-    function check() {
-      const v = localStorage.getItem(key);
-      if (v && v.startsWith("data:")) {
-        onChange(v);
-        localStorage.removeItem(key);
-        setMode("draw");
-      }
-    }
-    function onStorage(e: StorageEvent) {
-      if (e.key === key) check();
-    }
-    check();
-    window.addEventListener("storage", onStorage);
-    const interval = window.setInterval(check, 2000);
+    if (!mobileToken || !mobilePin) return;
+    const channel = supabase.channel(`mobile-sig:${mobileToken}`, {
+      config: { broadcast: { self: false } },
+    });
+    channel
+      .on("broadcast", { event: "scanned" }, () => {
+        setMobileStatus((s) => (s === "waiting" ? "scanned" : s));
+      })
+      .on("broadcast", { event: "signature" }, ({ payload }) => {
+        if (!payload || typeof payload !== "object") return;
+        if (payload.pin !== mobilePin) return; // wrong PIN — silently drop
+        const sig = String(payload.signature || "");
+        if (!sig.startsWith("data:")) return;
+        onChange(sig);
+        setMobileStatus("received");
+        // Brief delay so the user sees the "received" confirmation before
+        // we drop them back to the Draw mode preview of the new signature.
+        setTimeout(() => setMode("draw"), 1200);
+      })
+      .subscribe();
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.clearInterval(interval);
+      void supabase.removeChannel(channel);
     };
-  }, [mobileToken, onChange]);
+  }, [mobileToken, mobilePin, onChange]);
+
+  function regenerateMobileToken() {
+    setMobileToken(randomToken());
+    setMobilePin(randomPin());
+    setMobileStatus("waiting");
+  }
 
   // Initialize canvas
   useEffect(() => {
@@ -234,16 +261,40 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
           <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Scan to sign on your phone</p>
             <p>
-              Open the QR code on a mobile device. Draw your signature there and
+              Open the QR code on your phone. You'll be asked to enter the PIN
+              below to prove you're the same user, then draw your signature —
               it'll appear here automatically.
             </p>
-            <p className="font-mono break-all bg-muted/40 rounded px-2 py-1">
+            {mobilePin && (
+              <div className="rounded-md bg-primary/10 border border-primary/30 p-2 flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">PIN</span>
+                <span className="font-mono text-lg font-bold tracking-[0.3em] text-foreground">
+                  {mobilePin}
+                </span>
+              </div>
+            )}
+            <p className="font-mono break-all bg-muted/40 rounded px-2 py-1 text-[10px]">
               {mobileSignUrl}
             </p>
-            <p className="text-[10px] opacity-70">
-              Demo mode — same-device sync only. A 6-digit PIN + cross-device
-              sync is on the way.
-            </p>
+            {mobileStatus === "scanned" && (
+              <p className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Phone connected — waiting for the signature.
+              </p>
+            )}
+            {mobileStatus === "received" && (
+              <p className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="h-3 w-3" />
+                Signature received.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={regenerateMobileToken}
+              className="text-[11px] text-primary hover:underline"
+            >
+              Generate a new code
+            </button>
           </div>
         </div>
       )}

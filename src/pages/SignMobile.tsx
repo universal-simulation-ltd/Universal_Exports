@@ -1,41 +1,98 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Smartphone, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import SignaturePad from "@/components/SignaturePad";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-
-const MOBILE_STORAGE_PREFIX = "exports:mobile-sig:";
 
 /**
  * Mobile Signature handoff page — the QR code on the desktop "Mobile
- * Signature" tab points here. The signer draws their signature, taps
- * Submit, and the original SignaturePad picks up the value via the
- * `storage` event (same browser, multiple tabs) or the next localStorage
- * poll on the originating device.
+ * Signature" tab points here. Cross-device flow:
  *
- * Demo only: cross-device sync requires a backend handoff (Supabase row +
- * polling, like /sign/:token does for counter-signing). The 6-digit PIN
- * lockout the user mentioned is the natural next step.
+ *   1. Visitor lands here with `?` token = uuid-ish from the QR.
+ *   2. We join the Supabase Realtime channel `mobile-sig:<token>` and emit
+ *      a `scanned` broadcast so the desktop tab can show "Phone connected".
+ *   3. User enters the 6-digit PIN displayed on the desktop screen.
+ *   4. User draws a signature.
+ *   5. Tapping "Send signature" emits a `signature` broadcast with the PIN
+ *      + the drawn data URL. The desktop receives, validates the PIN, and
+ *      applies the signature to the form. We don't write anything to the
+ *      database — broadcast messages are ephemeral, which is exactly what a
+ *      one-shot signature handoff needs.
+ *
+ * The PIN check happens on the desktop side. Wrong PIN → desktop silently
+ * drops the message. We don't tell the mobile user whether the PIN was
+ * accepted (that would help a brute-force attacker); instead we show a
+ * generic "Sent — check your desktop" confirmation.
  */
 const SignMobile = () => {
   const { token = "" } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [pin, setPin] = useState("");
   const [signature, setSignature] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = () => {
+  // Tell the desktop tab we're here so it can swap "Scan with your phone" for
+  // "Phone connected — waiting for the signature." We do this once per
+  // token; if the connection drops mid-flow the desktop just stays in the
+  // waiting state, which is fine for a manual flow.
+  useEffect(() => {
+    if (!token) return;
+    const channel = supabase.channel(`mobile-sig:${token}`, {
+      config: { broadcast: { self: false } },
+    });
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        void channel.send({ type: "broadcast", event: "scanned", payload: {} });
+      }
+    });
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [token]);
+
+  const handleSubmit = async () => {
     if (!signature || !token) {
       toast.error("Draw or upload a signature first.");
       return;
     }
+    if (!/^\d{6}$/.test(pin)) {
+      toast.error("Enter the 6-digit PIN shown on your desktop.");
+      return;
+    }
+    setSending(true);
+    const channel = supabase.channel(`mobile-sig:${token}`, {
+      config: { broadcast: { self: false } },
+    });
     try {
-      localStorage.setItem(`${MOBILE_STORAGE_PREFIX}${token}`, signature);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("timeout")), 5000);
+        channel.subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            clearTimeout(timer);
+            resolve();
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            clearTimeout(timer);
+            reject(new Error(status));
+          }
+        });
+      });
+      const res = await channel.send({
+        type: "broadcast",
+        event: "signature",
+        payload: { pin, signature },
+      });
+      if (res !== "ok") throw new Error("send-failed");
       setSubmitted(true);
-      toast.success("Signature sent back to the desktop tab.");
     } catch (err) {
-      console.error(err);
-      toast.error("Could not save signature.");
+      console.error("[exports] mobile-sig broadcast failed:", err);
+      toast.error("Could not send signature — check your connection and try again.");
+    } finally {
+      setSending(false);
+      void supabase.removeChannel(channel);
     }
   };
 
@@ -48,8 +105,8 @@ const SignMobile = () => {
           </div>
           <h1 className="text-lg font-semibold">Signature sent</h1>
           <p className="text-sm text-muted-foreground">
-            You can close this tab. Your signature has been sent back to the
-            desktop tab that generated the QR code.
+            Check the desktop tab — if the PIN matched, your signature is now
+            on the form. You can close this page.
           </p>
           <Button variant="outline" onClick={() => navigate("/")}>Back to Universal Exports</Button>
         </div>
@@ -65,18 +122,38 @@ const SignMobile = () => {
           <h1 className="text-base font-semibold">Mobile signature</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Draw your signature below, then tap Send. The signature will appear
-          on the desktop tab that opened this QR code.
+          Enter the 6-digit PIN shown on your desktop, draw your signature,
+          then tap Send. The signature will appear on the desktop form.
         </p>
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-foreground" htmlFor="mobile-sig-pin">
+            PIN
+          </label>
+          <Input
+            id="mobile-sig-pin"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            pattern="\d{6}"
+            placeholder="123456"
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="font-mono text-lg tracking-[0.3em] text-center"
+          />
+        </div>
         <div className="rounded-lg border border-input bg-background p-3">
           <SignaturePad value={signature} onChange={setSignature} />
         </div>
-        <Button className="w-full" disabled={!signature} onClick={handleSubmit}>
-          Send signature
+        <Button
+          className="w-full"
+          disabled={!signature || pin.length !== 6 || sending}
+          onClick={handleSubmit}
+        >
+          {sending ? "Sending…" : "Send signature"}
         </Button>
         <p className="text-[11px] text-muted-foreground text-center">
-          Demo only — your signature is sent via the browser's local storage to
-          the desktop tab. A 6-digit PIN + cross-device sync is on the way.
+          The PIN proves you're the same person at the desktop. Your signature
+          is sent over an encrypted realtime channel and never stored.
         </p>
       </div>
     </div>
