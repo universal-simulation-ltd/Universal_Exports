@@ -12,9 +12,7 @@ import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2
 import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
-import SignaturePad from "@/components/SignaturePad";
-import CounterSignPanel from "@/components/CounterSignPanel";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ExportAgreementWorkflow from "@/components/ExportAgreementWorkflow";
 import LockedSectionView from "@/components/LockedSectionView";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
@@ -2019,6 +2017,58 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           const missing = checks.filter((c) => c.status === "missing");
           const passed = checks.filter((c) => c.status === "pass");
 
+          // Gather the transaction overview that goes into the generated PDF.
+          const agreementCurrency = (
+            val("transaction", "currency") || val("invoice", "docCurrency") || ""
+          ).toUpperCase();
+          const agreementAmount =
+            val("transaction", "billAmount") ||
+            (productTotals.totalIncTax > 0 ? productTotals.totalIncTax.toFixed(2) : "");
+          const agreementCounterparty =
+            val("invoice", "counterparty") ||
+            val("purchase-order", "counterparty") ||
+            val("estimate-quote", "counterparty");
+          const agreementFields = [
+            { label: "Drawer (Seller)", value: val("transaction", "drawer") },
+            { label: "Drawee (Buyer)", value: val("transaction", "drawee") },
+            { label: "Counterparty", value: agreementCounterparty },
+            { label: "Amount", value: agreementAmount ? `${agreementCurrency} ${agreementAmount}`.trim() : "" },
+            { label: "Incoterms", value: val("shipment", "incoterms") },
+            { label: "Port of Loading", value: val("shipment", "portLoading") },
+            { label: "Port of Discharge", value: val("shipment", "portDischarge") },
+            { label: "Country of Origin", value: val("coo", "countryOfOrigin") },
+          ];
+          const agreementProducts: { name: string; units: string; total: string }[] = (() => {
+            try {
+              const raw = allForms["product-details"]?.productLines;
+              if (!raw) return [];
+              const lines = JSON.parse(raw) as { catalogueId: string; units: string; discount: string; discountAmount?: string }[];
+              return lines.map((l) => {
+                const product = catalogue.find((p) => p.id === l.catalogueId);
+                const units = parseFloat(l.units) || 0;
+                let total = "";
+                if (product) {
+                  const discount = parseFloat(l.discount) || 0;
+                  const fixed = parseFloat(l.discountAmount || "0") || 0;
+                  const sub = product.unitPrice * units;
+                  const discounted = Math.max(0, sub - sub * (discount / 100) - fixed);
+                  total = (discounted + discounted * (product.vatPercent / 100)).toFixed(2);
+                }
+                return { name: product?.name || "Product", units: String(l.units || ""), total };
+              });
+            } catch {
+              return [];
+            }
+          })();
+          const buildPdfInput = (signature: import("@/lib/exportAgreementPdf").AgreementSignatureBlock | null) => ({
+            projectName,
+            role: role || "",
+            fields: agreementFields,
+            products: agreementProducts,
+            totals: { currency: agreementCurrency, amount: agreementAmount },
+            signature,
+          });
+
           return (
             <div className="space-y-5">
               <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
@@ -2063,112 +2113,18 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 </Collapsible>
               )}
 
-              {/* Generate / Upload — sits ABOVE the You Sign / They Sign
-                  tabs so the primary action is the one the user reaches for
-                  first. The app is free to use without sign-in; saving the
-                  generated agreement is the only thing that will be gated
-                  (later — pay per token / project / enterprise). */}
-              <div className="flex flex-col gap-3 max-w-xs pt-2 border-t border-border">
-                <Button
-                  variant="default"
-                  className="w-full justify-start"
-                  disabled={missing.length > 0}
-                  onClick={() => {
-                    toast.info(`${t("eboxy.generate")} — ${t("toast.comingSoon")}`);
-                  }}
-                >
-                  <Wand2 className="mr-2 h-4 w-4" />
-                  {t("eboxy.generate")}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    toast.info(`${t("eboxy.upload")} — ${t("toast.comingSoon")}`);
-                  }}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t("eboxy.upload")}
-                </Button>
-              </div>
-
-              {/* Export Agreement — collapsible with You Sign / They Sign tabs.
-                  "You Sign" keeps the original drafter-signs-here form. "They
-                  Sign" generates a one-time QR + link the drafter can send to
-                  the other party to counter-sign from any device. */}
-              <Collapsible defaultOpen className="max-w-lg pt-2 border-t border-border">
-                <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors py-2 [&[data-state=open]>svg]:rotate-180">
-                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-                  Export Agreement
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-3">
-                  <Tabs defaultValue="you" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 max-w-xs">
-                      <TabsTrigger value="you">You Sign</TabsTrigger>
-                      <TabsTrigger value="them">They Sign</TabsTrigger>
-                    </TabsList>
-
-                    {/* ── You Sign — the drafter's own signature ───────────── */}
-                    <TabsContent value="you" className="space-y-4 pt-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
-                          <Input
-                            placeholder="Enter your full name"
-                            className="bg-secondary/50"
-                            value={formData["confirmName"] || ""}
-                            onChange={(e) => onFieldChange("confirmName", e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Date</label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal bg-secondary/50",
-                                  !formData["confirmDate"] && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {formData["confirmDate"] || "Pick a date"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={formData["confirmDate"] ? new Date(formData["confirmDate"]) : undefined}
-                                onSelect={(date) => onFieldChange("confirmDate", date ? format(date, "yyyy-MM-dd") : "")}
-                                initialFocus
-                                className={cn("p-3 pointer-events-auto")}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">Signature</label>
-                        <SignaturePad
-                          value={formData["confirmSignature"] || ""}
-                          onChange={(val) => onFieldChange("confirmSignature", val)}
-                        />
-                      </div>
-                    </TabsContent>
-
-                    {/* ── They Sign — counter-sign-by-link flow ────────────── */}
-                    <TabsContent value="them" className="pt-4">
-                      {projectId ? (
-                        <CounterSignPanel projectId={projectId} projectName={projectName} />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          Save the project first so we can attach the counter-sign link to it.
-                        </p>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </CollapsibleContent>
-              </Collapsible>
+              {/* Generate → sign → counter-sign workflow. Generating produces
+                  an embedded PDF overview; the signature panel stays greyed out
+                  until then, and "They Sign" unlocks only once the drafter has
+                  confirmed their own signature. */}
+              <ExportAgreementWorkflow
+                canGenerate={missing.length === 0}
+                projectId={projectId}
+                projectName={projectName}
+                formData={formData}
+                onFieldChange={onFieldChange}
+                buildPdfInput={buildPdfInput}
+              />
             </div>
           );
         })()

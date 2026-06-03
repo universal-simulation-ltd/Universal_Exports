@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
 import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SignaturePadProps {
   value: string; // base64 data URL
@@ -27,6 +28,9 @@ function randomPin() {
 }
 
 const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
+  // When the drafter is already on a phone there's no point offering the
+  // "scan a QR to sign on your phone" handoff — they can just draw directly.
+  const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -188,15 +192,17 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant={mode === "mobile" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setMode("mobile")}
-        >
-          <Smartphone className="mr-1 h-3.5 w-3.5" />
-          Mobile Signature
-        </Button>
+        {!isMobile && (
+          <Button
+            type="button"
+            variant={mode === "mobile" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setMode("mobile")}
+          >
+            <Smartphone className="mr-1 h-3.5 w-3.5" />
+            Mobile Signature
+          </Button>
+        )}
         <Button
           type="button"
           variant={mode === "draw" ? "default" : "outline"}
@@ -213,7 +219,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
           onClick={() => { setMode("upload"); fileRef.current?.click(); }}
         >
           <Upload className="mr-1 h-3.5 w-3.5" />
-          Upload
+          Upload Signature
         </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
@@ -253,7 +259,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
         </div>
       )}
 
-      {mode === "mobile" && (
+      {mode === "mobile" && !isMobile && (
         <div className="rounded-md border border-input bg-background p-3 flex flex-col sm:flex-row gap-3 items-start">
           <div className="rounded-md border border-border bg-white p-2 shrink-0">
             <canvas ref={qrCanvasRef} aria-label="Mobile signature QR code" />
