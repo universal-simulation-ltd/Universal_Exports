@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +29,43 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return user ? <Navigate to="/app" replace /> : <>{children}</>;
 }
 
+function AppShell() {
+  const { pathname } = useLocation();
+  // Hide the actions menu on the landing page — same convention as PDF/Images:
+  // actions only make sense once the user is inside the editor.
+  const showFileMenu = pathname !== "/";
+  return (
+    <div className="h-screen flex flex-col overflow-hidden">
+      <UniversalAppsNavBar
+        product="exports"
+        productLogo={<ProductLogo />}
+        productHomeHref={import.meta.env.BASE_URL}
+        fileMenu={showFileMenu ? <FileMenu variant="header" /> : undefined}
+        suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
+        contentMaxWidth={1152}
+      />
+      <div className="flex-1 min-h-0 overflow-auto">
+        <Routes>
+          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/app" element={<Index />} />
+          {/* Public counter-sign route — no auth gate. The uuid token
+              in the URL is the bearer credential and the row is RLS-
+              readable only when the caller knows it. */}
+          <Route path="/sign/:token" element={<Sign />} />
+          {/* Mobile-signature handoff — desktop SignaturePad shows a
+              QR that opens this page on the user's phone. Public,
+              no auth needed (demo-only, same-device localStorage
+              handoff for now). */}
+          <Route path="/sign-mobile/:token" element={<SignMobile />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
@@ -37,33 +74,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
-            <div className="h-screen flex flex-col overflow-hidden">
-              <UniversalAppsNavBar
-                product="exports"
-                productLogo={<ProductLogo />}
-                fileMenu={<FileMenu variant="header" />}
-                suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
-                contentMaxWidth={1152}
-              />
-              <div className="flex-1 min-h-0 overflow-auto">
-                <Routes>
-                  <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/app" element={<Index />} />
-                  {/* Public counter-sign route — no auth gate. The uuid token
-                      in the URL is the bearer credential and the row is RLS-
-                      readable only when the caller knows it. */}
-                  <Route path="/sign/:token" element={<Sign />} />
-                  {/* Mobile-signature handoff — desktop SignaturePad shows a
-                      QR that opens this page on the user's phone. Public,
-                      no auth needed (demo-only, same-device localStorage
-                      handoff for now). */}
-                  <Route path="/sign-mobile/:token" element={<SignMobile />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-            </div>
+            <AppShell />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
