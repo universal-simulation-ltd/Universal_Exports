@@ -291,7 +291,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   }
 
   return (
-    <aside className="w-56 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col min-h-0 relative">
+    <aside className="w-full md:w-56 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col min-h-0 relative">
       <div className="flex-1 min-h-0 relative">
       {/* Scroll fade overlays */}
       <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-card to-transparent transition-opacity duration-300 z-10 rounded-tl-lg ${fadeTop ? "opacity-100" : "opacity-0"}`} />

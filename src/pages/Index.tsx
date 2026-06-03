@@ -7,6 +7,7 @@ import { ProjectData, loadProjects, saveProject, createProjectId } from "@/lib/p
 import { DEMO_PROJECT, DEMO_YOUR_DETAILS, DEMO_OTHER_PARTY } from "@/lib/demoProject";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { CompanyDetails } from "@/lib/contactStore";
 
 const Index = () => {
@@ -46,6 +47,12 @@ const Index = () => {
   const pendingAction = useRef<() => void>(() => {});
 
   const { t } = useI18n();
+  const isMobile = useIsMobile();
+
+  // On mobile, collapse the menu after a selection so the content takes over the screen
+  const closeMenuOnMobile = useCallback(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   // Load saved projects on mount
   useEffect(() => {
@@ -113,20 +120,23 @@ const Index = () => {
     if (id === "your-details" || id === "contacts") {
       setSelectedDoc(id);
       setShowSavedList(false);
+      closeMenuOnMobile();
       return;
     }
     tryNavigate(() => {
       setSelectedDoc(id);
       setShowSavedList(false);
+      closeMenuOnMobile();
     });
-  }, [tryNavigate]);
+  }, [tryNavigate, closeMenuOnMobile]);
 
   const handleNewProject = useCallback(() => {
     tryNavigate(() => {
       setSelectedDoc("new-project");
       setShowSavedList(false);
+      closeMenuOnMobile();
     });
-  }, [tryNavigate]);
+  }, [tryNavigate, closeMenuOnMobile]);
 
   const handleConfirmNewProject = useCallback(() => {
     setProjectId("");
@@ -201,8 +211,9 @@ const Index = () => {
       refreshSavedProjects();
       setSelectedDoc(null);
       setShowSavedList(true);
+      closeMenuOnMobile();
     });
-  }, [tryNavigate, refreshSavedProjects]);
+  }, [tryNavigate, refreshSavedProjects, closeMenuOnMobile]);
 
   const handleLoadProject = useCallback((project: ProjectData) => {
     setProjectId(project.id);
@@ -360,6 +371,7 @@ const Index = () => {
           savedSections={savedSections}
           forceExpandSections={demoExpand}
         />
+        <div className={`flex-1 flex min-h-0 min-w-0 ${isMobile && sidebarOpen ? "hidden" : ""}`}>
         <MainContent
           key={resetKey}
           projectId={projectId}
@@ -390,6 +402,7 @@ const Index = () => {
           demoParties={demoParties}
           onLoadDemo={handleLoadDemo}
         />
+        </div>
       </div>
 
       <UnsavedChangesDialog
