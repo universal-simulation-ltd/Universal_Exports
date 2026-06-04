@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
-import QRCode from "qrcode";
+import StyledQRCode from "@/components/StyledQRCode";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -32,7 +32,6 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
   const [mobileToken, setMobileToken] = useState<string | null>(null);
@@ -53,16 +52,6 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
       setMobileStatus("waiting");
     }
   }, [mode, mobileToken]);
-
-  // Render the QR whenever the URL changes.
-  useEffect(() => {
-    if (mode !== "mobile" || !mobileSignUrl || !qrCanvasRef.current) return;
-    QRCode.toCanvas(qrCanvasRef.current, mobileSignUrl, {
-      width: 192,
-      margin: 1,
-      color: { dark: "#0f172a", light: "#ffffff" },
-    }).catch((err) => console.error("[exports] mobile QR render failed:", err));
-  }, [mode, mobileSignUrl]);
 
   // ── Cross-device handoff via Supabase Realtime broadcast ─────────────────
   // The desktop subscribes to a per-token channel and the mobile page sends
@@ -261,8 +250,8 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
       {mode === "mobile" && !isMobile && (
         <div className="rounded-md border border-input bg-background p-3 flex flex-col sm:flex-row gap-3 items-start">
-          <div className="rounded-md border border-border bg-white p-2 shrink-0">
-            <canvas ref={qrCanvasRef} aria-label="Mobile signature QR code" />
+          <div className="rounded-xl border border-border bg-[#0b0b0c] p-2 shrink-0">
+            <StyledQRCode value={mobileSignUrl} size={176} aria-label="Mobile signature QR code" />
           </div>
           <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Scan to sign on your phone</p>
