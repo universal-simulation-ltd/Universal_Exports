@@ -52,18 +52,28 @@ const Sign = () => {
     // now we just stamp the viewed marker and open an "about:blank" preview.
     const pdfWindow = window.open("about:blank", "_blank");
     if (pdfWindow) {
-      pdfWindow.document.title = `Export Agreement — ${record?.project_name ?? ""}`;
-      pdfWindow.document.body.innerHTML = `
-        <div style="font-family: system-ui, sans-serif; padding: 40px; max-width: 720px; margin: 40px auto;">
-          <h1 style="font-size: 22px; margin-bottom: 8px;">Export Agreement preview</h1>
-          <p style="color: #475569;">${record?.project_name ?? "Export Agreement"}</p>
-          <p style="color: #94a3b8; font-size: 13px; margin-top: 32px;">
-            The drafter hasn't attached a finalised PDF yet — this is a stand-in
-            preview. Once the generate flow ships, the real Export Agreement
-            PDF will load here for review before signing.
-          </p>
-        </div>
-      `;
+      const projectName = record?.project_name ?? "Export Agreement";
+      pdfWindow.document.title = `Export Agreement — ${projectName}`;
+      // Build the preview with the DOM API rather than interpolating into
+      // innerHTML: project_name is set by the drafter and shown to the signer,
+      // so an innerHTML template would be a stored-XSS sink. textContent escapes
+      // it for free.
+      const doc = pdfWindow.document;
+      const wrap = doc.createElement("div");
+      wrap.setAttribute("style", "font-family: system-ui, sans-serif; padding: 40px; max-width: 720px; margin: 40px auto;");
+      const h1 = doc.createElement("h1");
+      h1.setAttribute("style", "font-size: 22px; margin-bottom: 8px;");
+      h1.textContent = "Export Agreement preview";
+      const name = doc.createElement("p");
+      name.setAttribute("style", "color: #475569;");
+      name.textContent = projectName;
+      const note = doc.createElement("p");
+      note.setAttribute("style", "color: #94a3b8; font-size: 13px; margin-top: 32px;");
+      note.textContent =
+        "The drafter hasn't attached a finalised PDF yet — this is a stand-in preview. " +
+        "Once the generate flow ships, the real Export Agreement PDF will load here for review before signing.";
+      wrap.append(h1, name, note);
+      doc.body.append(wrap);
     }
     const ok = await markPdfViewed(token);
     if (ok) {
