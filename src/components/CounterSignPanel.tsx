@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2, RotateCcw, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import QRCode from "qrcode";
 import { format } from "date-fns";
+import StyledQRCode from "@/components/StyledQRCode";
 import {
   createSignatureToken,
   listSignatureTokens,
@@ -29,7 +29,6 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   const [tokens,      setTokens]      = useState<AgreementSignature[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [generating,  setGenerating]  = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // The hardcoded "Example" project lives only client-side — it's never written
   // to the `projects` table, so the `agreement_signatures.project_id` foreign
@@ -74,16 +73,6 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       if (timer) clearTimeout(timer);
     };
   }, [projectId, isDemo]);
-
-  // Render the QR whenever the active token changes.
-  useEffect(() => {
-    if (!signUrl || !canvasRef.current) return;
-    QRCode.toCanvas(canvasRef.current, signUrl, {
-      width: 192,
-      margin: 1,
-      color: { dark: "#0f172a", light: "#ffffff" },
-    }).catch(err => console.error("[exports] QR render failed:", err));
-  }, [signUrl]);
 
   const handleGenerate = async () => {
     if (!projectId) {
@@ -202,8 +191,8 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
             below updates automatically once they sign.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="rounded-md border border-border bg-white p-3">
-              <canvas ref={canvasRef} aria-label="Counter-sign QR code" />
+            <div className="rounded-xl border border-border bg-[#0b0b0c] p-3">
+              <StyledQRCode value={signUrl} size={192} aria-label="Counter-sign QR code" />
             </div>
             <div className="flex-1 space-y-2 min-w-0">
               <label className="text-xs text-muted-foreground block">Link</label>
