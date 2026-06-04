@@ -191,7 +191,7 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
             below updates automatically once they sign.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="rounded-xl border border-border bg-[#0b0b0c] p-3">
+            <div className="rounded-2xl border border-border bg-[#0b0b0c] p-2">
               <StyledQRCode value={signUrl} size={192} aria-label="Counter-sign QR code" />
             </div>
             <div className="flex-1 space-y-2 min-w-0">
