@@ -21,6 +21,17 @@ export interface AgreementProduct {
   total: string;
 }
 
+export interface AgreementDocument {
+  /** Friendly document name, e.g. "Invoice". */
+  label: string;
+  /** Reference / document number (may be empty). */
+  reference: string;
+  /** Document date (may be empty). */
+  date: string;
+  /** Currency + amount, or empty when value isn't applicable. */
+  value: string;
+}
+
 export interface AgreementSignatureBlock {
   /** Signer's full name. */
   name: string;
@@ -40,6 +51,8 @@ export interface AgreementPdfInput {
   products: AgreementProduct[];
   /** Currency + amount footer for the products table. */
   totals: { currency: string; amount: string };
+  /** Source documents provided for the agreement (reference / date / value). */
+  documents?: AgreementDocument[];
   /** Drafter's signature — present only on the signed copy. */
   signature?: AgreementSignatureBlock | null;
 }
@@ -154,6 +167,44 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
       y
     );
     y += LINE + 8;
+  }
+
+  // ── Documents provided ────────────────────────────────────────────────────
+  if (input.documents && input.documents.length > 0) {
+    ensureSpace(LINE * 3);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Documents Provided", MARGIN, y);
+    y += LINE + 2;
+
+    const refX = MARGIN + contentWidth * 0.40;
+    const dateX = MARGIN + contentWidth * 0.64;
+    const valueX = MARGIN + contentWidth * 0.82;
+
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text("Document", MARGIN, y);
+    doc.text("Reference", refX, y);
+    doc.text("Date", dateX, y);
+    doc.text("Value", valueX, y);
+    y += 6;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(MARGIN, y, pageWidth - MARGIN, y);
+    y += LINE - 2;
+
+    doc.setTextColor(15, 23, 42);
+    for (const d of input.documents) {
+      ensureSpace(LINE);
+      const name = doc.splitTextToSize(d.label || "—", refX - MARGIN - 8)[0];
+      doc.setFont("helvetica", "normal");
+      doc.text(name, MARGIN, y);
+      doc.text(d.reference || "—", refX, y);
+      doc.text(d.date || "—", dateX, y);
+      doc.text(d.value || "—", valueX, y);
+      y += LINE;
+    }
+    y += LINE - 4;
   }
 
   // ── Signature block ─────────────────────────────────────────────────────

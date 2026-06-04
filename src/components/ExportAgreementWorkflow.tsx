@@ -21,7 +21,6 @@ import {
   Lock,
   CheckCircle2,
   Calendar as CalendarIcon,
-  FileSignature,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -142,7 +141,7 @@ const ExportAgreementWorkflow = ({
     setSignedUrl(trackUrl(url));
     setSignedBlob(blob);
     setFinalUrl(null);
-    toast.success("Signature applied — the signed copy is shown on the right.");
+    toast.success("Signature applied — the preview now shows the signed copy.");
   }, [generatedUrl, signature, signerName, buildPdfInput, onFieldChange, signedUrl, finalUrl]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
@@ -157,14 +156,20 @@ const ExportAgreementWorkflow = ({
     const url = URL.createObjectURL(file);
     revoke(finalUrl);
     setFinalUrl(trackUrl(url));
-    toast.success("Finalised PDF uploaded — it now replaces the signed preview.");
+    toast.success("Finalised PDF uploaded — it now replaces the preview.");
   }, [finalUrl]);
 
   const downloadName = `${(projectName || "export-agreement").replace(/\s+/g, "-")}.pdf`;
-  // The right-hand preview shows the finalised upload if present, else the
-  // drafter-signed copy.
-  const rightUrl = finalUrl ?? signedUrl;
   const userHasSigned = !!signedUrl;
+  // A single preview that updates in place: the finalised upload if present,
+  // else the drafter-signed copy, else the unsigned overview.
+  const previewUrl = finalUrl ?? signedUrl ?? generatedUrl;
+  const previewLabel = finalUrl
+    ? "Finalised (counter-signed)"
+    : signedUrl
+      ? "Signed copy"
+      : "Overview (unsigned)";
+  const previewDownloadName = (finalUrl || signedUrl) ? `signed-${downloadName}` : downloadName;
 
   return (
     <div className="space-y-5 pt-2 border-t border-border">
@@ -186,55 +191,24 @@ const ExportAgreementWorkflow = ({
         )}
       </div>
 
-      {/* Embedded PDF previews — unsigned (left) and signed/finalised (right) */}
-      {generatedUrl && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Overview (unsigned)</span>
-              <a href={generatedUrl} download={downloadName}>
-                <Button type="button" variant="outline" size="sm">
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
-                  Download PDF
-                </Button>
-              </a>
-            </div>
-            <iframe
-              title="Export Agreement overview"
-              src={generatedUrl}
-              className="w-full h-[460px] rounded-md border border-input bg-muted"
-            />
+      {/* Single embedded PDF preview — updates in place once the signature is
+          confirmed (and again if a finalised copy is uploaded). */}
+      {previewUrl && (
+        <div className="space-y-2 max-w-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">{previewLabel}</span>
+            <a href={previewUrl} download={previewDownloadName}>
+              <Button type="button" variant="outline" size="sm">
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                Download PDF
+              </Button>
+            </a>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                {finalUrl ? "Finalised (counter-signed)" : "Signed copy"}
-              </span>
-              {rightUrl && (
-                <a href={rightUrl} download={`signed-${downloadName}`}>
-                  <Button type="button" variant="outline" size="sm">
-                    <Download className="mr-1.5 h-3.5 w-3.5" />
-                    Download PDF
-                  </Button>
-                </a>
-              )}
-            </div>
-            {rightUrl ? (
-              <iframe
-                title="Signed Export Agreement"
-                src={rightUrl}
-                className="w-full h-[460px] rounded-md border border-input bg-muted"
-              />
-            ) : (
-              <div className="w-full h-[460px] rounded-md border border-dashed border-input bg-muted/40 flex flex-col items-center justify-center text-center gap-2 px-6">
-                <FileSignature className="h-8 w-8 text-muted-foreground/60" />
-                <p className="text-sm text-muted-foreground">
-                  Confirm your signature to preview the signed copy here.
-                </p>
-              </div>
-            )}
-          </div>
+          <iframe
+            title="Export Agreement"
+            src={previewUrl}
+            className="w-full h-[560px] rounded-md border border-input bg-muted"
+          />
         </div>
       )}
 
@@ -334,8 +308,8 @@ const ExportAgreementWorkflow = ({
               <div className="space-y-2 pt-4 border-t border-border">
                 <p className="text-sm font-medium text-foreground">Have a signed copy already?</p>
                 <p className="text-xs text-muted-foreground max-w-md">
-                  Upload the counter-signed PDF and it will replace the signed
-                  preview on the right as the finalised agreement.
+                  Upload the counter-signed PDF and it will replace the preview
+                  above as the finalised agreement.
                 </p>
                 <input
                   ref={uploadRef}
