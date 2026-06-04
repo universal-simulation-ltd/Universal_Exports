@@ -2,7 +2,7 @@
 // UniversalAppsNavBar renders the product name from the catalogue beside this
 // slot, and wraps logo+name in a single home-link when App.tsx passes
 // productHomeHref. So no anchor here.
-import logo from "@/assets/universal-exports-logo.svg";
+import logo from "@/assets/universal-exports-icon.svg";
 
 export default function ProductLogo() {
   return (
