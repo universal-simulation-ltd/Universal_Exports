@@ -250,7 +250,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
       {mode === "mobile" && !isMobile && (
         <div className="rounded-md border border-input bg-background p-3 flex flex-col sm:flex-row gap-3 items-start">
-          <div className="rounded-xl border border-border bg-[#0b0b0c] p-2 shrink-0">
+          <div className="rounded-2xl border border-border bg-[#0b0b0c] p-1.5 shrink-0">
             <StyledQRCode value={mobileSignUrl} size={176} aria-label="Mobile signature QR code" />
           </div>
           <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
