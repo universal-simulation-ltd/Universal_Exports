@@ -31,6 +31,13 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   const [generating,  setGenerating]  = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // The hardcoded "Example" project lives only client-side — it's never written
+  // to the `projects` table, so the `agreement_signatures.project_id` foreign
+  // key would reject any token insert. Detect it the same way the rest of the
+  // app does (the `demo-` id prefix) and mint the token locally so the QR code
+  // and link still render for the demo walkthrough.
+  const isDemo = projectId.startsWith("demo-");
+
   // Pick the most relevant token: the latest signed one if any, else the
   // latest pending. Drafters who regenerate get the freshest pending link.
   const active = tokens.find(t => t.status === "signed")
@@ -41,6 +48,12 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   // Initial load + polling. Polling stops once we have a signed row — no
   // further state change is possible.
   useEffect(() => {
+    // No backend row exists for the demo project — nothing to load or poll.
+    if (isDemo) {
+      setLoading(false);
+      return;
+    }
+
     let active = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -60,7 +73,7 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       active = false;
       if (timer) clearTimeout(timer);
     };
-  }, [projectId]);
+  }, [projectId, isDemo]);
 
   // Render the QR whenever the active token changes.
   useEffect(() => {
@@ -77,6 +90,27 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       toast.error("Save the project first so we can attach the link to it.");
       return;
     }
+    // Demo project: mint a token client-side instead of hitting Supabase,
+    // which would reject the insert (no matching `projects` row to satisfy the
+    // foreign key). The QR + link still render so the walkthrough is complete.
+    if (isDemo) {
+      const row: AgreementSignature = {
+        id: crypto.randomUUID(),
+        project_id: projectId,
+        user_id: null,
+        project_name: projectName,
+        status: "pending",
+        counter_signer_name: "",
+        counter_signer_signature: "",
+        counter_signed_at: null,
+        viewed_pdf_at: null,
+        created_at: new Date().toISOString(),
+      };
+      setTokens(prev => [row, ...prev]);
+      toast.success("Counter-sign link ready — share the QR or URL with the other party.");
+      return;
+    }
+
     setGenerating(true);
     const row = await createSignatureToken({ projectId, projectName });
     setGenerating(false);
