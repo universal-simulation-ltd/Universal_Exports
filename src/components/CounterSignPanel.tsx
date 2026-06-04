@@ -84,7 +84,7 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       setTokens(prev => [row, ...prev]);
       toast.success("Counter-sign link ready — share the QR or URL with the other party.");
     } else {
-      toast.error("Could not generate a link. Make sure you're signed in and the project is saved.");
+      toast.error("Could not generate a link. Make sure the project is saved and try again.");
     }
   };
 

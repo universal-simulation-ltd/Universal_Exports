@@ -2060,12 +2060,43 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               return [];
             }
           })();
+          // Which source documents have been provided, with their reference
+          // number, date and value (where applicable). Surfaced on screen and
+          // baked into the generated agreement PDF.
+          const documentMeta: { docId: string; label: string }[] = [
+            { docId: "estimate-quote", label: "Estimate / Quote" },
+            { docId: "purchase-order", label: "Purchase Order" },
+            { docId: "invoice", label: "Invoice" },
+            { docId: "picking-list", label: "Picking List" },
+            { docId: "delivery-note", label: "Delivery Note" },
+            { docId: "credit-note", label: "Credit Note" },
+            { docId: "receipt", label: "Receipt" },
+          ];
+          const providedDocuments = documentMeta
+            .map(({ docId, label }) => {
+              const reference = val(docId, "referenceNo");
+              const date = val(docId, "date");
+              const amount = val(docId, "amount");
+              const currency = val(docId, "docCurrency").toUpperCase();
+              const notes = val(docId, "notes");
+              const provided = !!(reference || date || amount || notes);
+              return {
+                label,
+                reference,
+                date,
+                value: amount ? `${currency} ${amount}`.trim() : "",
+                provided,
+              };
+            })
+            .filter((d) => d.provided);
+
           const buildPdfInput = (signature: import("@/lib/exportAgreementPdf").AgreementSignatureBlock | null) => ({
             projectName,
             role: role || "",
             fields: agreementFields,
             products: agreementProducts,
             totals: { currency: agreementCurrency, amount: agreementAmount },
+            documents: providedDocuments.map(({ label, reference, date, value }) => ({ label, reference, date, value })),
             signature,
           });
 
@@ -2111,6 +2142,37 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     ))}
                   </CollapsibleContent>
                 </Collapsible>
+              )}
+
+              {/* Documents provided — reference number, date and value (where
+                  applicable). Mirrors the "Documents Provided" table baked into
+                  the generated agreement PDF. */}
+              {providedDocuments.length > 0 && (
+                <div className="max-w-lg space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">Documents provided</h3>
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 text-xs text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2 text-left font-medium">Document</th>
+                          <th className="px-3 py-2 text-left font-medium">Reference</th>
+                          <th className="px-3 py-2 text-left font-medium">Date</th>
+                          <th className="px-3 py-2 text-right font-medium">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {providedDocuments.map((d) => (
+                          <tr key={d.label} className="border-t border-border">
+                            <td className="px-3 py-2 text-foreground">{d.label}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{d.reference || "—"}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{d.date || "—"}</td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">{d.value || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
 
               {/* Generate → sign → counter-sign workflow. Generating produces

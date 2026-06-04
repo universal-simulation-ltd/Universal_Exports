@@ -104,7 +104,10 @@ create table public.agreement_signatures (
   id uuid primary key default gen_random_uuid(),
   -- Owner (drafter) project. Cascade so deleting the project cleans up tokens.
   project_id text references public.projects(id) on delete cascade not null,
-  user_id uuid references auth.users(id) on delete cascade not null,
+  -- Nullable: an unauthenticated drafter can still generate a counter-sign link
+  -- (the token uuid in the URL is the bearer credential). Set when signed in so
+  -- the drafter retains ownership of their tokens.
+  user_id uuid references auth.users(id) on delete cascade,
   -- Snapshot of the project name at token creation so the counter-signer sees
   -- a sensible header even if the drafter renames the project later.
   project_name text not null default '',
@@ -124,6 +127,14 @@ alter table public.agreement_signatures enable row level security;
 create policy "Drafter manages own agreement signatures"
   on public.agreement_signatures
   for all using (auth.uid() = user_id);
+
+-- Public create so an unauthenticated drafter can still generate a link. The
+-- random uuid token is the bearer credential; rows expose only the project
+-- name, not PII. Authenticated drafters are covered by the policy above (this
+-- one simply permits the anonymous insert path too).
+create policy "Public create agreement signatures"
+  on public.agreement_signatures
+  for insert with check (true);
 
 -- Public read so the counter-signer can load the token row without auth.
 -- The token itself (random uuid in the URL) is the bearer credential — no
