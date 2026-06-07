@@ -37,6 +37,28 @@ interface AppliedRule {
 
 const TARIFF_API = "https://www.trade-tariff.service.gov.uk/api/v2";
 
+// Accepted spellings/codes for a UK-based party. The tariff data comes from the
+// UK Trade Tariff Service, so the checker is only meaningful when one of the
+// trading parties is in the UK. Country is captured as free text, so we match
+// the common variants. Unknown/empty values are treated as non-UK.
+const UK_COUNTRY_VALUES = new Set([
+  "united kingdom",
+  "uk",
+  "u.k.",
+  "gb",
+  "gbr",
+  "great britain",
+  "england",
+  "scotland",
+  "wales",
+  "northern ireland",
+]);
+
+function isUkBased(country?: string): boolean {
+  if (!country) return false;
+  return UK_COUNTRY_VALUES.has(country.trim().toLowerCase());
+}
+
 async function lookupCommodity(hsCode: string): Promise<TariffResult> {
   // Strip non-digits, then right-pad to 10 digits only if under 10 chars
   const digits = hsCode.replace(/\D/g, "");
@@ -134,6 +156,13 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
   const [catalogueVersion, setCatalogueVersion] = useState(0);
   const [productsOpen, setProductsOpen] = useState(true);
   const [appliedOpen, setAppliedOpen] = useState(false);
+
+  // The UK Trade Tariff Service only covers UK trade, so only show the checker
+  // when the importer or exporter is UK-based. Reactive to country prop changes.
+  const isUkTrade = useMemo(
+    () => isUkBased(originCountry) || isUkBased(destCountry),
+    [originCountry, destCountry]
+  );
 
   // Country names (lowercase) involved in this trade — used to filter country-specific duties
   const tradeCountryNames = useMemo(() => {
@@ -263,6 +292,30 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
   const handleRemoveApplied = useCallback((index: number) => {
     setAppliedRules(appliedRules.filter((_, i) => i !== index));
   }, [appliedRules, setAppliedRules]);
+
+  if (!isUkTrade) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5" />
+            Customs & Tariff Lookup
+          </h2>
+        </div>
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-4 space-y-1.5">
+          <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            Tariff lookup is UK-only for now
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Automated tariff &amp; duty checking is currently only available when the
+            importer is based in the United Kingdom. Support for other countries is
+            coming soon.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
