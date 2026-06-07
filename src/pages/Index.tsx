@@ -39,6 +39,8 @@ const Index = () => {
   const [resetKey, setResetKey] = useState(0);
   const [demoParties, setDemoParties] = useState<{ yourDetails: CompanyDetails; otherParty: CompanyDetails } | null>(null);
   const [demoExpand, setDemoExpand] = useState(false);
+  // Whether the demo's "AI import" has been run (PDFs uploaded & extracted)
+  const [demoImported, setDemoImported] = useState(false);
   // Saved projects list (loaded async)
   const [savedProjects, setSavedProjects] = useState<ProjectData[]>([]);
 
@@ -154,6 +156,7 @@ const Index = () => {
     setShowSavedList(false);
     setDemoParties(null);
     setDemoExpand(false);
+    setDemoImported(false);
     setResetKey((k) => k + 1);
   }, []);
 
@@ -231,25 +234,43 @@ const Index = () => {
     setLoadCounter((c) => c + 1);
   }, []);
 
+  // Step 1 — load the demo "shell": parties & catalogue are ready, but no documents
+  // have been imported yet. The user clicks "Upload PDFs" on the Universal Exports AI
+  // screen to run the (simulated) extraction, which fills every section.
   const handleLoadDemo = useCallback(() => {
     setResetKey((k) => k + 1);
     setProjectId(DEMO_PROJECT.id);
     setProjectName(DEMO_PROJECT.name);
     setRole(DEMO_PROJECT.role as "buyer" | "seller" | "");
-    setForms(DEMO_PROJECT.forms);
-    setSavedForms(DEMO_PROJECT.forms);
-    setLockedSections(new Set(DEMO_PROJECT.lockedSections));
-    setSavedSections(new Set(DEMO_PROJECT.savedSections));
-    setEboxyGenerated(DEMO_PROJECT.eboxyGenerated);
+    setForms({});
+    setSavedForms({});
+    setLockedSections(new Set());
+    setSavedSections(new Set());
+    setEboxyGenerated(false);
     setEditingSections(new Set());
     setStarted(true);
     setAccepted(true);
     setShowSavedList(false);
     setSelectedDoc("ai-import");
     setDemoParties({ yourDetails: DEMO_YOUR_DETAILS as CompanyDetails, otherParty: DEMO_OTHER_PARTY as CompanyDetails });
-    setDemoExpand(true);
+    setDemoExpand(false);
+    setDemoImported(false);
     setLoadCounter((c) => c + 1);
-    toast.success("Example project loaded — explore away!");
+    toast.success("Example project ready — upload the PDFs to import");
+  }, []);
+
+  // Step 2 — simulated AI extraction: fill every section from the demo documents.
+  const handleRunDemoImport = useCallback(() => {
+    setForms(DEMO_PROJECT.forms);
+    setSavedForms(DEMO_PROJECT.forms);
+    setLockedSections(new Set(DEMO_PROJECT.lockedSections));
+    setSavedSections(new Set(DEMO_PROJECT.savedSections));
+    setEboxyGenerated(DEMO_PROJECT.eboxyGenerated);
+    setEditingSections(new Set());
+    setDemoExpand(true);
+    setDemoImported(true);
+    setLoadCounter((c) => c + 1);
+    toast.success("5 documents imported — explore away!");
   }, []);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
@@ -401,6 +422,8 @@ const Index = () => {
           onCancelEdit={handleCancelEdit}
           demoParties={demoParties}
           onLoadDemo={handleLoadDemo}
+          demoImported={demoImported}
+          onRunDemoImport={handleRunDemoImport}
         />
         </div>
       </div>

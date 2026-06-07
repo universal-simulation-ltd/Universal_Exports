@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2, Loader2, FileText } from "lucide-react";
 import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
@@ -56,10 +56,21 @@ interface MainContentProps {
   onCancelEdit?: (sectionId: string) => void;
   demoParties?: { yourDetails: CompanyDetails; otherParty: CompanyDetails } | null;
   onLoadDemo?: () => void;
+  demoImported?: boolean;
+  onRunDemoImport?: () => void;
 }
 
 const documentTypes = [
   "estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "credit-note", "receipt",
+];
+
+// Documents the demo "AI import" pulls in — shown on the upload, processing and done screens
+const DEMO_IMPORT_DOCS = [
+  "Commercial Invoice — INV-2026-0089",
+  "Purchase Order — PO-DBE-20260312",
+  "Packing & Delivery Note — DN-2026-0089",
+  "Certificate of Origin (UK)",
+  "Shipment details & Incoterms",
 ];
 
 function getProductTotals(allForms: Record<string, Record<string, string>>, catalogue: import("@/lib/productCatalogueStore").CatalogueProduct[]) {
@@ -392,6 +403,8 @@ const MainContent = ({
   onCancelEdit,
   demoParties,
   onLoadDemo,
+  demoImported,
+  onRunDemoImport,
 }: MainContentProps) => {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -434,6 +447,17 @@ const MainContent = ({
   const [editingOtherParty, setEditingOtherParty] = useState(false);
   const [editingYourDetails, setEditingYourDetails] = useState(false);
   const [shipmentIfKnownOpen, setShipmentIfKnownOpen] = useState(false);
+
+  // Universal Exports AI demo — simulated PDF upload + extraction
+  const [demoImporting, setDemoImporting] = useState(false);
+  const demoImportTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (demoImportTimer.current) clearTimeout(demoImportTimer.current); }, []);
+  const handleUploadPdfs = useCallback(() => {
+    setDemoImporting(true);
+    demoImportTimer.current = setTimeout(() => {
+      onRunDemoImport?.();
+    }, 1600);
+  }, [onRunDemoImport]);
 
   // Getting Started checklist open/close — starts closed if all items already ticked (e.g. demo)
   const [gsOpen, setGsOpen] = useState(() => {
@@ -1797,38 +1821,84 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         })()
       ) : selectedDoc === "ai-import" ? (
         demoParties ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto space-y-5">
-            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-success/10 border-2 border-success/30">
-              <CheckCircle2 className="h-10 w-10 text-success" />
+          demoImported ? (
+            // ── Done: documents extracted, every section pre-filled ──────────────
+            <div className="flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto space-y-5">
+              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-success/10 border-2 border-success/30">
+                <CheckCircle2 className="h-10 w-10 text-success" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-foreground">Documents imported &amp; extracted</h2>
+                <p className="text-sm text-muted-foreground">
+                  Universal Exports AI has processed your PDFs and pre-filled every section from the uploaded trade documents.
+                </p>
+              </div>
+              <div className="w-full rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-left space-y-1.5">
+                {DEMO_IMPORT_DOCS.map((doc) => (
+                  <div key={doc} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="h-3.5 w-3.5 text-success shrink-0" />
+                    <span>{doc}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                This is an example project — in a live project you would upload your own documents here.
+              </p>
+              <div className="flex items-center gap-2 text-primary animate-pulse">
+                <ArrowLeft className="h-5 w-5 shrink-0" />
+                <p className="text-sm font-medium">Choose a section from the menu to get started</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-foreground">Documents already extracted</h2>
-              <p className="text-sm text-muted-foreground">
-                Universal Exports AI has already processed and imported all documents for this project. Every section has been pre-filled from the uploaded trade documents.
+          ) : demoImporting ? (
+            // ── Processing: simulated extraction in progress ─────────────────────
+            <div className="flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto space-y-5">
+              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/30">
+                <Loader2 className="h-9 w-9 text-primary animate-spin" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-foreground">Extracting your documents…</h2>
+                <p className="text-sm text-muted-foreground">
+                  Universal Exports AI is reading your PDFs and pre-filling every section.
+                </p>
+              </div>
+              <div className="w-full rounded-lg border border-border bg-secondary/30 px-4 py-3 text-left space-y-1.5">
+                {DEMO_IMPORT_DOCS.map((doc) => (
+                  <div key={doc} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 text-primary shrink-0 animate-spin" />
+                    <span>{doc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            // ── Upload: PDFs are ready, waiting for the user to import ───────────
+            <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto space-y-5">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20">
+                <Wand2 className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-foreground">Universal Exports AI</h2>
+                <p className="text-sm text-muted-foreground">
+                  Upload your trade documents and Universal Exports AI will extract the details and pre-fill every section automatically.
+                </p>
+              </div>
+              <div className="w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/[0.03] px-4 py-4 text-left space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ready to upload</p>
+                {DEMO_IMPORT_DOCS.map((doc) => (
+                  <div key={doc} className="flex items-center gap-2 text-sm text-foreground">
+                    <FileText className="h-4 w-4 text-primary/70 shrink-0" />
+                    <span>{doc}</span>
+                  </div>
+                ))}
+              </div>
+              <Button size="lg" className="w-full" onClick={handleUploadPdfs}>
+                <Upload className="mr-2 h-4 w-4" /> Upload PDFs
+              </Button>
+              <p className="text-xs text-muted-foreground italic">
+                This is an example project — the PDFs are ready, just hit upload to see the extraction.
               </p>
             </div>
-            <div className="w-full rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-left space-y-1.5">
-              {[
-                "Commercial Invoice — INV-2026-0089",
-                "Purchase Order — PO-DBE-20260312",
-                "Packing & Delivery Note — DN-2026-0089",
-                "Certificate of Origin (UK)",
-                "Shipment details & Incoterms",
-              ].map((doc) => (
-                <div key={doc} className="flex items-center gap-2 text-sm text-foreground">
-                  <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                  <span>{doc}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              This is an example project — in a live project you would upload your own documents here.
-            </p>
-            <div className="flex items-center gap-2 text-primary animate-pulse">
-              <ArrowLeft className="h-5 w-5 shrink-0" />
-              <p className="text-sm font-medium">Choose a section from the menu to get started</p>
-            </div>
-          </div>
+          )
         ) : (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
