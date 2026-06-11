@@ -1841,6 +1841,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   </div>
                 ))}
               </div>
+              <div className="w-full flex items-center gap-2 text-sm font-medium text-success">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>No discrepancies found in the documents</span>
+              </div>
               <p className="text-xs text-muted-foreground italic">
                 This is an example project — in a live project you would upload your own documents here.
               </p>

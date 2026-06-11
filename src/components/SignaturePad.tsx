@@ -230,8 +230,8 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
         <canvas
           ref={canvasRef}
           width={500}
-          height={150}
-          className="w-full h-[100px] rounded-md border border-input bg-background cursor-crosshair touch-none"
+          height={200}
+          className="w-full h-[140px] rounded-md border border-input bg-background cursor-crosshair touch-none"
           onMouseDown={startDraw}
           onMouseMove={draw}
           onMouseUp={endDraw}
@@ -244,7 +244,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
       {mode === "upload" && value && (
         <div className="rounded-md border border-input bg-background p-2">
-          <img src={value} alt="Signature" className="max-h-[100px] object-contain" />
+          <img src={value} alt="Signature" className="max-h-[140px] object-contain" />
         </div>
       )}
 
@@ -282,6 +282,15 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
                 <CheckCircle2 className="h-3 w-3" />
                 Signature received.
               </p>
+            )}
+            {mobileStatus === "received" && value?.startsWith("data:") && (
+              <div className="rounded-md border border-border bg-white p-1.5">
+                <img
+                  src={value}
+                  alt="Returned signature preview"
+                  className="max-h-[120px] w-full object-contain"
+                />
+              </div>
             )}
             <button
               type="button"
