@@ -32,6 +32,17 @@ export interface AgreementDocument {
   value: string;
 }
 
+export interface AgreementTariff {
+  /** Product the rule applies to. */
+  product: string;
+  /** Commodity / HS code. */
+  hsCode: string;
+  /** Duty rate (third-country, with preferential noted where it applies). */
+  duty: string;
+  /** Import VAT rate. */
+  vat: string;
+}
+
 export interface AgreementSignatureBlock {
   /** Signer's full name. */
   name: string;
@@ -53,6 +64,8 @@ export interface AgreementPdfInput {
   totals: { currency: string; amount: string };
   /** Source documents provided for the agreement (reference / date / value). */
   documents?: AgreementDocument[];
+  /** Expected tariffs (applied customs rules). Optional — omitted when empty. */
+  tariffs?: AgreementTariff[];
   /** Drafter's signature — present only on the signed copy. */
   signature?: AgreementSignatureBlock | null;
 }
@@ -202,6 +215,44 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
       doc.text(d.reference || "—", refX, y);
       doc.text(d.date || "—", dateX, y);
       doc.text(d.value || "—", valueX, y);
+      y += LINE;
+    }
+    y += LINE - 4;
+  }
+
+  // ── Expected tariffs (optional) ───────────────────────────────────────────
+  if (input.tariffs && input.tariffs.length > 0) {
+    ensureSpace(LINE * 3);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Expected Tariffs", MARGIN, y);
+    y += LINE + 2;
+
+    const hsX = MARGIN + contentWidth * 0.46;
+    const dutyX = MARGIN + contentWidth * 0.66;
+    const vatX = MARGIN + contentWidth * 0.86;
+
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text("Product", MARGIN, y);
+    doc.text("HS code", hsX, y);
+    doc.text("Duty", dutyX, y);
+    doc.text("VAT", vatX, y);
+    y += 6;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(MARGIN, y, pageWidth - MARGIN, y);
+    y += LINE - 2;
+
+    doc.setTextColor(15, 23, 42);
+    for (const tr of input.tariffs) {
+      ensureSpace(LINE);
+      const name = doc.splitTextToSize(tr.product || "—", hsX - MARGIN - 8)[0];
+      doc.setFont("helvetica", "normal");
+      doc.text(name, MARGIN, y);
+      doc.text(tr.hsCode || "—", hsX, y);
+      doc.text(tr.duty || "—", dutyX, y);
+      doc.text(tr.vat || "—", vatX, y);
       y += LINE;
     }
     y += LINE - 4;

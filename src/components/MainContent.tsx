@@ -2164,6 +2164,26 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             })
             .filter((d) => d.provided);
 
+          // Expected tariffs — the applied customs rules, surfaced as an
+          // optional section on the agreement PDF. Empty array => section hidden.
+          const providedTariffs: { product: string; hsCode: string; duty: string; vat: string }[] = (() => {
+            try {
+              const rules = JSON.parse(allForms["customs"]?.appliedRules || "[]");
+              return (Array.isArray(rules) ? rules : [])
+                .map((r: { productName?: string; hsCode?: string; thirdCountryDuty?: string; preferentialDuty?: string | null; vat?: string }) => ({
+                  product: r.productName || "",
+                  hsCode: r.hsCode || "",
+                  duty: r.preferentialDuty
+                    ? `${r.thirdCountryDuty || ""} (pref ${r.preferentialDuty})`.trim()
+                    : (r.thirdCountryDuty || ""),
+                  vat: r.vat || "",
+                }))
+                .filter((t) => t.product || t.hsCode);
+            } catch {
+              return [];
+            }
+          })();
+
           const buildPdfInput = (signature: import("@/lib/exportAgreementPdf").AgreementSignatureBlock | null) => ({
             projectName,
             role: role || "",
@@ -2171,6 +2191,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             products: agreementProducts,
             totals: { currency: agreementCurrency, amount: agreementAmount },
             documents: providedDocuments.map(({ label, reference, date, value }) => ({ label, reference, date, value })),
+            tariffs: providedTariffs,
             signature,
           });
 
