@@ -12,6 +12,7 @@
 /exports/favicon.ico     /favicon.ico     200
 /exports/favicon.png     /favicon.png     200
 /exports/favicon.svg     /favicon.svg     200
+/exports/og-image.png         /og-image.png         200
 /exports/placeholder.svg /placeholder.svg 200
 /exports/robots.txt      /robots.txt      200
 /exports/unisim-icon.png /unisim-icon.png 200
