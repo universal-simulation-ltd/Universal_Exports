@@ -1895,7 +1895,15 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   </div>
                 ))}
               </div>
-              <Button size="lg" className="w-full" onClick={handleUploadPdfs}>
+              <div className="flex items-center gap-1.5 text-primary text-sm font-semibold animate-bounce">
+                <ArrowRight className="h-4 w-4 rotate-90" />
+                <span>Click here to import the documents</span>
+              </div>
+              <Button
+                size="lg"
+                className="w-full ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/30"
+                onClick={handleUploadPdfs}
+              >
                 <Upload className="mr-2 h-4 w-4" /> Upload PDFs
               </Button>
               <p className="text-xs text-muted-foreground italic">
