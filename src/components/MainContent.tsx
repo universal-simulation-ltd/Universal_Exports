@@ -2593,36 +2593,57 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               </span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">Product</th>
-                    <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">HS Code</th>
-                    <th className="text-right text-xs text-muted-foreground font-medium pb-2">Qty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    try {
-                      const lines: { catalogueId: string; units: string }[] = JSON.parse(allForms["product-details"]?.["productLines"] || "[]");
-                      const effectiveCatalogue = demoParties
-                        ? [...DEMO_CATALOGUE, ...catalogue.filter(p => !p.id.startsWith("demo-"))]
-                        : catalogue;
-                      return lines.map((line, i) => {
+              {(() => {
+                // Currency + line totals match the figures used on every other
+                // document (same maths as getProductTotals / the agreement PDF).
+                const curr = (allForms["transaction"]?.currency || allForms["invoice"]?.docCurrency || "").toUpperCase();
+                const money = (n: number) => `${curr} ${n.toFixed(2)}`.trim();
+                let lines: { catalogueId: string; units: string; discount?: string; discountAmount?: string }[] = [];
+                try { lines = JSON.parse(allForms["product-details"]?.["productLines"] || "[]"); } catch { lines = []; }
+                const effectiveCatalogue = demoParties
+                  ? [...DEMO_CATALOGUE, ...catalogue.filter(p => !p.id.startsWith("demo-"))]
+                  : catalogue;
+                const lineTotal = (line: { catalogueId: string; units: string; discount?: string; discountAmount?: string }, product: { unitPrice: number; vatPercent: number }) => {
+                  const units = parseFloat(line.units) || 0;
+                  const discount = parseFloat(line.discount || "0") || 0;
+                  const fixed = parseFloat(line.discountAmount || "0") || 0;
+                  const sub = product.unitPrice * units;
+                  const discounted = Math.max(0, sub - sub * (discount / 100) - fixed);
+                  return discounted + discounted * (product.vatPercent / 100);
+                };
+                return (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">Product</th>
+                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">HS Code</th>
+                        <th className="text-right text-xs text-muted-foreground font-medium pb-2 pr-4">Qty</th>
+                        <th className="text-right text-xs text-muted-foreground font-medium pb-2">Total (inc. tax)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lines.map((line, i) => {
                         const product = effectiveCatalogue.find((p) => p.id === line.catalogueId);
                         if (!product) return null;
                         return (
                           <tr key={i} className="border-b border-border/50 last:border-0">
                             <td className="py-2 pr-4 font-medium text-foreground">{product.name}</td>
                             <td className="py-2 pr-4 text-muted-foreground font-mono text-xs">{product.hsCode || "—"}</td>
-                            <td className="py-2 text-right text-foreground">{line.units}</td>
+                            <td className="py-2 pr-4 text-right text-foreground">{line.units}</td>
+                            <td className="py-2 text-right text-foreground">{money(lineTotal(line, product))}</td>
                           </tr>
                         );
-                      });
-                    } catch { return null; }
-                  })()}
-                </tbody>
-              </table>
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t border-border">
+                        <td className="py-2 pr-4 font-semibold text-foreground" colSpan={3}>Total</td>
+                        <td className="py-2 text-right font-semibold text-foreground">{money(productTotals.totalIncTax)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                );
+              })()}
             </div>
             <div className="flex gap-2 mt-2">
               <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("product-details")}>
