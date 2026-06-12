@@ -137,6 +137,7 @@ const AgreementView = () => {
               <tr className="text-left text-xs text-muted-foreground border-b border-border">
                 <th className="py-1.5 font-medium">Description</th>
                 <th className="py-1.5 font-medium">Units</th>
+                <th className="py-1.5 font-medium text-right">Unit price</th>
                 <th className="py-1.5 font-medium text-right">Total</th>
               </tr>
             </thead>
@@ -145,6 +146,7 @@ const AgreementView = () => {
                 <tr key={i} className="border-b border-border/50 last:border-0">
                   <td className="py-1.5">{p.name || "—"}</td>
                   <td className="py-1.5">{p.units || "—"}</td>
+                  <td className="py-1.5 text-right">{p.unitPrice || "—"}</td>
                   <td className="py-1.5 text-right">{p.total || "—"}</td>
                 </tr>
               ))}
@@ -152,7 +154,7 @@ const AgreementView = () => {
             {snap.totals && (
               <tfoot>
                 <tr className="font-semibold">
-                  <td className="pt-2" colSpan={2}>Total</td>
+                  <td className="pt-2" colSpan={3}>Total</td>
                   <td className="pt-2 text-right">
                     {`${snap.totals.currency} ${snap.totals.amount}`.trim()}
                   </td>

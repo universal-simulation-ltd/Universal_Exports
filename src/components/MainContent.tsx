@@ -511,7 +511,16 @@ const MainContent = ({
   const [catalogue, setCatalogue] = useState<import("@/lib/productCatalogueStore").CatalogueProduct[]>([]);
 
   useEffect(() => {
-    loadCatalogue().then(setCatalogue);
+    // Merge rather than overwrite: this resolves async, so a plain set would
+    // wipe the demo products the demoParties effect below may have already
+    // prepended (leaving demo product lines with no catalogue match and blank
+    // totals on the agreement).
+    loadCatalogue().then((stored) =>
+      setCatalogue((prev) => {
+        const demo = prev.filter((p) => p.id.startsWith("demo-"));
+        return [...demo, ...stored.filter((p) => !p.id.startsWith("demo-"))];
+      })
+    );
   }, []);
 
   // Your details (for setup)
@@ -2120,7 +2129,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             { label: "Port of Discharge", value: val("shipment", "portDischarge") },
             { label: "Country of Origin", value: val("coo", "countryOfOrigin") },
           ];
-          const agreementProducts: { name: string; units: string; total: string }[] = (() => {
+          const agreementProducts: { name: string; units: string; unitPrice: string; total: string }[] = (() => {
             try {
               const raw = allForms["product-details"]?.productLines;
               if (!raw) return [];
@@ -2128,15 +2137,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               return lines.map((l) => {
                 const product = catalogue.find((p) => p.id === l.catalogueId);
                 const units = parseFloat(l.units) || 0;
+                let unitPrice = "";
                 let total = "";
                 if (product) {
                   const discount = parseFloat(l.discount) || 0;
                   const fixed = parseFloat(l.discountAmount || "0") || 0;
                   const sub = product.unitPrice * units;
                   const discounted = Math.max(0, sub - sub * (discount / 100) - fixed);
+                  unitPrice = product.unitPrice.toFixed(2);
                   total = (discounted + discounted * (product.vatPercent / 100)).toFixed(2);
                 }
-                return { name: product?.name || "Product", units: String(l.units || ""), total };
+                return { name: product?.name || "Product", units: String(l.units || ""), unitPrice, total };
               });
             } catch {
               return [];

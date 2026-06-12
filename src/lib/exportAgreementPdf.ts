@@ -18,6 +18,9 @@ export interface AgreementField {
 export interface AgreementProduct {
   name: string;
   units: string;
+  /** Catalogue price per unit, pre-discount/VAT (may be empty). */
+  unitPrice: string;
+  /** Line total after discount + VAT (may be empty). */
   total: string;
 }
 
@@ -178,11 +181,16 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.text("Products", MARGIN, y);
     y += LINE + 2;
 
+    const unitsX = MARGIN + contentWidth - 260;
+    const priceX = MARGIN + contentWidth - 180;
+    const totalX = MARGIN + contentWidth - 80;
+
     doc.setFontSize(10);
     doc.setTextColor(71, 85, 105);
     doc.text("Description", MARGIN, y);
-    doc.text("Units", MARGIN + contentWidth - 180, y);
-    doc.text("Total", MARGIN + contentWidth - 80, y);
+    doc.text("Units", unitsX, y);
+    doc.text("Unit price", priceX, y);
+    doc.text("Total", totalX, y);
     y += 6;
     doc.setDrawColor(226, 232, 240);
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
@@ -191,11 +199,12 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.setTextColor(15, 23, 42);
     for (const p of input.products) {
       ensureSpace(LINE);
-      const name = doc.splitTextToSize(p.name || "—", contentWidth - 200)[0];
+      const name = doc.splitTextToSize(p.name || "—", unitsX - MARGIN - 8)[0];
       doc.setFont("helvetica", "normal");
       doc.text(name, MARGIN, y);
-      doc.text(p.units || "—", MARGIN + contentWidth - 180, y);
-      doc.text(p.total || "—", MARGIN + contentWidth - 80, y);
+      doc.text(p.units || "—", unitsX, y);
+      doc.text(p.unitPrice || "—", priceX, y);
+      doc.text(p.total || "—", totalX, y);
       y += LINE;
     }
 
@@ -203,10 +212,10 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
     y += LINE;
     doc.setFont("helvetica", "bold");
-    doc.text("Total", MARGIN + contentWidth - 180, y);
+    doc.text("Total", priceX, y);
     doc.text(
       `${input.totals.currency} ${input.totals.amount}`.trim(),
-      MARGIN + contentWidth - 80,
+      totalX,
       y
     );
     y += LINE + 8;
