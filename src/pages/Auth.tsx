@@ -117,6 +117,14 @@ export default function Auth() {
           <img src={logo} alt="Universal Exports" className="h-10 object-contain" />
         </div>
 
+        {/* Free-for-UK-businesses badge — shown in both modes so it's the
+            first thing anyone sees on the sign-in page. */}
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40">
+            <span aria-hidden="true">🇬🇧</span> 100% free for UK businesses
+          </span>
+        </div>
+
         {/* Card */}
         <div className="rounded-lg border border-border bg-card shadow-sm p-6 space-y-5">
           <div>
@@ -125,7 +133,7 @@ export default function Auth() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {mode === 'signin'
-                ? 'Welcome back to Universal Exports'
+                ? 'Free for UK businesses — sign in, or create your Universal ID free.'
                 : 'Free for UK businesses — just confirm your Companies House number.'}
             </p>
           </div>
