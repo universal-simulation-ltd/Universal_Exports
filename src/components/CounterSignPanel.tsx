@@ -42,7 +42,11 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   const active = tokens.find(t => t.status === "signed")
               ?? tokens.find(t => t.status === "pending")
               ?? null;
-  const signUrl = active ? `${window.location.origin}/sign/${active.id}` : "";
+  // Include the deploy base path ("/exports/" in production) — the app is
+  // served behind the portal Worker's path prefix, so origin alone 404s.
+  const signUrl = active
+    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/sign/${active.id}`
+    : "";
 
   // Initial load + polling. Polling stops once we have a signed row — no
   // further state change is possible.
