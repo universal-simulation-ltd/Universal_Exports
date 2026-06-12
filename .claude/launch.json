@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Microsoft\\VisualStudio\\NodeJs\\node.exe",
       "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "8080"],
       "port": 8080
+    },
+    {
+      "name": "exports-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "8080"],
+      "port": 8080
     }
   ]
 }

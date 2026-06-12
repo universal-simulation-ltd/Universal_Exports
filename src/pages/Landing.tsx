@@ -102,7 +102,7 @@ export default function Landing() {
               <span aria-hidden>·</span>
               <span>Multi-currency</span>
               <span aria-hidden>·</span>
-              <span>Free &amp; self-hosted</span>
+              <span>Free for UK businesses</span>
             </div>
           </div>
 
@@ -145,6 +145,10 @@ export default function Landing() {
                   >
                     Continue <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Free for UK businesses — sign in with your Universal ID, or create one
+                    with your Companies House number.
+                  </p>
                 </div>
 
                 <div className="mt-10 w-full max-w-xs">
