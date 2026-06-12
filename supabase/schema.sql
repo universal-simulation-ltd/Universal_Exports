@@ -153,3 +153,56 @@ create policy "Public update pending signatures"
 
 create index if not exists agreement_signatures_user_project_idx
   on public.agreement_signatures(user_id, project_id);
+
+-- READ-ONLY AGREEMENT VIEWS — backs the QR code stamped on every generated
+-- Export Agreement PDF. Each generate / sign mints one immutable row: a JSON
+-- snapshot of the agreement data plus the PDF itself (data URL, same pattern
+-- as the stored signature images), keyed by the random uuid token used in the
+-- public /view/:token URL.
+create table public.agreement_views (
+  -- Token used in the public URL. Supplied by the client (crypto.randomUUID)
+  -- because the QR has to be baked into the PDF *before* the row is written.
+  id uuid primary key,
+  -- Plain text, deliberately NO foreign key: the client-side demo project and
+  -- unauthenticated drafters have no `projects` row, but their QR links must
+  -- still work. Rows are self-contained snapshots, so cascade cleanup isn't
+  -- needed for correctness.
+  project_id text not null default '',
+  user_id uuid references auth.users(id) on delete cascade,
+  project_name text not null default '',
+  -- AgreementPdfInput snapshot (signature image stripped) for the page render.
+  snapshot jsonb not null default '{}',
+  -- The generated PDF as a data URL (data:application/pdf;base64,...).
+  pdf_data text not null default '',
+  created_at timestamptz not null default now()
+);
+alter table public.agreement_views enable row level security;
+
+-- Drafter keeps ownership of their own rows (list / revoke later).
+create policy "Drafter manages own agreement views"
+  on public.agreement_views
+  for all using (auth.uid() = user_id);
+
+-- Public insert so an unauthenticated drafter can still mint a view link.
+-- The check stops callers stamping someone else's user_id onto a row.
+create policy "Public create agreement views"
+  on public.agreement_views
+  for insert with check (user_id is null or user_id = auth.uid());
+
+-- NO public select policy: a bare `using (true)` select would let anyone with
+-- the anon key list every row (PDFs included). Reads instead go through this
+-- token-gated SECURITY DEFINER function — you only get the row if you already
+-- know its unguessable uuid.
+create or replace function public.get_agreement_view(view_token uuid)
+returns setof public.agreement_views
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select * from public.agreement_views where id = view_token;
+$$;
+grant execute on function public.get_agreement_view(uuid) to anon, authenticated;
+
+create index if not exists agreement_views_user_project_idx
+  on public.agreement_views(user_id, project_id);

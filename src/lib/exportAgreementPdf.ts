@@ -68,6 +68,12 @@ export interface AgreementPdfInput {
   tariffs?: AgreementTariff[];
   /** Drafter's signature — present only on the signed copy. */
   signature?: AgreementSignatureBlock | null;
+  /**
+   * Online view link, stamped as a QR top-right of the header. `dataUrl` is
+   * the pre-rendered brand-styled PNG (see qrPngDataUrl); `url` doubles as a
+   * click-through link annotation on the QR for digital readers.
+   */
+  qr?: { dataUrl: string; url: string } | null;
 }
 
 export interface BuiltPdf {
@@ -94,6 +100,25 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   };
 
   // ── Header ──────────────────────────────────────────────────────────────
+  // Online-view QR sits top-right; header text wraps short of it.
+  const QR_SIZE = 84;
+  const qrTop = 36;
+  let textWidth = contentWidth;
+  if (input.qr) {
+    const qrX = pageWidth - MARGIN - QR_SIZE;
+    textWidth = contentWidth - QR_SIZE - 16;
+    try {
+      doc.addImage(input.qr.dataUrl, "PNG", qrX, qrTop, QR_SIZE, QR_SIZE);
+      doc.link(qrX, qrTop, QR_SIZE, QR_SIZE, { url: input.qr.url });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Scan to view online", qrX + QR_SIZE / 2, qrTop + QR_SIZE + 10, { align: "center" });
+    } catch {
+      // malformed image — skip the QR rather than fail the whole document
+    }
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(15, 23, 42);
@@ -107,11 +132,16 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   if (input.role) {
     subtitleParts.push(`Prepared as ${input.role}`);
   }
-  doc.text(subtitleParts.join("  ·  "), MARGIN, y);
-  y += LINE;
+  const subtitle = doc.splitTextToSize(subtitleParts.join("  ·  "), textWidth);
+  doc.text(subtitle, MARGIN, y);
+  y += LINE * subtitle.length;
   doc.text(`Generated ${new Date().toLocaleDateString()}`, MARGIN, y);
   y += LINE;
 
+  // Keep the divider clear of the QR block when one is stamped.
+  if (input.qr) {
+    y = Math.max(y, qrTop + QR_SIZE + 18);
+  }
   doc.setDrawColor(226, 232, 240);
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;

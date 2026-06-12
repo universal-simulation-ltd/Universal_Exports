@@ -42,6 +42,23 @@ const buildOptions = (value: string, size: number, scale: number): Options => ({
   imageOptions: { crossOrigin: "anonymous", margin: 6 * scale, imageSize: 0.24, hideBackgroundDots: true },
 });
 
+/**
+ * Render the same brand-styled QR to a PNG data URL — for places a live
+ * canvas can't go, e.g. stamping the code into the generated PDF via jsPDF.
+ * `size` is the logical pixel edge; rendered at 2× for print sharpness.
+ */
+export async function qrPngDataUrl(value: string, size = 256): Promise<string> {
+  const qr = new QRCodeStyling(buildOptions(value, size, 2));
+  const raw = await qr.getRawData("png");
+  if (!(raw instanceof Blob)) throw new Error("QR render produced no image");
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(raw);
+  });
+}
+
 const StyledQRCode = ({ value, size = 200, className, "aria-label": ariaLabel }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const qrRef = useRef<QRCodeStyling | null>(null);

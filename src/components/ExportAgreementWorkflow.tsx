@@ -27,6 +27,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
 import CounterSignPanel from "@/components/CounterSignPanel";
+import { qrPngDataUrl } from "@/components/StyledQRCode";
+import { saveAgreementView } from "@/lib/agreementViewStore";
 import {
   buildAgreementPdf,
   type AgreementPdfInput,
@@ -85,10 +87,37 @@ const ExportAgreementWorkflow = ({
   const signature = formData["confirmSignature"] || "";
   const signerName = formData["confirmName"] || "";
 
+  // Build the PDF with a header QR linking to a public read-only copy.
+  // Order matters: mint token → render QR → build PDF → persist row. If the
+  // QR render or the persist fails, rebuild without the QR — a printed code
+  // must never point at a row that doesn't exist.
+  const buildPdfWithViewLink = useCallback(async (sig: AgreementSignatureBlock | null) => {
+    const input = buildPdfInput(sig);
+    try {
+      const token = crypto.randomUUID();
+      const viewUrl =
+        `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/view/${token}`;
+      input.qr = { dataUrl: await qrPngDataUrl(viewUrl), url: viewUrl };
+      const built = buildAgreementPdf(input);
+      const saved = await saveAgreementView({
+        id: token,
+        projectId,
+        projectName,
+        input,
+        pdfBlob: built.blob,
+      });
+      if (saved) return { ...built, input };
+      URL.revokeObjectURL(built.url);
+    } catch (e) {
+      console.error("[exports] online view link failed — generating without QR:", e);
+    }
+    input.qr = null;
+    return { ...buildAgreementPdf(input), input };
+  }, [buildPdfInput, projectId, projectName]);
+
   // ── Generate the unsigned overview ────────────────────────────────────────
-  const doGenerate = useCallback(() => {
-    const input = buildPdfInput(null);
-    const { blob, url } = buildAgreementPdf(input);
+  const doGenerate = useCallback(async () => {
+    const { blob, url, input } = await buildPdfWithViewLink(null);
     // Drop any previous outputs — regenerating nulls the prior agreement.
     revoke(generatedUrl);
     revoke(signedUrl);
@@ -100,7 +129,7 @@ const ExportAgreementWorkflow = ({
     setFinalUrl(null);
     snapshotRef.current = snapshotOf(input);
     toast.success("Export Agreement generated — review it before signing.");
-  }, [buildPdfInput, generatedUrl, signedUrl, finalUrl]);
+  }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl]);
 
   const handleGenerateClick = useCallback(() => {
     if (!generatedUrl) {
@@ -118,7 +147,7 @@ const ExportAgreementWorkflow = ({
   }, [generatedUrl, signedUrl, finalUrl, buildPdfInput, doGenerate]);
 
   // ── Confirm the drafter's signature onto the generated PDF ─────────────────
-  const handleConfirmSignature = useCallback(() => {
+  const handleConfirmSignature = useCallback(async () => {
     if (!generatedUrl) return;
     if (!signature.startsWith("data:")) {
       toast.error("Add your signature before confirming.");
@@ -130,19 +159,18 @@ const ExportAgreementWorkflow = ({
     }
     const today = new Date();
     onFieldChange("confirmDate", format(today, "yyyy-MM-dd"));
-    const input = buildPdfInput({
+    const { blob, url } = await buildPdfWithViewLink({
       name: signerName.trim(),
       dataUrl: signature,
       date: format(today, "PPP"),
     });
-    const { blob, url } = buildAgreementPdf(input);
     revoke(signedUrl);
     revoke(finalUrl);
     setSignedUrl(trackUrl(url));
     setSignedBlob(blob);
     setFinalUrl(null);
     toast.success("Signature applied — the preview now shows the signed copy.");
-  }, [generatedUrl, signature, signerName, buildPdfInput, onFieldChange, signedUrl, finalUrl]);
+  }, [generatedUrl, signature, signerName, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
   const handleUploadSignedPdf = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

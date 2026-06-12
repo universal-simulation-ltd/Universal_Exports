@@ -14,6 +14,7 @@ import Landing from "./pages/Landing.tsx";
 import Auth from "./pages/Auth.tsx";
 import Sign from "./pages/Sign.tsx";
 import SignMobile from "./pages/SignMobile.tsx";
+import AgreementView from "./pages/AgreementView.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,9 @@ function AppShell() {
               no auth needed (demo-only, same-device localStorage
               handoff for now). */}
           <Route path="/sign-mobile/:token" element={<SignMobile />} />
+          {/* Public read-only agreement view — the QR stamped on every
+              generated PDF opens here. Token-gated like /sign. */}
+          <Route path="/view/:token" element={<AgreementView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
