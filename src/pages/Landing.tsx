@@ -109,10 +109,10 @@ export default function Landing() {
           {/* RIGHT — start project card */}
           <div>
             <div className="relative rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-              {/* "100% Free" corner ribbon — z-0 so the navbar changelog
+              {/* "100% Free for UK businesses" corner ribbon — z-0 so the navbar changelog
                   dropdown (which floats down over this card) stays on top. */}
-              <div className="pointer-events-none absolute top-[26px] -right-[58px] z-0 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[10px] font-bold uppercase tracking-[0.18em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none">
-                100% Free
+              <div className="pointer-events-none absolute top-[26px] -right-[58px] z-0 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[9px] font-bold uppercase tracking-[0.06em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none whitespace-nowrap">
+                100% Free for UK businesses
               </div>
               <div className="flex flex-col items-center justify-center p-8 md:p-10">
                 <FileCheck className="h-12 w-12 text-primary mb-4" />
