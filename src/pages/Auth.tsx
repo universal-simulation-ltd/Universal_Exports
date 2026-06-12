@@ -94,7 +94,7 @@ export default function Auth() {
       if (error) {
         toast.error(error.message)
       } else {
-        toast.success('Universal ID created! Please check your email to confirm your account.')
+        toast.success(`Universal ID created! Check ${email} for a confirmation link (it can take a minute — check spam too), then sign in.`, { duration: 8000 })
         setMode('signin')
       }
     }

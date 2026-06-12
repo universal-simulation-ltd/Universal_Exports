@@ -41,10 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
     // metadata lands in auth.users.raw_user_meta_data — the sign-up gate uses
     // it to record the verified Companies House number on the Universal ID.
+    //
+    // emailRedirectTo brings the confirmation link back to THIS app (e.g.
+    // .../exports/app) instead of the shared hub Site URL. The target must be
+    // in the Supabase Auth redirect-URL allowlist; if it isn't, Supabase
+    // safely falls back to the project Site URL. BASE_URL is "/exports/" in
+    // prod and "/" in dev, so this resolves correctly in both.
+    const emailRedirectTo = `${window.location.origin}${import.meta.env.BASE_URL}app`
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: metadata ? { data: metadata } : undefined,
+      options: { data: metadata, emailRedirectTo },
     })
     return { error }
   }
