@@ -237,12 +237,12 @@ create policy "Drafter manages own exports agreement views"
   on public.exports_agreement_views
   for all using (auth.uid() = user_id);
 
--- Public insert so an unauthenticated drafter (incl. the demo walkthrough) can
--- still mint a view link. The check stops callers stamping someone else's
--- user_id onto a row.
-create policy "Public create exports agreement views"
-  on public.exports_agreement_views
-  for insert with check (user_id is null or user_id = auth.uid());
+-- No public insert. In a shared prod DB an anon insert path is an
+-- unauthenticated-write vector for large base64-PDF rows. Inserts are owner-only
+-- via the "Drafter manages own…" for-all policy above (its using clause doubles
+-- as the insert WITH CHECK). An unauthenticated drafter / the demo walkthrough
+-- simply gets a QR-less PDF — buildPdfWithViewLink falls back when the insert is
+-- refused. Mirrors exports_agreement_signatures (also owner-only insert).
 
 -- NO public select policy: a bare `using (true)` select would let anyone with
 -- the anon key list every row (PDFs included). Reads instead go through this
