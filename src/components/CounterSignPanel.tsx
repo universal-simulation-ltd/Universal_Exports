@@ -30,11 +30,11 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   const [loading,     setLoading]     = useState(true);
   const [generating,  setGenerating]  = useState(false);
 
-  // The hardcoded "Example" project lives only client-side — it's never written
-  // to the `projects` table, so the `agreement_signatures.project_id` foreign
-  // key would reject any token insert. Detect it the same way the rest of the
-  // app does (the `demo-` id prefix) and mint the token locally so the QR code
-  // and link still render for the demo walkthrough.
+  // The hardcoded "Example" project lives only client-side and is never saved to
+  // the backend, so there's nothing to attach a real token to (and creating one
+  // would just leave an orphan row). Detect it the same way the rest of the app
+  // does (the `demo-` id prefix) and mint the token locally so the QR code and
+  // link still render for the demo walkthrough.
   const isDemo = projectId.startsWith("demo-");
 
   // Pick the most relevant token: the latest signed one if any, else the
@@ -83,9 +83,9 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       toast.error("Save the project first so we can attach the link to it.");
       return;
     }
-    // Demo project: mint a token client-side instead of hitting Supabase,
-    // which would reject the insert (no matching `projects` row to satisfy the
-    // foreign key). The QR + link still render so the walkthrough is complete.
+    // Demo project: mint a token client-side instead of hitting Supabase. The
+    // demo project isn't persisted, so a backend token would just be an orphan
+    // row. The QR + link still render so the walkthrough is complete.
     if (isDemo) {
       const row: AgreementSignature = {
         id: crypto.randomUUID(),

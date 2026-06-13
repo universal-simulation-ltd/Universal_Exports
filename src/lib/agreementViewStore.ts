@@ -54,7 +54,7 @@ export async function saveAgreementView(args: {
 
   const pdf_data = await blobToDataUrl(args.pdfBlob)
 
-  const { error } = await supabase.from('agreement_views').insert({
+  const { error } = await supabase.from('exports_agreement_views').insert({
     id: args.id,
     project_id: args.projectId,
     user_id: user?.id ?? null,
@@ -76,7 +76,7 @@ export async function saveAgreementView(args: {
  * public select policy, so knowing the uuid is the only way in).
  */
 export async function getAgreementView(token: string): Promise<AgreementViewRow | null> {
-  const { data, error } = await supabase.rpc('get_agreement_view', { view_token: token })
+  const { data, error } = await supabase.rpc('exports_get_agreement_view', { view_token: token })
   if (error) {
     // Includes malformed (non-uuid) tokens — surface as "not found".
     console.error('[exports] getAgreementView failed:', error)

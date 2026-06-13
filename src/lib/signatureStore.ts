@@ -31,7 +31,7 @@ export async function createSignatureToken(args: {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data, error } = await supabase
-    .from('agreement_signatures')
+    .from('exports_agreement_signatures')
     .insert({
       project_id:   args.projectId,
       user_id:      user?.id ?? null,
@@ -54,15 +54,16 @@ export async function createSignatureToken(args: {
  *
  * This is a direct table select, so it only returns rows the caller owns via
  * the "Drafter manages own agreement signatures" RLS policy (auth.uid() =
- * user_id). That's the only real path: a project must be saved to back a token,
- * and saving requires sign-in — so every backend token has an authenticated
- * owner. (The demo project never reaches here; its tokens are minted client-side
- * in CounterSignPanel.) An unauthenticated caller gets an empty list, which is
- * fine because anonymous drafting can't produce a persisted token anyway.
+ * user_id). That's the only real path: creating a token is owner-only (insert is
+ * gated on user_id = auth.uid()) and reaching this panel needs a saved project,
+ * which requires sign-in — so every backend token has an authenticated owner.
+ * (The demo project never reaches here; its tokens are minted client-side in
+ * CounterSignPanel.) An unauthenticated caller gets an empty list, which is fine
+ * because anonymous drafting can't produce a persisted token anyway.
  */
 export async function listSignatureTokens(projectId: string): Promise<AgreementSignature[]> {
   const { data, error } = await supabase
-    .from('agreement_signatures')
+    .from('exports_agreement_signatures')
     .select('*')
     .eq('project_id', projectId)
     .order('created_at', { ascending: false })
@@ -82,7 +83,7 @@ export async function listSignatureTokens(projectId: string): Promise<AgreementS
  * hold its uuid.
  */
 export async function getSignatureToken(token: string): Promise<AgreementSignature | null> {
-  const { data, error } = await supabase.rpc('get_agreement_signature', { sig_token: token })
+  const { data, error } = await supabase.rpc('exports_get_agreement_signature', { sig_token: token })
 
   if (error) {
     // Includes malformed (non-uuid) tokens — surface as "not found".
@@ -100,7 +101,7 @@ export async function getSignatureToken(token: string): Promise<AgreementSignatu
 export async function markPdfViewed(token: string): Promise<boolean> {
   // Goes through a column-locked SECURITY DEFINER RPC: the table has no public
   // update policy, so this can only ever touch viewed_pdf_at on a pending row.
-  const { error } = await supabase.rpc('mark_agreement_pdf_viewed', { sig_token: token })
+  const { error } = await supabase.rpc('exports_mark_agreement_pdf_viewed', { sig_token: token })
 
   if (error) {
     console.error('[exports] markPdfViewed failed:', error)
@@ -121,7 +122,7 @@ export async function submitCounterSignature(args: {
   // Column-locked SECURITY DEFINER RPC: only the counter-signer fields + status
   // can change, and only while the row is still pending — so the table needs no
   // public update policy and a token can be used exactly once.
-  const { error } = await supabase.rpc('submit_agreement_counter_signature', {
+  const { error } = await supabase.rpc('exports_submit_agreement_counter_signature', {
     sig_token:        args.token,
     signer_name:      args.name,
     signer_signature: args.signature,

@@ -45,7 +45,7 @@ export async function loadCatalogue(): Promise<CatalogueProduct[]> {
   if (!(await isAuthenticated())) return getLocal()
 
   const { data, error } = await supabase
-    .from('product_catalogue')
+    .from('exports_product_catalogue')
     .select('*')
     .order('created_at', { ascending: true })
 
@@ -69,7 +69,7 @@ export async function addToCatalogue(product: Omit<CatalogueProduct, 'id'>): Pro
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data, error } = await supabase
-    .from('product_catalogue')
+    .from('exports_product_catalogue')
     .insert({
       id,
       user_id: user!.id,
@@ -97,7 +97,7 @@ export async function removeFromCatalogue(id: string): Promise<void> {
     return
   }
 
-  const { error } = await supabase.from('product_catalogue').delete().eq('id', id)
+  const { error } = await supabase.from('exports_product_catalogue').delete().eq('id', id)
   if (error) console.error('Error removing product:', error)
 }
 
@@ -108,7 +108,7 @@ export async function updateCatalogueProduct(updated: CatalogueProduct): Promise
   }
 
   const { error } = await supabase
-    .from('product_catalogue')
+    .from('exports_product_catalogue')
     .update({
       code: updated.code,
       hs_code: updated.hsCode,

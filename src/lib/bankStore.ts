@@ -28,7 +28,7 @@ function rowToBankAccount(row: Record<string, string>): BankAccount {
 
 async function loadBanks(type: 'your' | 'party'): Promise<Record<string, BankAccount>> {
   const { data, error } = await supabase
-    .from('bank_accounts')
+    .from('exports_bank_accounts')
     .select('*')
     .eq('type', type)
 
@@ -47,7 +47,7 @@ async function saveBanks(type: 'your' | 'party', banks: Record<string, BankAccou
   if (!user) return
 
   // Delete all existing rows for this type then re-insert
-  await supabase.from('bank_accounts').delete().eq('user_id', user.id).eq('type', type)
+  await supabase.from('exports_bank_accounts').delete().eq('user_id', user.id).eq('type', type)
 
   const rows = Object.entries(banks).map(([key, bank]) => ({
     user_id: user.id,
@@ -63,7 +63,7 @@ async function saveBanks(type: 'your' | 'party', banks: Record<string, BankAccou
   }))
 
   if (rows.length > 0) {
-    const { error } = await supabase.from('bank_accounts').insert(rows)
+    const { error } = await supabase.from('exports_bank_accounts').insert(rows)
     if (error) console.error(`Error saving ${type} banks:`, error)
   }
 }

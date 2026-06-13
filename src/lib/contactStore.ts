@@ -57,7 +57,7 @@ export async function loadYourDetails(): Promise<CompanyDetails> {
   if (!user) return { ...emptyDetails(), country: 'United Kingdom' }
 
   const { data, error } = await supabase
-    .from('your_details')
+    .from('exports_your_details')
     .select('*')
     .eq('user_id', user.id)
     .single()
@@ -70,7 +70,7 @@ export async function saveYourDetails(details: CompanyDetails): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  const { error } = await supabase.from('your_details').upsert({
+  const { error } = await supabase.from('exports_your_details').upsert({
     user_id: user.id,
     ...detailsToRow(details),
     updated_at: new Date().toISOString(),
@@ -81,7 +81,7 @@ export async function saveYourDetails(details: CompanyDetails): Promise<void> {
 
 export async function loadContacts(): Promise<CompanyDetails[]> {
   const { data, error } = await supabase
-    .from('contacts')
+    .from('exports_contacts')
     .select('*')
     .order('created_at', { ascending: false })
 
@@ -99,19 +99,19 @@ export async function saveContact(contact: CompanyDetails): Promise<void> {
 
   if (contact.id) {
     const { error } = await supabase
-      .from('contacts')
+      .from('exports_contacts')
       .update(detailsToRow(contact))
       .eq('id', contact.id)
     if (error) console.error('Error updating contact:', error)
   } else {
     const { error } = await supabase
-      .from('contacts')
+      .from('exports_contacts')
       .insert({ user_id: user.id, ...detailsToRow(contact) })
     if (error) console.error('Error saving contact:', error)
   }
 }
 
 export async function deleteContact(id: string): Promise<void> {
-  const { error } = await supabase.from('contacts').delete().eq('id', id)
+  const { error } = await supabase.from('exports_contacts').delete().eq('id', id)
   if (error) console.error('Error deleting contact:', error)
 }

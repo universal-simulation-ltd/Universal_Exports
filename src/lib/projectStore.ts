@@ -13,7 +13,7 @@ export interface ProjectData {
 
 export async function loadProjects(): Promise<ProjectData[]> {
   const { data, error } = await supabase
-    .from('projects')
+    .from('exports_projects')
     .select('*')
     .order('updated_at', { ascending: false })
 
@@ -38,7 +38,7 @@ export async function saveProject(project: ProjectData): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  const { error } = await supabase.from('projects').upsert({
+  const { error } = await supabase.from('exports_projects').upsert({
     id: project.id,
     user_id: user.id,
     name: project.name,
@@ -54,7 +54,7 @@ export async function saveProject(project: ProjectData): Promise<void> {
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  const { error } = await supabase.from('projects').delete().eq('id', id)
+  const { error } = await supabase.from('exports_projects').delete().eq('id', id)
   if (error) console.error('Error deleting project:', error)
 }
 
