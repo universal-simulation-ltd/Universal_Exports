@@ -32,7 +32,12 @@ export default function Auth() {
   const [companyConfirmed, setCompanyConfirmed] = useState(false)
   const [lookingUp, setLookingUp] = useState(false)
 
-  const { signIn, signUp } = useAuth()
+  // Shown after a sign-in attempt fails because the email isn't confirmed yet,
+  // or after a sign-up — lets the user re-trigger the confirmation email.
+  const [showResend, setShowResend] = useState(false)
+  const [resending, setResending] = useState(false)
+
+  const { signIn, signUp, resendConfirmation } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   // ProtectedRoute stashes the navigation state it intercepted (e.g. the
@@ -81,6 +86,9 @@ export default function Auth() {
       const { error } = await signIn(email, password)
       if (error) {
         toast.error(error.message)
+        // Supabase reports an unconfirmed address as "Email not confirmed" —
+        // surface the resend option so the user isn't stuck.
+        if (/confirm/i.test(error.message)) setShowResend(true)
       } else {
         navigate('/app', { state: appState })
       }
@@ -96,14 +104,31 @@ export default function Auth() {
       } else {
         toast.success(`Universal ID created! Check ${email} for a confirmation link (it can take a minute — check spam too), then sign in.`, { duration: 8000 })
         setMode('signin')
+        setShowResend(true)
       }
     }
     setLoading(false)
   }
 
+  const handleResend = async () => {
+    if (!email.trim()) {
+      toast.error('Enter your email above first, then resend.')
+      return
+    }
+    setResending(true)
+    const { error } = await resendConfirmation(email.trim())
+    setResending(false)
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success(`Confirmation email re-sent to ${email}. Check your inbox (and spam).`, { duration: 8000 })
+    }
+  }
+
   const switchMode = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin')
     resetCompanyStep()
+    setShowResend(false)
   }
 
   return (
@@ -274,6 +299,24 @@ export default function Auth() {
                 : mode === 'signin' ? 'Sign in' : 'Create Universal ID'}
             </Button>
           </form>
+
+          {mode === 'signin' && (
+            <div className={showResend ? 'rounded-md border border-border bg-secondary/40 p-3' : ''}>
+              <p className="text-xs text-muted-foreground">
+                {showResend
+                  ? 'Not confirmed yet? We can send the confirmation link again.'
+                  : "Didn't get the confirmation email? "}
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="text-primary underline-offset-4 hover:underline font-medium disabled:opacity-60"
+                >
+                  {resending ? 'Sending…' : 'Resend confirmation email'}
+                </button>
+              </p>
+            </div>
+          )}
 
           {mode === 'signup' && (
             <p className="text-xs text-muted-foreground">
