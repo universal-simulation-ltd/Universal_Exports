@@ -136,20 +136,61 @@ create policy "Public create agreement signatures"
   on public.agreement_signatures
   for insert with check (true);
 
--- Public read so the counter-signer can load the token row without auth.
--- The token itself (random uuid in the URL) is the bearer credential — no
--- enumeration possible and the row exposes only the project name, not PII.
-create policy "Public read by token"
-  on public.agreement_signatures
-  for select using (true);
+-- NO public select policy. A bare `using (true)` select would let anyone with
+-- the anon key dump every row (counter-signer names, base64 signature images,
+-- project names and all token uuids) via `GET /agreement_signatures?select=*`.
+-- The counter-signer (/sign/:token) instead reads through the token-gated
+-- SECURITY DEFINER function below — you only get a row if you already hold its
+-- unguessable uuid. The authenticated drafter still lists / polls their own
+-- tokens through the "Drafter manages own agreement signatures" policy above.
+create or replace function public.get_agreement_signature(sig_token uuid)
+returns setof public.agreement_signatures
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select * from public.agreement_signatures where id = sig_token;
+$$;
+grant execute on function public.get_agreement_signature(uuid) to anon, authenticated;
 
--- Public update so the counter-signer can mark `viewed_pdf_at` and submit
--- their signature. The check constraint locks them out once `status='signed'`
--- so a token can only ever be used once.
-create policy "Public update pending signatures"
-  on public.agreement_signatures
-  for update using (status = 'pending')
-  with check (status in ('pending', 'signed'));
+-- NO public update policy either. The old `for update using (status='pending')`
+-- policy let any token holder rewrite ANY column (project_name, user_id, …) on a
+-- pending row. The counter-signer's two writes go through these column-locked
+-- SECURITY DEFINER functions instead: each touches only its own fields and
+-- re-checks the pending gate, so a token can still only ever be used once and
+-- nothing else on the row can be tampered with.
+create or replace function public.mark_agreement_pdf_viewed(sig_token uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.agreement_signatures
+     set viewed_pdf_at = now()
+   where id = sig_token and status = 'pending';
+$$;
+grant execute on function public.mark_agreement_pdf_viewed(uuid) to anon, authenticated;
+
+create or replace function public.submit_agreement_counter_signature(
+  sig_token        uuid,
+  signer_name      text,
+  signer_signature text
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.agreement_signatures
+     set counter_signer_name      = signer_name,
+         counter_signer_signature = signer_signature,
+         counter_signed_at        = now(),
+         status                   = 'signed'
+   where id = sig_token and status = 'pending';
+$$;
+grant execute on function public.submit_agreement_counter_signature(uuid, text, text)
+  to anon, authenticated;
 
 create index if not exists agreement_signatures_user_project_idx
   on public.agreement_signatures(user_id, project_id);

@@ -51,6 +51,14 @@ export async function createSignatureToken(args: {
 /**
  * List tokens for a project so the drafter can see pending / completed
  * counter-signs (and surface the latest one in the UI).
+ *
+ * This is a direct table select, so it only returns rows the caller owns via
+ * the "Drafter manages own agreement signatures" RLS policy (auth.uid() =
+ * user_id). That's the only real path: a project must be saved to back a token,
+ * and saving requires sign-in — so every backend token has an authenticated
+ * owner. (The demo project never reaches here; its tokens are minted client-side
+ * in CounterSignPanel.) An unauthenticated caller gets an empty list, which is
+ * fine because anonymous drafting can't produce a persisted token anyway.
  */
 export async function listSignatureTokens(projectId: string): Promise<AgreementSignature[]> {
   const { data, error } = await supabase
@@ -68,20 +76,21 @@ export async function listSignatureTokens(projectId: string): Promise<AgreementS
 
 /**
  * Public lookup by token — used by the /sign/:token page. No auth required;
- * the token in the URL is the bearer credential.
+ * the token in the URL is the bearer credential. The table has no public select
+ * policy (that would let anyone dump every row), so the read goes through the
+ * token-gated get_agreement_signature RPC — you only get a row if you already
+ * hold its uuid.
  */
 export async function getSignatureToken(token: string): Promise<AgreementSignature | null> {
-  const { data, error } = await supabase
-    .from('agreement_signatures')
-    .select('*')
-    .eq('id', token)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('get_agreement_signature', { sig_token: token })
 
   if (error) {
+    // Includes malformed (non-uuid) tokens — surface as "not found".
     console.error('[exports] getSignatureToken failed:', error)
     return null
   }
-  return (data as AgreementSignature) ?? null
+  const row = Array.isArray(data) ? data[0] : data
+  return (row as AgreementSignature) ?? null
 }
 
 /**
@@ -89,11 +98,9 @@ export async function getSignatureToken(token: string): Promise<AgreementSignatu
  * pad client-side so they can't sign without reviewing the document.
  */
 export async function markPdfViewed(token: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('agreement_signatures')
-    .update({ viewed_pdf_at: new Date().toISOString() })
-    .eq('id', token)
-    .eq('status', 'pending')
+  // Goes through a column-locked SECURITY DEFINER RPC: the table has no public
+  // update policy, so this can only ever touch viewed_pdf_at on a pending row.
+  const { error } = await supabase.rpc('mark_agreement_pdf_viewed', { sig_token: token })
 
   if (error) {
     console.error('[exports] markPdfViewed failed:', error)
@@ -111,16 +118,14 @@ export async function submitCounterSignature(args: {
   name:      string
   signature: string
 }): Promise<boolean> {
-  const { error } = await supabase
-    .from('agreement_signatures')
-    .update({
-      counter_signer_name:      args.name,
-      counter_signer_signature: args.signature,
-      counter_signed_at:        new Date().toISOString(),
-      status:                   'signed',
-    })
-    .eq('id', args.token)
-    .eq('status', 'pending')
+  // Column-locked SECURITY DEFINER RPC: only the counter-signer fields + status
+  // can change, and only while the row is still pending — so the table needs no
+  // public update policy and a token can be used exactly once.
+  const { error } = await supabase.rpc('submit_agreement_counter_signature', {
+    sig_token:        args.token,
+    signer_name:      args.name,
+    signer_signature: args.signature,
+  })
 
   if (error) {
     console.error('[exports] submitCounterSignature failed:', error)
