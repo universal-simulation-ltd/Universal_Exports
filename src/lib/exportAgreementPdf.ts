@@ -149,6 +149,62 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;
 
+  // ── Key information (at-a-glance summary) ─────────────────────────────────
+  // The backlog's "key information" block: documents available, total units,
+  // total deal price, and HS codes with their taxes — boxed on the first page
+  // so anyone scanning the QR-stamped top sheet (e.g. customs) sees the
+  // essentials without reading the whole pack.
+  {
+    const totalUnits = input.products.reduce((s, p) => s + (parseFloat(p.units) || 0), 0);
+    const dealPrice = `${input.totals.currency} ${input.totals.amount}`.trim();
+    const docList = (input.documents ?? []).map((d) => d.label);
+    const hsLines = (input.tariffs ?? []).map((tr) =>
+      `${tr.hsCode || "—"} · duty ${tr.duty || "—"} · VAT ${tr.vat || "—"}${tr.product ? `  (${tr.product})` : ""}`
+    );
+
+    const kLabelW = 140;
+    const valueWidth = contentWidth - 24 - kLabelW;
+    const rows: { label: string; lines: string[] }[] = [];
+    if (dealPrice) rows.push({ label: "Total deal price", lines: [dealPrice] });
+    if (totalUnits > 0) rows.push({ label: "Total units", lines: [String(totalUnits)] });
+    if (docList.length) {
+      rows.push({ label: `Documents (${docList.length})`, lines: doc.splitTextToSize(docList.join(", "), valueWidth) });
+    }
+    if (hsLines.length) {
+      rows.push({ label: "HS codes & taxes", lines: hsLines.flatMap((l) => doc.splitTextToSize(l, valueWidth)) });
+    }
+
+    if (rows.length) {
+      const innerPad = 12;
+      const rowsHeight = rows.reduce((h, r) => h + LINE * r.lines.length, 0);
+      const boxHeight = innerPad * 2 + (LINE + 2) + rowsHeight;
+      ensureSpace(boxHeight + LINE);
+      const boxTop = y;
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(MARGIN, boxTop, contentWidth, boxHeight, 6, 6, "FD");
+
+      let by = boxTop + innerPad + 9;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Key Information", MARGIN + innerPad, by);
+      by += LINE + 2;
+
+      doc.setFontSize(10);
+      for (const r of rows) {
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(71, 85, 105);
+        doc.text(r.label, MARGIN + innerPad, by);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(15, 23, 42);
+        doc.text(r.lines, MARGIN + innerPad + kLabelW, by);
+        by += LINE * r.lines.length;
+      }
+      y = boxTop + boxHeight + LINE;
+    }
+  }
+
   // ── Transaction overview ────────────────────────────────────────────────
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
