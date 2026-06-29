@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
 import CounterSignPanel from "@/components/CounterSignPanel";
+import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { qrPngDataUrl } from "@/components/StyledQRCode";
 import { saveAgreementView } from "@/lib/agreementViewStore";
 import { buildQrSheetPdf } from "@/lib/qrSheetPdf";
@@ -74,6 +75,7 @@ const ExportAgreementWorkflow = ({
   const [signedBlob, setSignedBlob] = useState<Blob | null>(null);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [warnOpen, setWarnOpen] = useState(false);
+  const [storeOpen, setStoreOpen] = useState(false);
   // QR (data URL + public view link) from the most recent generate — drives the
   // printable sheet of 8 scan labels. Null until an agreement is generated, or
   // when the online-view link couldn't be minted (then the PDF has no QR either).
@@ -272,6 +274,10 @@ const ExportAgreementWorkflow = ({
                   Download PDF
                 </Button>
               </a>
+              <Button type="button" variant="outline" size="sm" onClick={() => setStoreOpen(true)}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                Back up…
+              </Button>
             </div>
           </div>
           <iframe
@@ -416,6 +422,13 @@ const ExportAgreementWorkflow = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <HostedStoreDialog
+        open={storeOpen}
+        onClose={() => setStoreOpen(false)}
+        blob={signedBlob ?? generatedBlob}
+        fileName={previewDownloadName}
+      />
     </div>
   );
 };
