@@ -189,7 +189,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             onClick={() => setMode("mobile")}
           >
             <Smartphone className="mr-1 h-3.5 w-3.5" />
-            Mobile Signature
+            Sign on mobile
           </Button>
         )}
         <Button

@@ -44,6 +44,12 @@ export interface AgreementTariff {
   duty: string;
   /** Import VAT rate. */
   vat: string;
+  /** Computed duty cost for this line (number, e.g. "12.50"), if derivable. */
+  dutyCost?: string;
+  /** Computed import-VAT cost for this line, if derivable. */
+  vatCost?: string;
+  /** Currency code for the cost figures, e.g. "GBP". */
+  currency?: string;
 }
 
 export interface AgreementSignatureBlock {
@@ -103,8 +109,9 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   };
 
   // ── Header ──────────────────────────────────────────────────────────────
-  // Online-view QR sits top-right; header text wraps short of it.
-  const QR_SIZE = 84;
+  // Large online-view QR sits top-right; header text wraps short of it. Big
+  // enough to scan comfortably off a printed page from arm's length.
+  const QR_SIZE = 130;
   const qrTop = 36;
   let textWidth = contentWidth;
   if (input.qr) {
@@ -113,10 +120,10 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     try {
       doc.addImage(input.qr.dataUrl, "PNG", qrX, qrTop, QR_SIZE, QR_SIZE);
       doc.link(qrX, qrTop, QR_SIZE, QR_SIZE, { url: input.qr.url });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
-      doc.text("Scan to view online", qrX + QR_SIZE / 2, qrTop + QR_SIZE + 10, { align: "center" });
+      doc.text("Scan to view this project online", qrX + QR_SIZE / 2, qrTop + QR_SIZE + 11, { align: "center" });
     } catch {
       // malformed image — skip the QR rather than fail the whole document
     }
@@ -149,16 +156,35 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;
 
-  // ── Transaction overview ────────────────────────────────────────────────
+  // ── Overview ──────────────────────────────────────────────────────────────
+  // Single merged section: the transaction/shipment fields plus the at-a-glance
+  // figures (total units, documents with their reference + date). HS codes are
+  // intentionally NOT here — they're listed with their taxes in the Tariffs
+  // section below. The transaction "Amount" already serves as the total deal
+  // price, so we don't repeat it.
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text("Transaction Overview", MARGIN, y);
+  doc.text("Overview", MARGIN, y);
   y += LINE + 2;
 
   doc.setFontSize(10);
   const labelWidth = 150;
-  for (const f of input.fields) {
+
+  // Build the merged row list: the transaction fields, then total units, then a
+  // documents line that names each provided doc with its reference + date.
+  const totalUnits = input.products.reduce((s, p) => s + (parseFloat(p.units) || 0), 0);
+  const docList = (input.documents ?? []).map((d) => {
+    const meta = [d.reference, d.date].filter(Boolean).join(" | ");
+    return meta ? `${d.label} (${meta})` : d.label;
+  });
+  const overviewRows: { label: string; value: string }[] = [...input.fields];
+  if (totalUnits > 0) overviewRows.push({ label: "Total units", value: String(totalUnits) });
+  if (docList.length) {
+    overviewRows.push({ label: `Documents (${docList.length})`, value: docList.join(", ") });
+  }
+
+  for (const f of overviewRows) {
     const value = f.value || "—";
     const wrapped = doc.splitTextToSize(value, contentWidth - labelWidth);
     ensureSpace(LINE * wrapped.length);
@@ -212,7 +238,9 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
     y += LINE;
     doc.setFont("helvetica", "bold");
-    doc.text("Total", priceX, y);
+    // Totals row: total units under the Units column, total value under Total.
+    doc.text("Total", MARGIN, y);
+    if (totalUnits > 0) doc.text(String(totalUnits), unitsX, y);
     doc.text(
       `${input.totals.currency} ${input.totals.amount}`.trim(),
       totalX,
@@ -221,80 +249,55 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     y += LINE + 8;
   }
 
-  // ── Documents provided ────────────────────────────────────────────────────
-  if (input.documents && input.documents.length > 0) {
-    ensureSpace(LINE * 3);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(15, 23, 42);
-    doc.text("Documents Provided", MARGIN, y);
-    y += LINE + 2;
-
-    const refX = MARGIN + contentWidth * 0.40;
-    const dateX = MARGIN + contentWidth * 0.64;
-    const valueX = MARGIN + contentWidth * 0.82;
-
-    doc.setFontSize(10);
-    doc.setTextColor(71, 85, 105);
-    doc.text("Document", MARGIN, y);
-    doc.text("Reference", refX, y);
-    doc.text("Date", dateX, y);
-    doc.text("Value", valueX, y);
-    y += 6;
-    doc.setDrawColor(226, 232, 240);
-    doc.line(MARGIN, y, pageWidth - MARGIN, y);
-    y += LINE - 2;
-
-    doc.setTextColor(15, 23, 42);
-    for (const d of input.documents) {
-      ensureSpace(LINE);
-      const name = doc.splitTextToSize(d.label || "—", refX - MARGIN - 8)[0];
-      doc.setFont("helvetica", "normal");
-      doc.text(name, MARGIN, y);
-      doc.text(d.reference || "—", refX, y);
-      doc.text(d.date || "—", dateX, y);
-      doc.text(d.value || "—", valueX, y);
-      y += LINE;
-    }
-    y += LINE - 4;
-  }
-
-  // ── Expected tariffs (optional) ───────────────────────────────────────────
+  // ── Tariffs (optional) ─────────────────────────────────────────────────────
+  // One block per product: HS code on the header line, then duty and VAT on
+  // their own lines, each with its computed cost where derivable.
   if (input.tariffs && input.tariffs.length > 0) {
-    ensureSpace(LINE * 3);
+    ensureSpace(LINE * 4);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(15, 23, 42);
-    doc.text("Expected Tariffs", MARGIN, y);
+    doc.text("Tariffs", MARGIN, y);
     y += LINE + 2;
 
-    const hsX = MARGIN + contentWidth * 0.46;
-    const dutyX = MARGIN + contentWidth * 0.66;
-    const vatX = MARGIN + contentWidth * 0.86;
+    const costX = MARGIN + contentWidth; // right-aligned cost column
+    const subIndent = MARGIN + 14;
 
     doc.setFontSize(10);
-    doc.setTextColor(71, 85, 105);
-    doc.text("Product", MARGIN, y);
-    doc.text("HS code", hsX, y);
-    doc.text("Duty", dutyX, y);
-    doc.text("VAT", vatX, y);
-    y += 6;
-    doc.setDrawColor(226, 232, 240);
-    doc.line(MARGIN, y, pageWidth - MARGIN, y);
-    y += LINE - 2;
-
-    doc.setTextColor(15, 23, 42);
     for (const tr of input.tariffs) {
-      ensureSpace(LINE);
-      const name = doc.splitTextToSize(tr.product || "—", hsX - MARGIN - 8)[0];
-      doc.setFont("helvetica", "normal");
-      doc.text(name, MARGIN, y);
-      doc.text(tr.hsCode || "—", hsX, y);
-      doc.text(tr.duty || "—", dutyX, y);
-      doc.text(tr.vat || "—", vatX, y);
+      ensureSpace(LINE * 3);
+      // Product + HS code header line.
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      const head = tr.hsCode ? `${tr.product || "—"}  ·  HS ${tr.hsCode}` : (tr.product || "—");
+      doc.text(doc.splitTextToSize(head, contentWidth)[0], MARGIN, y);
       y += LINE;
+
+      const cur = tr.currency || input.totals.currency || "";
+      const costLabel = (cost?: string) => (cost ? `${cur} ${cost}`.trim() : "");
+
+      // Duty line.
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Duty  ${tr.duty || "—"}`, subIndent, y);
+      const dutyCost = costLabel(tr.dutyCost);
+      if (dutyCost) {
+        doc.setTextColor(15, 23, 42);
+        doc.text(dutyCost, costX, y, { align: "right" });
+      }
+      y += LINE;
+
+      // VAT line.
+      doc.setTextColor(71, 85, 105);
+      doc.text(`VAT  ${tr.vat || "—"}`, subIndent, y);
+      const vatCost = costLabel(tr.vatCost);
+      if (vatCost) {
+        doc.setTextColor(15, 23, 42);
+        doc.text(vatCost, costX, y, { align: "right" });
+      }
+      y += LINE + 4;
     }
-    y += LINE - 4;
+    y += LINE - 8;
   }
 
   // ── Signature block ─────────────────────────────────────────────────────

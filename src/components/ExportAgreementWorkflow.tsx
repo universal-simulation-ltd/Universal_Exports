@@ -21,6 +21,8 @@ import {
   Lock,
   CheckCircle2,
   Calendar as CalendarIcon,
+  QrCode,
+  FileCode,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -30,6 +32,8 @@ import CounterSignPanel from "@/components/CounterSignPanel";
 import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { qrPngDataUrl } from "@/components/StyledQRCode";
 import { saveAgreementView } from "@/lib/agreementViewStore";
+import { buildQrSheetPdf } from "@/lib/qrSheetPdf";
+import { downloadDealXml } from "@/lib/dealXml";
 import {
   buildAgreementPdf,
   type AgreementPdfInput,
@@ -72,6 +76,10 @@ const ExportAgreementWorkflow = ({
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [warnOpen, setWarnOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
+  // QR (data URL + public view link) from the most recent generate — drives the
+  // printable sheet of 8 scan labels. Null until an agreement is generated, or
+  // when the online-view link couldn't be minted (then the PDF has no QR either).
+  const [qrInfo, setQrInfo] = useState<{ dataUrl: string; url: string } | null>(null);
 
   // Snapshot of the data the current PDF was generated from — used to decide
   // whether a re-generate would discard a *different* agreement (and warn).
@@ -129,9 +137,31 @@ const ExportAgreementWorkflow = ({
     setSignedUrl(null);
     setSignedBlob(null);
     setFinalUrl(null);
+    setQrInfo(input.qr ?? null);
     snapshotRef.current = snapshotOf(input);
     toast.success("Export Agreement generated — review it before signing.");
   }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl]);
+
+  // ── Sheet of 8 printable QR scan-labels (for sticking on products) ─────────
+  const handlePrintQrSheet = useCallback(() => {
+    if (!qrInfo) return;
+    const { blob } = buildQrSheetPdf({ dataUrl: qrInfo.dataUrl, url: qrInfo.url, projectName });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(projectName || "export").replace(/\s+/g, "-")}-qr-labels.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success("QR label sheet downloaded — 8 labels ready to print.");
+  }, [qrInfo, projectName]);
+
+  // ── XML export of the deal (for re-import into other trade software) ───────
+  const handleDownloadXml = useCallback(() => {
+    downloadDealXml(buildPdfInput(null), `${(projectName || "export").replace(/\s+/g, "-")}.xml`);
+    toast.success("Deal exported as XML.");
+  }, [buildPdfInput, projectName]);
 
   const handleGenerateClick = useCallback(() => {
     if (!generatedUrl) {
@@ -225,9 +255,19 @@ const ExportAgreementWorkflow = ({
           confirmed (and again if a finalised copy is uploaded). */}
       {previewUrl && (
         <div className="space-y-2 max-w-2xl">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="text-xs font-medium text-muted-foreground">{previewLabel}</span>
             <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={handleDownloadXml}>
+                <FileCode className="mr-1.5 h-3.5 w-3.5" />
+                Download XML
+              </Button>
+              {qrInfo && (
+                <Button type="button" variant="outline" size="sm" onClick={handlePrintQrSheet}>
+                  <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                  Download box QR Codes
+                </Button>
+              )}
               <a href={previewUrl} download={previewDownloadName}>
                 <Button type="button" variant="outline" size="sm">
                   <Download className="mr-1.5 h-3.5 w-3.5" />
@@ -351,6 +391,7 @@ const ExportAgreementWorkflow = ({
                   ref={uploadRef}
                   type="file"
                   accept="application/pdf"
+                  aria-label="Upload signed PDF"
                   className="hidden"
                   onChange={handleUploadSignedPdf}
                 />

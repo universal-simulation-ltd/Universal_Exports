@@ -452,12 +452,20 @@ const MainContent = ({
   const [demoImporting, setDemoImporting] = useState(false);
   const demoImportTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (demoImportTimer.current) clearTimeout(demoImportTimer.current); }, []);
+
+  // Point of truth — the user confirms the agreed total deal price BEFORE
+  // importing, so the extracted documents can be checked against it. Prefilled
+  // on the example project; required (gates the upload button) otherwise.
+  const [potTotal, setPotTotal] = useState("");
+  useEffect(() => { if (demoParties) setPotTotal("9825.00"); }, [demoParties]);
+
   const handleUploadPdfs = useCallback(() => {
+    onFieldChange?.("pointOfTruthTotal", potTotal.trim());
     setDemoImporting(true);
     demoImportTimer.current = setTimeout(() => {
       onRunDemoImport?.();
     }, 1600);
-  }, [onRunDemoImport]);
+  }, [onRunDemoImport, onFieldChange, potTotal]);
 
   // Getting Started checklist open/close — starts closed if all items already ticked (e.g. demo)
   const [gsOpen, setGsOpen] = useState(() => {
@@ -1904,19 +1912,40 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   </div>
                 ))}
               </div>
+              {/* Point of truth — confirm the agreed total before importing. */}
+              <div className="w-full rounded-lg border border-border bg-card px-4 py-3 text-left space-y-2">
+                <label htmlFor="pot-total" className="text-sm font-medium text-foreground">
+                  Confirm the total deal price
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Enter the agreed total so we can check the imported documents against it. Required before uploading.
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{((allForms["transaction"]?.currency) || "GBP").toUpperCase()}</span>
+                  <Input
+                    id="pot-total"
+                    inputMode="decimal"
+                    value={potTotal}
+                    onChange={(e) => setPotTotal(e.target.value)}
+                    placeholder="0.00"
+                    className="bg-secondary/50"
+                  />
+                </div>
+              </div>
               <div className="flex items-center gap-1.5 text-primary text-sm font-semibold animate-bounce">
                 <ArrowRight className="h-4 w-4 rotate-90" />
-                <span>Click here to import the documents</span>
+                <span>{potTotal.trim() ? "Click here to import the documents" : "Confirm the total deal price above to continue"}</span>
               </div>
               <Button
                 size="lg"
                 className="w-full ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/30"
                 onClick={handleUploadPdfs}
+                disabled={!potTotal.trim()}
               >
                 <Upload className="mr-2 h-4 w-4" /> Upload PDFs
               </Button>
               <p className="text-xs text-muted-foreground italic">
-                This is an example project — the PDFs are ready, just hit upload to see the extraction.
+                This is an example project — the total is prefilled, just hit upload to see the extraction.
               </p>
             </div>
           )
@@ -2183,20 +2212,57 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             })
             .filter((d) => d.provided);
 
-          // Expected tariffs — the applied customs rules, surfaced as an
-          // optional section on the agreement PDF. Empty array => section hidden.
-          const providedTariffs: { product: string; hsCode: string; duty: string; vat: string }[] = (() => {
+          // Pre-VAT goods value per product (summed across lines), so each
+          // tariff line can show a computed duty / VAT cost.
+          const goodsValueByName: Record<string, number> = (() => {
+            const map: Record<string, number> = {};
+            try {
+              const raw = allForms["product-details"]?.productLines;
+              if (!raw) return map;
+              const lines = JSON.parse(raw) as { catalogueId: string; units: string; discount: string; discountAmount?: string }[];
+              for (const l of lines) {
+                const product = catalogue.find((p) => p.id === l.catalogueId);
+                if (!product) continue;
+                const units = parseFloat(l.units) || 0;
+                const discount = parseFloat(l.discount) || 0;
+                const fixed = parseFloat(l.discountAmount || "0") || 0;
+                const sub = product.unitPrice * units;
+                const discounted = Math.max(0, sub - sub * (discount / 100) - fixed);
+                map[product.name] = (map[product.name] || 0) + discounted;
+              }
+            } catch { /* ignore */ }
+            return map;
+          })();
+          const parsePct = (s?: string | null) => {
+            const m = String(s ?? "").match(/[\d.]+/);
+            return m ? parseFloat(m[0]) : 0;
+          };
+
+          // Tariffs — the applied customs rules, surfaced as an optional section
+          // on the agreement PDF with duty + VAT each on their own line and a
+          // computed cost where the product's goods value is known. Empty => hidden.
+          const providedTariffs: import("@/lib/exportAgreementPdf").AgreementTariff[] = (() => {
             try {
               const rules = JSON.parse(allForms["customs"]?.appliedRules || "[]");
               return (Array.isArray(rules) ? rules : [])
-                .map((r: { productName?: string; hsCode?: string; thirdCountryDuty?: string; preferentialDuty?: string | null; vat?: string }) => ({
-                  product: r.productName || "",
-                  hsCode: r.hsCode || "",
-                  duty: r.preferentialDuty
-                    ? `${r.thirdCountryDuty || ""} (pref ${r.preferentialDuty})`.trim()
-                    : (r.thirdCountryDuty || ""),
-                  vat: r.vat || "",
-                }))
+                .map((r: { productName?: string; hsCode?: string; thirdCountryDuty?: string; preferentialDuty?: string | null; vat?: string }) => {
+                  const goods = goodsValueByName[r.productName || ""] || 0;
+                  const dutyRate = parsePct(r.preferentialDuty || r.thirdCountryDuty);
+                  const vatRate = parsePct(r.vat);
+                  const dutyCostNum = goods * (dutyRate / 100);
+                  const vatCostNum = (goods + dutyCostNum) * (vatRate / 100);
+                  return {
+                    product: r.productName || "",
+                    hsCode: r.hsCode || "",
+                    duty: r.preferentialDuty
+                      ? `${r.thirdCountryDuty || ""} (pref ${r.preferentialDuty})`.trim()
+                      : (r.thirdCountryDuty || ""),
+                    vat: r.vat || "",
+                    dutyCost: goods > 0 ? dutyCostNum.toFixed(2) : undefined,
+                    vatCost: goods > 0 ? vatCostNum.toFixed(2) : undefined,
+                    currency: agreementCurrency || undefined,
+                  };
+                })
                 .filter((t) => t.product || t.hsCode);
             } catch {
               return [];

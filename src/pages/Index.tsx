@@ -117,7 +117,15 @@ const Index = () => {
     }
   }, [hasUnsavedChanges]);
 
+  // On the import page you can't move on until the documents are uploaded —
+  // we want the user to confirm the total deal price and import first.
+  const importNotDone = selectedDoc === "ai-import" && !!demoParties && !demoImported;
+
   const handleSelectDoc = useCallback((id: string) => {
+    if (importNotDone && id !== "ai-import") {
+      toast.info("Confirm the total deal price and upload the documents to continue.");
+      return;
+    }
     // Address book items are always accessible
     if (id === "your-details" || id === "contacts") {
       setSelectedDoc(id);
@@ -130,15 +138,19 @@ const Index = () => {
       setShowSavedList(false);
       closeMenuOnMobile();
     });
-  }, [tryNavigate, closeMenuOnMobile]);
+  }, [tryNavigate, closeMenuOnMobile, importNotDone]);
 
   const handleNewProject = useCallback(() => {
+    if (importNotDone) {
+      toast.info("Confirm the total deal price and upload the documents to continue.");
+      return;
+    }
     tryNavigate(() => {
       setSelectedDoc("new-project");
       setShowSavedList(false);
       closeMenuOnMobile();
     });
-  }, [tryNavigate, closeMenuOnMobile]);
+  }, [tryNavigate, closeMenuOnMobile, importNotDone]);
 
   const handleConfirmNewProject = useCallback(() => {
     setProjectId("");
