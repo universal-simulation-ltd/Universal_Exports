@@ -263,7 +263,7 @@ const ExportAgreementWorkflow = ({
               {qrInfo && (
                 <Button type="button" variant="outline" size="sm" onClick={handlePrintQrSheet}>
                   <QrCode className="mr-1.5 h-3.5 w-3.5" />
-                  QR labels (×8)
+                  Download box QR Codes
                 </Button>
               )}
               <a href={previewUrl} download={previewDownloadName}>

@@ -2183,20 +2183,57 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             })
             .filter((d) => d.provided);
 
-          // Expected tariffs — the applied customs rules, surfaced as an
-          // optional section on the agreement PDF. Empty array => section hidden.
-          const providedTariffs: { product: string; hsCode: string; duty: string; vat: string }[] = (() => {
+          // Pre-VAT goods value per product (summed across lines), so each
+          // tariff line can show a computed duty / VAT cost.
+          const goodsValueByName: Record<string, number> = (() => {
+            const map: Record<string, number> = {};
+            try {
+              const raw = allForms["product-details"]?.productLines;
+              if (!raw) return map;
+              const lines = JSON.parse(raw) as { catalogueId: string; units: string; discount: string; discountAmount?: string }[];
+              for (const l of lines) {
+                const product = catalogue.find((p) => p.id === l.catalogueId);
+                if (!product) continue;
+                const units = parseFloat(l.units) || 0;
+                const discount = parseFloat(l.discount) || 0;
+                const fixed = parseFloat(l.discountAmount || "0") || 0;
+                const sub = product.unitPrice * units;
+                const discounted = Math.max(0, sub - sub * (discount / 100) - fixed);
+                map[product.name] = (map[product.name] || 0) + discounted;
+              }
+            } catch { /* ignore */ }
+            return map;
+          })();
+          const parsePct = (s?: string | null) => {
+            const m = String(s ?? "").match(/[\d.]+/);
+            return m ? parseFloat(m[0]) : 0;
+          };
+
+          // Tariffs — the applied customs rules, surfaced as an optional section
+          // on the agreement PDF with duty + VAT each on their own line and a
+          // computed cost where the product's goods value is known. Empty => hidden.
+          const providedTariffs: import("@/lib/exportAgreementPdf").AgreementTariff[] = (() => {
             try {
               const rules = JSON.parse(allForms["customs"]?.appliedRules || "[]");
               return (Array.isArray(rules) ? rules : [])
-                .map((r: { productName?: string; hsCode?: string; thirdCountryDuty?: string; preferentialDuty?: string | null; vat?: string }) => ({
-                  product: r.productName || "",
-                  hsCode: r.hsCode || "",
-                  duty: r.preferentialDuty
-                    ? `${r.thirdCountryDuty || ""} (pref ${r.preferentialDuty})`.trim()
-                    : (r.thirdCountryDuty || ""),
-                  vat: r.vat || "",
-                }))
+                .map((r: { productName?: string; hsCode?: string; thirdCountryDuty?: string; preferentialDuty?: string | null; vat?: string }) => {
+                  const goods = goodsValueByName[r.productName || ""] || 0;
+                  const dutyRate = parsePct(r.preferentialDuty || r.thirdCountryDuty);
+                  const vatRate = parsePct(r.vat);
+                  const dutyCostNum = goods * (dutyRate / 100);
+                  const vatCostNum = (goods + dutyCostNum) * (vatRate / 100);
+                  return {
+                    product: r.productName || "",
+                    hsCode: r.hsCode || "",
+                    duty: r.preferentialDuty
+                      ? `${r.thirdCountryDuty || ""} (pref ${r.preferentialDuty})`.trim()
+                      : (r.thirdCountryDuty || ""),
+                    vat: r.vat || "",
+                    dutyCost: goods > 0 ? dutyCostNum.toFixed(2) : undefined,
+                    vatCost: goods > 0 ? vatCostNum.toFixed(2) : undefined,
+                    currency: agreementCurrency || undefined,
+                  };
+                })
                 .filter((t) => t.product || t.hsCode);
             } catch {
               return [];

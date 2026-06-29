@@ -1,13 +1,14 @@
 import { jsPDF } from "jspdf";
 
 /**
- * Print-ready sheet of 8 identical QR labels (2 columns × 4 rows on A4).
+ * Print-ready sheet of 8 box QR labels (2 columns × 4 rows on A4), numbered
+ * Box 1–8.
  *
- * Each label opens the same public `/view/:token` link as the agreement's
- * header QR, so a seller can cut these out and stick one on each product /
- * carton — customs (or the buyer) scans any label to pull up the full export
- * pack online. The QR PNG is pre-rendered by qrPngDataUrl() so it carries the
- * same brand styling (orange modules, UniSim mark) as everywhere else.
+ * Every label opens the same public `/view/:token` link as the agreement's
+ * header QR, so a seller can cut these out and stick one on each box / carton —
+ * customs (or the buyer) scans any label to pull up the full export pack
+ * online. The QR PNG is pre-rendered by qrPngDataUrl() so it carries the same
+ * brand styling (orange modules, UniSim mark) as everywhere else.
  */
 
 export interface QrSheetInput {
@@ -35,12 +36,12 @@ export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): Bu
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(15, 23, 42);
-  doc.text(`${name} — scan labels`, MARGIN, MARGIN);
+  doc.text(`${name} — box QR labels`, MARGIN, MARGIN);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(100, 116, 139);
   doc.text(
-    "Cut out and attach one to each product or carton. Scanning any label opens the full export pack online.",
+    "Cut out and attach one to each box or carton. Scanning any label opens the full export pack online.",
     MARGIN,
     MARGIN + 16
   );
@@ -50,8 +51,8 @@ export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): Bu
   const rows = 4;
   const gridTop = MARGIN + 38;
   const cellW = (pageWidth - MARGIN * 2) / cols;
-  const qrSize = 150;
-  const cellH = qrSize + 44;
+  const qrSize = 135;
+  const cellH = qrSize + 42;
 
   for (let i = 0; i < cols * rows; i++) {
     const c = i % cols;
@@ -67,15 +68,17 @@ export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): Bu
       // malformed image — skip this tile rather than fail the whole sheet
     }
 
-    const label = doc.splitTextToSize(name, cellW - 20)[0];
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(71, 85, 105);
-    doc.text(label, cx, top + qrSize + 14, { align: "center" });
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`Box ${i + 1}`, cx, top + qrSize + 14, { align: "center" });
+    const label = doc.splitTextToSize(name, cellW - 20)[0];
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(label, cx, top + qrSize + 25, { align: "center" });
     doc.setTextColor(148, 163, 184);
-    doc.text("Scan to view online", cx, top + qrSize + 26, { align: "center" });
+    doc.text("Scan to view online", cx, top + qrSize + 35, { align: "center" });
   }
 
   const blob = doc.output("blob");
