@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
 import CounterSignPanel from "@/components/CounterSignPanel";
+import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { qrPngDataUrl } from "@/components/StyledQRCode";
 import { saveAgreementView } from "@/lib/agreementViewStore";
 import {
@@ -70,6 +71,7 @@ const ExportAgreementWorkflow = ({
   const [signedBlob, setSignedBlob] = useState<Blob | null>(null);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [warnOpen, setWarnOpen] = useState(false);
+  const [storeOpen, setStoreOpen] = useState(false);
 
   // Snapshot of the data the current PDF was generated from — used to decide
   // whether a re-generate would discard a *different* agreement (and warn).
@@ -223,14 +225,20 @@ const ExportAgreementWorkflow = ({
           confirmed (and again if a finalised copy is uploaded). */}
       {previewUrl && (
         <div className="space-y-2 max-w-2xl">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-muted-foreground">{previewLabel}</span>
-            <a href={previewUrl} download={previewDownloadName}>
-              <Button type="button" variant="outline" size="sm">
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-                Download PDF
+            <div className="flex items-center gap-2">
+              <a href={previewUrl} download={previewDownloadName}>
+                <Button type="button" variant="outline" size="sm">
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  Download PDF
+                </Button>
+              </a>
+              <Button type="button" variant="outline" size="sm" onClick={() => setStoreOpen(true)}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                Back up…
               </Button>
-            </a>
+            </div>
           </div>
           <iframe
             title="Export Agreement"
@@ -373,6 +381,13 @@ const ExportAgreementWorkflow = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <HostedStoreDialog
+        open={storeOpen}
+        onClose={() => setStoreOpen(false)}
+        blob={signedBlob ?? generatedBlob}
+        fileName={previewDownloadName}
+      />
     </div>
   );
 };
