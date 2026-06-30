@@ -81,6 +81,22 @@ const Index = () => {
 
   const currentFormData = selectedDoc ? (forms[selectedDoc] || {}) : {};
 
+  // The whole editable project, assembled for the "Save to desktop" backup in
+  // the agreement's Back-up dialog (mirrors the ProjectData built on Save).
+  const currentProject: ProjectData = useMemo(
+    () => ({
+      id: projectId,
+      name: projectName,
+      createdAt: new Date().toISOString(),
+      role,
+      forms,
+      lockedSections: Array.from(lockedSections),
+      savedSections: Array.from(savedSections),
+      eboxyGenerated,
+    }),
+    [projectId, projectName, role, forms, lockedSections, savedSections, eboxyGenerated],
+  );
+
   const hasUnsavedChanges = useCallback(() => {
     if (!selectedDoc) return false;
     const current = JSON.stringify(forms[selectedDoc] || {});
@@ -420,6 +436,8 @@ const Index = () => {
           onSave={handleSave}
           savedProjects={savedProjects}
           onLoadProject={handleLoadProject}
+          currentProject={currentProject}
+          onImportProject={handleLoadProject}
           showSavedList={showSavedList}
           onNavigate={handleSelectDoc}
           role={role}
