@@ -42,6 +42,10 @@ interface MainContentProps {
   onSave: () => void;
   savedProjects: ProjectData[];
   onLoadProject: (project: ProjectData) => void;
+  /** The whole editable project, for the "Save to desktop" backup in the agreement dialog. */
+  currentProject: ProjectData;
+  /** Restore a project imported from a desktop backup (loads it into the editor). */
+  onImportProject: (project: ProjectData) => void;
   showSavedList: boolean;
   onNavigate?: (docId: string) => void;
   role: "buyer" | "seller" | "";
@@ -389,6 +393,8 @@ const MainContent = ({
   onSave,
   savedProjects,
   onLoadProject,
+  currentProject,
+  onImportProject,
   showSavedList,
   onNavigate,
   role,
@@ -2366,6 +2372,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 formData={formData}
                 onFieldChange={onFieldChange}
                 buildPdfInput={buildPdfInput}
+                project={currentProject}
+                onImportProject={onImportProject}
               />
             </div>
           );

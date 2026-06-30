@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
 import CounterSignPanel from "@/components/CounterSignPanel";
 import HostedStoreDialog from "@/components/HostedStoreDialog";
+import { type ProjectData } from "@/lib/projectStore";
 import { qrPngDataUrl } from "@/components/StyledQRCode";
 import { saveAgreementView } from "@/lib/agreementViewStore";
 import { buildQrSheetPdf } from "@/lib/qrSheetPdf";
@@ -54,6 +55,10 @@ interface Props {
    * the parent keeps all the cross-document extraction next to the data.
    */
   buildPdfInput: (signature: AgreementSignatureBlock | null) => AgreementPdfInput;
+  /** The whole editable project — backed up by the dialog's "Save to desktop". */
+  project: ProjectData;
+  /** Restore a project imported from a desktop backup. */
+  onImportProject: (project: ProjectData) => void;
 }
 
 /** A snapshot of the source data, ignoring the signature, for change detection. */
@@ -68,6 +73,8 @@ const ExportAgreementWorkflow = ({
   formData,
   onFieldChange,
   buildPdfInput,
+  project,
+  onImportProject,
 }: Props) => {
   // Unsigned overview, signed-by-drafter copy, and the uploaded finalised copy.
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -429,6 +436,8 @@ const ExportAgreementWorkflow = ({
         onClose={() => setStoreOpen(false)}
         blob={signedBlob ?? generatedBlob}
         fileName={previewDownloadName}
+        project={project}
+        onImportProject={onImportProject}
       />
     </div>
   );
