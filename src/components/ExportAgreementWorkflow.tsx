@@ -18,6 +18,7 @@ import {
   Wand2,
   Download,
   Upload,
+  Save,
   Lock,
   CheckCircle2,
   Calendar as CalendarIcon,
@@ -275,7 +276,7 @@ const ExportAgreementWorkflow = ({
                 </Button>
               </a>
               <Button type="button" variant="outline" size="sm" onClick={() => setStoreOpen(true)}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                <Save className="mr-1.5 h-3.5 w-3.5" />
                 Back up…
               </Button>
             </div>
