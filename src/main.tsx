@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { UniversalProvider } from "@unisim/sdk";
 import App from "./App.tsx";
+import UsageTracker from "./UsageTracker";
 import "./index.css";
 
 const universalConfig = {
@@ -12,6 +13,7 @@ const universalConfig = {
 
 createRoot(document.getElementById("root")!).render(
   <UniversalProvider config={universalConfig}>
+    <UsageTracker />
     <App />
   </UniversalProvider>,
 );
