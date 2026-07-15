@@ -7,6 +7,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
 import { UniversalAppsNavBar } from "@unisim/sdk";
+import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
 import FileMenu from "@/components/FileMenu";
 import Index from "./pages/Index.tsx";
@@ -62,7 +63,7 @@ function AppShell() {
         productHomeHref={import.meta.env.BASE_URL}
         fileMenu={showFileMenu ? <FileMenu variant="header" /> : undefined}
         suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
-        contentMaxWidth={1152}
+        contentClassName={CONTAINER}
       />
       {inDemoBypass && (
         <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/30 text-center text-xs text-foreground py-1 px-4">
