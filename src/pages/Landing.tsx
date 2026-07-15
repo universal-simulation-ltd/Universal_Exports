@@ -7,6 +7,7 @@ import BrandFooter from "@/components/BrandFooter";
 import WorkflowAnimation from "@/components/WorkflowAnimation";
 import { grantDemoAccess } from "@/lib/demoAccess";
 import ueIcon from "@/assets/universal-exports-icon.svg";
+import { CONTAINER } from "@/lib/layout";
 
 const features = [
   {
@@ -55,7 +56,7 @@ export default function Landing() {
     <div className="min-h-full flex flex-col bg-background">
       {/* Hero */}
       <main className="flex-1 w-full">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <div className={`${CONTAINER} py-8 md:py-12`}>
           {/* Hero title — spans both columns */}
           <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-semibold tracking-tight text-foreground leading-[1.15] text-center mb-3 md:mb-4">
             Export, Import, <span className="text-primary">With Peace of Mind.</span>
