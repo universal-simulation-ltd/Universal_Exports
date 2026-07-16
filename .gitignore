@@ -5,6 +5,7 @@ node_modules/
 dist/
 dist-ssr/
 .wrangler/
+*.tsbuildinfo
 
 # Environment variables — DO NOT COMMIT
 .env
