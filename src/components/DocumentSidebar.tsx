@@ -204,8 +204,22 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     }
   }, [hasAnyDocFilled, forceExpandSections]);
 
+  // Getting Started checklist (in Handy Tools) is "done" when every item is
+  // ticked — drives the Handy Tools item turning green.
+  const gettingStartedComplete = (() => {
+    const raw = allForms["handy-tools"]?.["gettingStartedChecked"];
+    if (!raw) return false;
+    try {
+      const arr = JSON.parse(raw) as boolean[];
+      return arr.length > 0 && arr.every(Boolean);
+    } catch {
+      return false;
+    }
+  })();
+
   const isComplete = (id: string) => {
     if (lockedSections.has(id)) return true;
+    if (id === "handy-tools") return gettingStartedComplete;
     const status = getDocStatus(allForms[id], id, role, savedSections);
     return status === "complete";
   };
@@ -272,6 +286,14 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   const allProductDetailsComplete = productDetailItems.every(
     (item) => disabledDocs.includes(item.id) || lockedSections.has(item.id) || getDocStatus(allForms[item.id], item.id, role, savedSections) === "complete"
   ) && productDetailItems.some((item) => !disabledDocs.includes(item.id));
+
+  const allDocumentsComplete = documentTypes.every(
+    (item) => disabledDocs.includes(item.id) || lockedSections.has(item.id) || getDocStatus(allForms[item.id], item.id, role, savedSections) === "complete"
+  ) && documentTypes.some((item) => !disabledDocs.includes(item.id));
+
+  const allPaymentComplete = paymentItems.every(
+    (item) => disabledDocs.includes(item.id) || lockedSections.has(item.id) || getDocStatus(allForms[item.id], item.id, role, savedSections) === "complete"
+  ) && paymentItems.some((item) => !disabledDocs.includes(item.id));
 
   useEffect(() => {
     if (allProductDetailsComplete && !forceExpandSections) {
@@ -445,6 +467,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${documentsOpen ? "rotate-90" : ""}`} />
                   {t("sidebar.documents")}
+                  {allDocumentsComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
                 </button>
                 {documentsOpen && (
                   <nav className="space-y-1">
@@ -503,6 +526,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${paymentOpen ? "rotate-90" : ""}`} />
                   {t("sidebar.paymentDetails")}
+                  {allPaymentComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
                 </button>
                 {paymentOpen && (
                   <nav className="space-y-1">
@@ -536,7 +560,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                     </button>
                     <button onClick={() => onSelect("handy-tools")} className={btnClass("handy-tools")}>
                       <Sparkles className="h-4 w-4" />
-                      <span>{t("sidebar.handyTools")}</span>
+                      <span className="flex-1 text-left">{t("sidebar.handyTools")}</span>
+                      {gettingStartedComplete && <Check className="h-3.5 w-3.5 text-success shrink-0" />}
                     </button>
                   </nav>
                 )}
