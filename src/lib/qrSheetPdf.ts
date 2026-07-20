@@ -82,18 +82,8 @@ export function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrShee
     } catch {
       // malformed image — skip this tile rather than fail the whole sheet
     }
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`Box ${i + 1}`, cx, top + qrSize + 14, { align: "center" });
-    const label = doc.splitTextToSize(name, cellW - 20)[0];
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(100, 116, 139);
-    doc.text(label, cx, top + qrSize + 25, { align: "center" });
-    doc.setTextColor(148, 163, 184);
-    doc.text(watermark ? "Link not reserved yet" : "Scan to view online", cx, top + qrSize + 35, { align: "center" });
+    // No per-tile caption: every label is the same code, so "Box N" / project
+    // name / status lines were just repeated noise (the header covers it).
   }
 
   // Diagonal watermark across the whole sheet when the link isn't reserved, so
