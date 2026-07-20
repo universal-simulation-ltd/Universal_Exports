@@ -78,6 +78,16 @@ export interface AgreementPdfInput {
   /** Drafter's signature — present only on the signed copy. */
   signature?: AgreementSignatureBlock | null;
   /**
+   * Both parties' signing blocks, so the agreement always shows where each side
+   * signs (e.g. "Exporter (Seller)" and "Importer (Buyer)"). `drafter` is the
+   * side signing in-app (its `signature` fills in above); `counterparty` is the
+   * other side, who counter-signs on the shared/printed copy.
+   */
+  signatories?: {
+    drafter: { label: string; name: string };
+    counterparty: { label: string; name: string };
+  } | null;
+  /**
    * Online view link, stamped as a QR top-right of the header. `dataUrl` is
    * the pre-rendered brand-styled PNG (see qrPngDataUrl); `url` doubles as a
    * click-through link annotation on the QR for digital readers.
@@ -301,7 +311,10 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   }
 
   // ── Signature block ─────────────────────────────────────────────────────
-  ensureSpace(120);
+  // Two columns so both sides can see where they sign. The drafter's drawn
+  // signature (when present) fills in above their line; the counterparty always
+  // shows a blank line to counter-sign on the shared / printed copy.
+  ensureSpace(150);
   doc.setDrawColor(226, 232, 240);
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;
@@ -309,36 +322,65 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text("Signed by", MARGIN, y);
-  y += LINE + 6;
+  doc.text("Signatures", MARGIN, y);
+  y += LINE + 8;
 
-  if (input.signature && input.signature.dataUrl.startsWith("data:")) {
-    try {
-      doc.addImage(input.signature.dataUrl, "PNG", MARGIN, y, 160, 56);
-    } catch {
-      // ignore malformed image — fall back to the line below
+  const drafterSig = input.signature && input.signature.dataUrl.startsWith("data:") ? input.signature : null;
+  const gap = 28;
+  const colW = (contentWidth - gap) / 2;
+  const lineW = colW - 8;
+  const drafter = input.signatories?.drafter ?? { label: "Signed by", name: drafterSig?.name || "" };
+  const counterparty = input.signatories?.counterparty ?? null;
+
+  const signColumn = (
+    x: number,
+    party: { label: string; name: string },
+    sig: AgreementSignatureBlock | null,
+  ) => {
+    let cy = y;
+    // Role label (e.g. EXPORTER (SELLER)).
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(party.label.toUpperCase(), x, cy);
+    cy += 8;
+    // Signature image sits just above the ruled line, when we have one.
+    if (sig) {
+      try {
+        doc.addImage(sig.dataUrl, "PNG", x, cy, 150, 46);
+      } catch {
+        // ignore malformed image
+      }
     }
-    y += 64;
+    cy += 52;
     doc.setDrawColor(148, 163, 184);
-    doc.line(MARGIN, y, MARGIN + 200, y);
-    y += LINE;
+    doc.setLineWidth(0.75);
+    doc.line(x, cy, x + lineW, cy);
+    cy += 13;
+    // Printed name.
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(15, 23, 42);
-    doc.text(input.signature.name || "—", MARGIN, y);
-    y += LINE;
+    doc.text(party.name || "—", x, cy);
+    cy += 13;
+    // Date (filled for the drafter's signed copy, blank prompt otherwise).
+    doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Date: ${input.signature.date}`, MARGIN, y);
-  } else {
-    y += 40;
-    doc.setDrawColor(148, 163, 184);
-    doc.line(MARGIN, y, MARGIN + 200, y);
-    y += LINE;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(148, 163, 184);
-    doc.text("Awaiting signature", MARGIN, y);
-  }
+    doc.text(sig ? `Date: ${sig.date}` : "Date: ______________", x, cy);
+    if (!sig) {
+      cy += 12;
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(8);
+      doc.text("Awaiting signature", x, cy);
+    }
+    return cy;
+  };
+
+  const leftBottom = signColumn(MARGIN, drafter, drafterSig);
+  const rightBottom = counterparty
+    ? signColumn(MARGIN + colW + gap, counterparty, null)
+    : y;
+  y = Math.max(leftBottom, rightBottom) + LINE;
 
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);

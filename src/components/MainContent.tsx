@@ -546,6 +546,10 @@ const MainContent = ({
   // Other party details (for setup)
   const [otherParty, setOtherParty] = useState<CompanyDetails>(emptyCompany());
 
+  // The pre-generation checklist collapses once the agreement is generated, to
+  // free the screen for the PDF preview. Open by default; closed on Generate.
+  const [agreementChecklistOpen, setAgreementChecklistOpen] = useState(true);
+
   // Address book editing states
   const [editYourDetails, setEditYourDetails] = useState<CompanyDetails>(emptyDetails());
   const [contacts, setContacts] = useState<CompanyDetails[]>([]);
@@ -2297,14 +2301,34 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             documents: providedDocuments.map(({ label, reference, date, value }) => ({ label, reference, date, value })),
             tariffs: providedTariffs,
             signature,
+            signatories: {
+              drafter: {
+                label: role === "seller" ? "Exporter (Seller)" : role === "buyer" ? "Importer (Buyer)" : "Party 1 (You)",
+                name: yourDetails.registeredName || preFrom,
+              },
+              counterparty: {
+                label: role === "seller" ? "Importer (Buyer)" : role === "buyer" ? "Exporter (Seller)" : "Party 2 (Counterparty)",
+                name: otherParty.registeredName || preCounterparty,
+              },
+            },
           });
 
           return (
             <div className="space-y-5">
-              <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Review the checklist below before generating your Export Agreement. Discrepancies are highlighted for your review.
-              </p>
+              <Collapsible open={agreementChecklistOpen} onOpenChange={setAgreementChecklistOpen} className="space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground [&[data-state=open]>svg]:rotate-180">
+                      {agreementChecklistOpen ? "Hide checklist" : "Show checklist"}
+                      <ChevronDown className="ml-1.5 h-4 w-4 transition-transform" />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent className="space-y-5">
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    Review the checklist below before generating your Export Agreement. Discrepancies are highlighted for your review.
+                  </p>
 
               {/* Summary */}
               <div className="flex gap-3 text-sm">
@@ -2374,10 +2398,14 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 </div>
               )}
 
+                </CollapsibleContent>
+              </Collapsible>
+
               {/* Generate → sign → counter-sign workflow. Generating produces
                   an embedded PDF overview; the signature panel stays greyed out
                   until then, and "They Sign" unlocks only once the drafter has
-                  confirmed their own signature. */}
+                  confirmed their own signature. Generating also collapses the
+                  checklist above to free the screen for the preview. */}
               <ExportAgreementWorkflow
                 canGenerate={missing.length === 0}
                 projectId={projectId}
@@ -2387,6 +2415,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 buildPdfInput={buildPdfInput}
                 project={currentProject}
                 onImportProject={onImportProject}
+                onGenerated={() => setAgreementChecklistOpen(false)}
               />
             </div>
           );

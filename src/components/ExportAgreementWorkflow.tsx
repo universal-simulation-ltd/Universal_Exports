@@ -59,6 +59,8 @@ interface Props {
   project: ProjectData;
   /** Restore a project imported from a desktop backup. */
   onImportProject: (project: ProjectData) => void;
+  /** Fired after a successful generate — lets the parent collapse the checklist. */
+  onGenerated?: () => void;
 }
 
 /** A snapshot of the source data, ignoring the signature, for change detection. */
@@ -75,6 +77,7 @@ const ExportAgreementWorkflow = ({
   buildPdfInput,
   project,
   onImportProject,
+  onGenerated,
 }: Props) => {
   // Unsigned overview, signed-by-drafter copy, and the uploaded finalised copy.
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -147,8 +150,9 @@ const ExportAgreementWorkflow = ({
     setFinalUrl(null);
     setQrInfo(input.qr ?? null);
     snapshotRef.current = snapshotOf(input);
+    onGenerated?.();
     toast.success("Export Agreement generated — review it before signing.");
-  }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl]);
+  }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl, onGenerated]);
 
   // ── Sheet of 8 printable QR scan-labels (for sticking on products) ─────────
   const handlePrintQrSheet = useCallback(() => {
