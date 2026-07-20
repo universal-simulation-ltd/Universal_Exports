@@ -592,6 +592,13 @@ const MainContent = ({
   const preAmount = productTotals.totalIncTax > 0 ? productTotals.totalIncTax.toFixed(2) : txn.billAmount || "";
   const preCurrency = txn.currency || "";
 
+  // Branding stamped onto every downloadable document PDF (issuer logo + details,
+  // counterparty, project name). Passed to each LockedSectionView's Download PDF.
+  const docBranding = useMemo(
+    () => ({ from: yourDetails, to: otherParty, logoDataUrl: logoDataUrl || undefined, projectName }),
+    [yourDetails, otherParty, logoDataUrl, projectName],
+  );
+
   // Dynamic counterparty label: if I'm seller, other party is buyer and vice versa
   const counterpartyLabel = role === "seller" ? t("doc.buyer") : role === "buyer" ? t("doc.seller") : t("doc.counterparty");
 
@@ -2386,7 +2393,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         })()
       ) : selectedDoc === "coo" ? (
         lockedSections.has("coo") ? (
-          <LockedSectionView title="Country of Origin (COO)" fields={[["Country of Origin", field("countryOfOrigin")], ["Certificate", field("cooFileName") || "None"]]} onEdit={() => onUnlockSection?.("coo")} />
+          <LockedSectionView title="Country of Origin (COO)" fields={[["Country of Origin", field("countryOfOrigin")], ["Certificate", field("cooFileName") || "None"]]} onEdit={() => onUnlockSection?.("coo")} branding={docBranding} />
         ) : (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-foreground">Country of Origin (COO)</h2>
@@ -2966,7 +2973,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         )
        ) : selectedDoc === "picking-list" ? (
          lockedSections.has("picking-list") ? (
-           <LockedSectionView title="Picking List" fields={[["Picked By", field("pickedBy")], ["Date Picked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} />
+           <LockedSectionView title="Picking List" fields={[["Picked By", field("pickedBy")], ["Date Picked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} branding={docBranding} />
          ) :
          (() => {
            const productLines = (() => {
@@ -3075,6 +3082,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              ]}
              onEdit={() => onUnlockSection?.("certificate-of-origin")}
              colSpanFields={["Means of Transport", "Description of Goods", "Declaration"]}
+             branding={docBranding}
            />
          ) : (
            <div className="space-y-5">
@@ -3170,6 +3178,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              ]}
              onEdit={() => onUnlockSection?.("bill-of-lading")}
              colSpanFields={["Description of Goods"]}
+             branding={docBranding}
            />
          ) : (
            <div className="space-y-5">
@@ -3287,7 +3296,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <BankDetailsSection txnCurrency={txn.currency || "GBP"} locked={lockedSections.has("bank-details")} onLock={() => { onLockSection?.("bank-details"); }} onUnlock={() => onUnlockSection?.("bank-details")} isReEditing={editingSections.has("bank-details")} onCancelEdit={() => onCancelEdit?.("bank-details")} />
        ) : selectedDoc === "letter-of-credit" ? (
          lockedSections.has("letter-of-credit") ? (
-           <LockedSectionView title="Letter of Credit (LC)" fields={[["LC Number", field("lcNumber")], ["Date of Issue", field("lcDateOfIssue")], ["Expiry Date", field("lcExpiryDate")], ["Amount", field("lcAmount")], ["Currency", field("lcCurrency") || txn.currency || "GBP"], ["Issuing Bank", field("lcIssuingBank")], ["Advising Bank", field("lcAdvisingBank")], ["Type", field("lcType")]]} onEdit={() => onUnlockSection?.("letter-of-credit")} colSpanFields={["Terms & Conditions"]} />
+           <LockedSectionView title="Letter of Credit (LC)" fields={[["LC Number", field("lcNumber")], ["Date of Issue", field("lcDateOfIssue")], ["Expiry Date", field("lcExpiryDate")], ["Amount", field("lcAmount")], ["Currency", field("lcCurrency") || txn.currency || "GBP"], ["Issuing Bank", field("lcIssuingBank")], ["Advising Bank", field("lcAdvisingBank")], ["Type", field("lcType")]]} onEdit={() => onUnlockSection?.("letter-of-credit")} colSpanFields={["Terms & Conditions"]} branding={docBranding} />
           ) : (
           <div className="space-y-5">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
@@ -3388,7 +3397,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
          )
        ) : isDocumentType ? (
           lockedSections.has(selectedDoc!) ? (
-            <LockedSectionView title={selectedDoc!.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())} fields={[["Reference No", field("referenceNo")], ["Date", field("date") || preDate], ["Issued By", field("issuedBy") || preFrom], [counterpartyLabel, field("counterparty") || preCounterparty], ["Amount", field("amount") || preAmount], ["Currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["Notes", field("notes")] as [string, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["Notes"]} />
+            <LockedSectionView title={selectedDoc!.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())} fields={[["Reference No", field("referenceNo")], ["Date", field("date") || preDate], ["Issued By", field("issuedBy") || preFrom], [counterpartyLabel, field("counterparty") || preCounterparty], ["Amount", field("amount") || preAmount], ["Currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["Notes", field("notes")] as [string, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["Notes"]} branding={docBranding} />
           ) :
           (() => {
             // Determine if this doc is upload-only based on role

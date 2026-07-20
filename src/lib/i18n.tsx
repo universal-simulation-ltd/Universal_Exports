@@ -147,6 +147,7 @@ const translations: Record<Language, Record<string, string>> = {
     "lock.acceptLock": "Accept & Lock",
     "lock.sectionAccepted": "Section Accepted",
     "lock.edit": "Edit",
+    "doc.downloadPdf": "Download PDF",
     "lock.view": "View",
     "lock.bankHint": "Add at least one bank account for each party to accept & lock.",
     "lock.invalidateWarning": "Editing this section will invalidate the current Export Agreement. Please regenerate it when done.",
