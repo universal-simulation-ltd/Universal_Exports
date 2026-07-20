@@ -23,6 +23,25 @@ Supabase, or use UNI·SIM's hosted deployment.
 Free and open source; the app is usable without an account (sign-in gates only
 the save-to-cloud features).
 
+## Trade documents produced
+
+Each project builds a full export-document set. Documents are section-driven:
+the sidebar (`DocumentSidebar.tsx`) lists them and `MainContent.tsx` renders a
+form per section, keyed by section id in `formData`/`allForms`. Required-field
+status lives in `docRequiredFields` (sidebar); the demo project
+(`lib/demoProject.ts`) seeds a fully-worked, locked example of every one.
+
+- **Documents:** Estimate / Quote, Purchase Order, Invoice
+- **Shipment:** Shipment Details, Picking List, Delivery Note,
+  **Certificate of Origin (CoO)**, **Bill of Lading (BoL)**
+- **Payment:** Bank Details, Receipt, Credit Note, Letter of Credit
+- **Product / customs:** Products, Country of Origin, Tariffs & Customs
+
+The CoO and BoL forms follow the same locked-view + form + `renderSectionButtons`
+pattern as the other sections and prefill from Your Details, the counterparty and
+the Shipment section (ports, vessel, goods description, country of origin). This
+brings the set in line with IncoDocs / Shipping Solutions.
+
 ## Suite context
 
 This repo is one part of the **Universal Simulation suite** (the open-source

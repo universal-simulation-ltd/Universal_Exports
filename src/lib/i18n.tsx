@@ -30,6 +30,8 @@ const translations: Record<Language, Record<string, string>> = {
     "sidebar.invoice": "Invoice",
     "sidebar.pickingList": "Picking List",
     "sidebar.deliveryNote": "Delivery Note",
+    "sidebar.certificateOfOrigin": "Certificate of Origin",
+    "sidebar.billOfLading": "Bill of Lading",
     "sidebar.creditNote": "Credit Note",
     "sidebar.receipt": "Receipt",
     "sidebar.eBill": "Export Agreement",
@@ -152,6 +154,8 @@ const translations: Record<Language, Record<string, string>> = {
     // Save buttons
     "save.products": "Save Products",
     "save.pickingList": "Save Picking List",
+    "save.certificateOfOrigin": "Save Certificate of Origin",
+    "save.billOfLading": "Save Bill of Lading",
     "save.cooDetails": "Save COO Details",
     "save.tariffs": "Save Tariffs",
     "save.lcDetails": "Save LC Details",

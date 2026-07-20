@@ -22,6 +22,8 @@ import {
   Building2,
   PanelLeftClose,
   Menu,
+  Award,
+  Anchor,
 } from "lucide-react";
 import { Check } from "lucide-react";
 import ueLogo from "@/assets/universal-exports-logo.svg";
@@ -59,6 +61,8 @@ const docRequiredFields: Record<string, string[]> = {
   "invoice": ["referenceNo", "date", "counterparty", "amount", "docCurrency"],
   "picking-list": ["pickedItems", "pickedBy", "datePicked"],
   "delivery-note": ["referenceNo", "date", "counterparty", "amount", "docCurrency"],
+  "certificate-of-origin": ["exporter", "consignee", "countryOfOrigin", "goodsDescription", "declaration"],
+  "bill-of-lading": ["shipper", "consignee", "portOfLoading", "portOfDischarge", "goodsDescription", "freightTerms"],
   "credit-note": ["referenceNo", "date", "counterparty", "amount", "docCurrency"],
   "receipt": ["referenceNo", "date", "counterparty", "amount", "docCurrency"],
   "letter-of-credit": ["referenceNo", "date", "counterparty", "amount", "docCurrency"],
@@ -240,6 +244,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   const shipmentDocTypes = [
     { id: "picking-list", label: t("sidebar.pickingList"), icon: ClipboardList },
     { id: "delivery-note", label: t("sidebar.deliveryNote"), icon: Truck },
+    { id: "certificate-of-origin", label: t("sidebar.certificateOfOrigin"), icon: Award },
+    { id: "bill-of-lading", label: t("sidebar.billOfLading"), icon: Anchor },
   ];
 
   const paymentItems = [

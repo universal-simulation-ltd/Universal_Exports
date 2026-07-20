@@ -371,7 +371,7 @@ const Index = () => {
       disabled.push("product-details", "coo");
     }
     if (!hasProductData) {
-      disabled.push("estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "shipment");
+      disabled.push("estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "certificate-of-origin", "bill-of-lading", "shipment");
     }
     if (!hasDocsCreated) {
       disabled.push(...lockedDocs);
