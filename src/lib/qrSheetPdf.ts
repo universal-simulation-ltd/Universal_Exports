@@ -18,6 +18,12 @@ export interface QrSheetInput {
   url: string;
   /** Project name, printed as the sheet title and under each tile. */
   projectName: string;
+  /**
+   * When set, the online link behind these labels was NOT reserved (no account),
+   * so the sheet is stamped with this caption + a diagonal watermark to make
+   * clear the labels are a preview and won't resolve until reserved.
+   */
+  watermark?: string;
 }
 
 export interface BuiltQrSheet {
@@ -26,9 +32,10 @@ export interface BuiltQrSheet {
   url: string;
 }
 
-export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): BuiltQrSheet {
+export function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrSheetInput): BuiltQrSheet {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const MARGIN = 40;
   const name = projectName || "Export pack";
 
@@ -46,10 +53,18 @@ export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): Bu
     MARGIN + 16
   );
 
+  // Unreserved-link caption (amber), shown above the grid when watermarked.
+  if (watermark) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(180, 83, 9); // amber-700
+    doc.text(`⚠ ${watermark}`, MARGIN, MARGIN + 30);
+  }
+
   // 2 × 4 grid of tiles.
   const cols = 2;
   const rows = 4;
-  const gridTop = MARGIN + 38;
+  const gridTop = MARGIN + (watermark ? 48 : 38);
   const cellW = (pageWidth - MARGIN * 2) / cols;
   const qrSize = 135;
   const cellH = qrSize + 42;
@@ -78,7 +93,19 @@ export function buildQrSheetPdf({ dataUrl, url, projectName }: QrSheetInput): Bu
     doc.setTextColor(100, 116, 139);
     doc.text(label, cx, top + qrSize + 25, { align: "center" });
     doc.setTextColor(148, 163, 184);
-    doc.text("Scan to view online", cx, top + qrSize + 35, { align: "center" });
+    doc.text(watermark ? "Link not reserved yet" : "Scan to view online", cx, top + qrSize + 35, { align: "center" });
+  }
+
+  // Diagonal watermark across the whole sheet when the link isn't reserved, so
+  // these preview labels can't be mistaken for print-ready ones.
+  if (watermark) {
+    const GState = (doc as unknown as { GState?: new (o: { opacity: number }) => unknown }).GState;
+    if (GState) doc.setGState(new GState({ opacity: 0.12 }));
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(60);
+    doc.setTextColor(180, 83, 9);
+    doc.text("ACCOUNT REQUIRED", pageWidth / 2, pageHeight / 2, { align: "center", angle: 32 });
+    if (GState) doc.setGState(new GState({ opacity: 1 }));
   }
 
   const blob = doc.output("blob");

@@ -90,7 +90,7 @@ const ExportAgreementWorkflow = ({
   // QR (data URL + public view link) from the most recent generate — drives the
   // printable sheet of 8 scan labels. Null until an agreement is generated, or
   // when the online-view link couldn't be minted (then the PDF has no QR either).
-  const [qrInfo, setQrInfo] = useState<{ dataUrl: string; url: string } | null>(null);
+  const [qrInfo, setQrInfo] = useState<{ dataUrl: string; url: string; reserved: boolean } | null>(null);
 
   // Snapshot of the data the current PDF was generated from — used to decide
   // whether a re-generate would discard a *different* agreement (and warn).
@@ -108,37 +108,50 @@ const ExportAgreementWorkflow = ({
   const signature = formData["confirmSignature"] || "";
   const signerName = formData["confirmName"] || "";
 
-  // Build the PDF with a header QR linking to a public read-only copy.
-  // Order matters: mint token → render QR → build PDF → persist row. If the
-  // QR render or the persist fails, rebuild without the QR — a printed code
-  // must never point at a row that doesn't exist.
+  // Build the PDF with a header QR linking to a public read-only copy, and mint
+  // the box-label QR. Order: render QR → build PDF → try to reserve the online
+  // row. If reserving succeeds, the agreement's header carries the QR and the
+  // box labels resolve. If it fails (e.g. no account), we still hand back the
+  // label QR so the sheet can be generated — but flagged `reserved:false`, so
+  // the labels get watermarked and the *agreement's own header QR is dropped*
+  // (the main document must never carry a code that points nowhere).
   const buildPdfWithViewLink = useCallback(async (sig: AgreementSignatureBlock | null) => {
     const input = buildPdfInput(sig);
+    const token = crypto.randomUUID();
+    const viewUrl =
+      `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/view/${token}`;
+    let dataUrl = "";
     try {
-      const token = crypto.randomUUID();
-      const viewUrl =
-        `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/view/${token}`;
-      input.qr = { dataUrl: await qrPngDataUrl(viewUrl), url: viewUrl };
-      const built = buildAgreementPdf(input);
-      const saved = await saveAgreementView({
-        id: token,
-        projectId,
-        projectName,
-        input,
-        pdfBlob: built.blob,
-      });
-      if (saved) return { ...built, input };
-      URL.revokeObjectURL(built.url);
+      dataUrl = await qrPngDataUrl(viewUrl);
     } catch (e) {
-      console.error("[exports] online view link failed — generating without QR:", e);
+      console.error("[exports] QR render failed:", e);
     }
+
+    if (dataUrl) {
+      input.qr = { dataUrl, url: viewUrl };
+      const built = buildAgreementPdf(input);
+      let reserved = false;
+      try {
+        reserved = await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: built.blob });
+      } catch (e) {
+        console.error("[exports] online view link couldn't be reserved — labels will be watermarked:", e);
+      }
+      if (reserved) {
+        return { ...built, input, labelQr: { dataUrl, url: viewUrl, reserved: true } };
+      }
+      // Couldn't reserve — rebuild the agreement WITHOUT its header QR, but keep
+      // the (watermarked) box labels available.
+      URL.revokeObjectURL(built.url);
+    }
+
     input.qr = null;
-    return { ...buildAgreementPdf(input), input };
+    const labelQr = dataUrl ? { dataUrl, url: viewUrl, reserved: false } : null;
+    return { ...buildAgreementPdf(input), input, labelQr };
   }, [buildPdfInput, projectId, projectName]);
 
   // ── Generate the unsigned overview ────────────────────────────────────────
   const doGenerate = useCallback(async () => {
-    const { blob, url, input } = await buildPdfWithViewLink(null);
+    const { blob, url, input, labelQr } = await buildPdfWithViewLink(null);
     // Drop any previous outputs — regenerating nulls the prior agreement.
     revoke(generatedUrl);
     revoke(signedUrl);
@@ -148,7 +161,7 @@ const ExportAgreementWorkflow = ({
     setSignedUrl(null);
     setSignedBlob(null);
     setFinalUrl(null);
-    setQrInfo(input.qr ?? null);
+    setQrInfo(labelQr);
     snapshotRef.current = snapshotOf(input);
     onGenerated?.();
     toast.success("Export Agreement generated — review it before signing.");
@@ -157,7 +170,12 @@ const ExportAgreementWorkflow = ({
   // ── Sheet of 8 printable QR scan-labels (for sticking on products) ─────────
   const handlePrintQrSheet = useCallback(() => {
     if (!qrInfo) return;
-    const { blob } = buildQrSheetPdf({ dataUrl: qrInfo.dataUrl, url: qrInfo.url, projectName });
+    const { blob } = buildQrSheetPdf({
+      dataUrl: qrInfo.dataUrl,
+      url: qrInfo.url,
+      projectName,
+      watermark: qrInfo.reserved ? undefined : "Requires a UNI·SIM account to reserve this link",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -166,7 +184,11 @@ const ExportAgreementWorkflow = ({
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast.success("QR label sheet downloaded — 8 labels ready to print.");
+    toast.success(
+      qrInfo.reserved
+        ? "QR label sheet downloaded — 8 labels ready to print."
+        : "QR labels downloaded (watermarked) — sign in with a UNI·SIM account to reserve the link.",
+    );
   }, [qrInfo, projectName]);
 
   // ── XML export of the deal (for re-import into other trade software) ───────
@@ -203,7 +225,7 @@ const ExportAgreementWorkflow = ({
     }
     const today = new Date();
     onFieldChange("confirmDate", format(today, "yyyy-MM-dd"));
-    const { blob, url } = await buildPdfWithViewLink({
+    const { blob, url, labelQr } = await buildPdfWithViewLink({
       name: signerName.trim(),
       dataUrl: signature,
       date: format(today, "PPP"),
@@ -213,6 +235,7 @@ const ExportAgreementWorkflow = ({
     setSignedUrl(trackUrl(url));
     setSignedBlob(blob);
     setFinalUrl(null);
+    setQrInfo(labelQr);
     toast.success("Signature applied — the preview now shows the signed copy.");
   }, [generatedUrl, signature, signerName, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
 
@@ -274,12 +297,6 @@ const ExportAgreementWorkflow = ({
                 <FileCode className="mr-1.5 h-3.5 w-3.5" />
                 Download XML
               </Button>
-              {qrInfo && (
-                <Button type="button" variant="outline" size="sm" onClick={handlePrintQrSheet}>
-                  <QrCode className="mr-1.5 h-3.5 w-3.5" />
-                  Download box QR Codes
-                </Button>
-              )}
               <a href={previewUrl} download={previewDownloadName}>
                 <Button type="button" variant="outline" size="sm">
                   <Download className="mr-1.5 h-3.5 w-3.5" />
@@ -290,6 +307,22 @@ const ExportAgreementWorkflow = ({
                 <Save className="mr-1.5 h-3.5 w-3.5" />
                 Back up…
               </Button>
+              {qrInfo && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintQrSheet}
+                  title={
+                    qrInfo.reserved
+                      ? "Download an A4 sheet of 8 box QR labels"
+                      : "Preview labels — sign in with a UNI·SIM account to reserve the link (labels are watermarked until then)"
+                  }
+                >
+                  <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                  {qrInfo.reserved ? "Download box QR Codes" : "Download box QR Codes (preview)"}
+                </Button>
+              )}
             </div>
           </div>
           <iframe
