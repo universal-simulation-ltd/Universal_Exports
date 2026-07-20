@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2, Loader2, FileText } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2, Loader2, FileText, Award, Anchor } from "lucide-react";
 import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
@@ -67,6 +67,10 @@ interface MainContentProps {
 const documentTypes = [
   "estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "credit-note", "receipt",
 ];
+
+// Sensible default legal wording for a Certificate of Origin declaration
+const DEFAULT_COO_DECLARATION =
+  "We, the undersigned, hereby declare that the goods described above originate in the country stated and comply with the applicable rules of origin.";
 
 // Documents the demo "AI import" pulls in — shown on the upload, processing and done screens
 const DEMO_IMPORT_DOCS = [
@@ -578,6 +582,8 @@ const MainContent = ({
   const isDocumentType = selectedDoc ? documentTypes.includes(selectedDoc) : false;
 
   const txn = allForms["transaction"] || {};
+  const ship = allForms["shipment"] || {};
+  const cooData = allForms["coo"] || {};
   const productTotals = useMemo(() => getProductTotals(allForms, catalogue), [allForms, catalogue]);
 
   const preDate = new Date().toISOString().split("T")[0];
@@ -3052,6 +3058,231 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              </div>
            );
          })()
+       ) : selectedDoc === "certificate-of-origin" ? (
+         lockedSections.has("certificate-of-origin") ? (
+           <LockedSectionView
+             title="Certificate of Origin (CoO)"
+             fields={[
+               ["Exporter / Consignor", field("exporter") || preFrom],
+               ["Consignee", field("consignee") || preCounterparty],
+               ["Country of Origin", field("countryOfOrigin") || cooData.countryOfOrigin || ""],
+               ["Certificate No.", field("referenceNo")],
+               ["Date", field("date")],
+               ["Place of Issue", field("placeOfIssue")],
+               ["Means of Transport", field("transport")],
+               ["Description of Goods", field("goodsDescription") || ship.goodsDescription || ""],
+               ["Declaration", field("declaration") || DEFAULT_COO_DECLARATION],
+             ]}
+             onEdit={() => onUnlockSection?.("certificate-of-origin")}
+             colSpanFields={["Means of Transport", "Description of Goods", "Declaration"]}
+           />
+         ) : (
+           <div className="space-y-5">
+             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+               <Award className="h-5 w-5" />
+               Certificate of Origin (CoO)
+             </h2>
+             <p className="text-sm text-muted-foreground max-w-lg">
+               Certifies the country in which the goods were produced — often required at customs and under preferential trade agreements.
+             </p>
+             <div className="grid grid-cols-2 gap-4 max-w-lg">
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Exporter / Consignor</label>
+                 <Input placeholder="Your company name &amp; address" className="bg-secondary/50" value={docField("exporter", preFrom)} onChange={set("exporter")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Consignee</label>
+                 <Input placeholder="Receiving party name &amp; address" className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Country of Origin</label>
+                 <Input placeholder="e.g. United Kingdom" className="bg-secondary/50" value={docField("countryOfOrigin", cooData.countryOfOrigin || "")} onChange={set("countryOfOrigin")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Certificate No.</label>
+                 <Input placeholder="e.g. CoO-2026-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Date</label>
+                 <Input type="date" className="bg-secondary/50" value={field("date")} onChange={set("date")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Issue</label>
+                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Means of Transport (optional)</label>
+                 <Input placeholder="e.g. Sea — MV Cotentin" className="bg-secondary/50" value={docField("transport", [ship.transportMode, ship.vesselFlight].filter(Boolean).join(" — "))} onChange={set("transport")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Description of Goods</label>
+                 <textarea
+                   placeholder="Marks, numbers, quantity and description of goods..."
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   value={docField("goodsDescription", ship.goodsDescription || "")}
+                   onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
+                 />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Declaration</label>
+                 <textarea
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   value={docField("declaration", DEFAULT_COO_DECLARATION)}
+                   onChange={(e) => onFieldChange("declaration", e.target.value)}
+                 />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                 <textarea
+                   placeholder="Additional notes..."
+                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   value={field("notes")}
+                   onChange={(e) => onFieldChange("notes", e.target.value)}
+                 />
+               </div>
+             </div>
+             {renderSectionButtons("certificate-of-origin", t("save.certificateOfOrigin"))}
+           </div>
+         )
+       ) : selectedDoc === "bill-of-lading" ? (
+         lockedSections.has("bill-of-lading") ? (
+           <LockedSectionView
+             title="Bill of Lading (BoL)"
+             fields={[
+               ["Shipper", field("shipper") || preFrom],
+               ["Consignee", field("consignee") || preCounterparty],
+               ["Notify Party", field("notifyParty")],
+               ["Vessel", field("vessel") || ship.vesselFlight || ""],
+               ["Voyage No.", field("voyageNo")],
+               ["Port of Loading", field("portOfLoading") || ship.portLoading || ""],
+               ["Port of Discharge", field("portOfDischarge") || ship.portDischarge || ""],
+               ["Place of Receipt", field("placeOfReceipt")],
+               ["Place of Delivery", field("placeOfDelivery")],
+               ["No. of Packages", field("numberOfPackages")],
+               ["Gross Weight", field("grossWeight")],
+               ["Measurement", field("measurement")],
+               ["Freight Terms", field("freightTerms")],
+               ["B/L No.", field("referenceNo")],
+               ["Date", field("date")],
+               ["Place of Issue", field("placeOfIssue")],
+               ["No. of Originals", field("numberOfOriginals")],
+               ["Description of Goods", field("goodsDescription") || ship.goodsDescription || ""],
+             ]}
+             onEdit={() => onUnlockSection?.("bill-of-lading")}
+             colSpanFields={["Description of Goods"]}
+           />
+         ) : (
+           <div className="space-y-5">
+             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+               <Anchor className="h-5 w-5" />
+               Bill of Lading (BoL)
+             </h2>
+             <p className="text-sm text-muted-foreground max-w-lg">
+               The carrier's receipt for the goods and the contract of carriage — also a document of title. Prefilled from your shipment details.
+             </p>
+             <div className="grid grid-cols-2 gap-4 max-w-lg">
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Shipper</label>
+                 <Input placeholder="Shipper name &amp; address" className="bg-secondary/50" value={docField("shipper", preFrom)} onChange={set("shipper")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Consignee</label>
+                 <Input placeholder="Consignee name &amp; address" className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notify Party</label>
+                 <Input placeholder="Party to be notified on arrival (may be same as consignee)" className="bg-secondary/50" value={field("notifyParty")} onChange={set("notifyParty")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Vessel</label>
+                 <Input placeholder="e.g. MV Cotentin" className="bg-secondary/50" value={docField("vessel", ship.vesselFlight || "")} onChange={set("vessel")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Voyage No.</label>
+                 <Input placeholder="e.g. V.2604" className="bg-secondary/50" value={field("voyageNo")} onChange={set("voyageNo")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Port of Loading</label>
+                 <Input placeholder="e.g. Portsmouth, UK" className="bg-secondary/50" value={docField("portOfLoading", ship.portLoading || "")} onChange={set("portOfLoading")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Port of Discharge</label>
+                 <Input placeholder="e.g. Saint-Malo, France" className="bg-secondary/50" value={docField("portOfDischarge", ship.portDischarge || "")} onChange={set("portOfDischarge")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Receipt</label>
+                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfReceipt")} onChange={set("placeOfReceipt")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Delivery</label>
+                 <Input placeholder="e.g. Rennes, France" className="bg-secondary/50" value={field("placeOfDelivery")} onChange={set("placeOfDelivery")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Marks &amp; Numbers</label>
+                 <Input placeholder="Container / seal / package marks" className="bg-secondary/50" value={field("marksNumbers")} onChange={set("marksNumbers")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">No. of Packages</label>
+                 <Input placeholder="e.g. 3 pallets" className="bg-secondary/50" value={field("numberOfPackages")} onChange={set("numberOfPackages")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Gross Weight</label>
+                 <Input placeholder="e.g. 420 kg" className="bg-secondary/50" value={field("grossWeight")} onChange={set("grossWeight")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Measurement</label>
+                 <Input placeholder="e.g. 1.2 m³" className="bg-secondary/50" value={field("measurement")} onChange={set("measurement")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Freight Terms</label>
+                 <select
+                   className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                   value={field("freightTerms")}
+                   onChange={(e) => onFieldChange("freightTerms", e.target.value)}
+                 >
+                   <option value="">Select terms...</option>
+                   <option value="Freight Prepaid">Freight Prepaid</option>
+                   <option value="Freight Collect">Freight Collect</option>
+                 </select>
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Description of Goods</label>
+                 <textarea
+                   placeholder="Description of goods as it should appear on the bill of lading..."
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   value={docField("goodsDescription", ship.goodsDescription || "")}
+                   onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
+                 />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">B/L No.</label>
+                 <Input placeholder="e.g. BL-2026-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Date</label>
+                 <Input type="date" className="bg-secondary/50" value={field("date")} onChange={set("date")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Issue</label>
+                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
+               </div>
+               <div>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">No. of Originals</label>
+                 <Input placeholder="e.g. 3" className="bg-secondary/50" value={field("numberOfOriginals")} onChange={set("numberOfOriginals")} />
+               </div>
+               <div className="col-span-2">
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                 <textarea
+                   placeholder="Additional clauses or notes..."
+                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   value={field("notes")}
+                   onChange={(e) => onFieldChange("notes", e.target.value)}
+                 />
+               </div>
+             </div>
+             {renderSectionButtons("bill-of-lading", t("save.billOfLading"))}
+           </div>
+         )
        ) : selectedDoc === "bank-details" ? (
           <BankDetailsSection txnCurrency={txn.currency || "GBP"} locked={lockedSections.has("bank-details")} onLock={() => { onLockSection?.("bank-details"); }} onUnlock={() => onUnlockSection?.("bank-details")} isReEditing={editingSections.has("bank-details")} onCancelEdit={() => onCancelEdit?.("bank-details")} />
        ) : selectedDoc === "letter-of-credit" ? (

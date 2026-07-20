@@ -52,6 +52,8 @@ export const DEMO_PROJECT: ProjectData = {
     'invoice',
     'delivery-note',
     'picking-list',
+    'certificate-of-origin',
+    'bill-of-lading',
     'bank-details',
     'receipt',
     'credit-note',
@@ -70,6 +72,8 @@ export const DEMO_PROJECT: ProjectData = {
     'invoice',
     'delivery-note',
     'picking-list',
+    'certificate-of-origin',
+    'bill-of-lading',
     'bank-details',
     'receipt',
     'credit-note',
@@ -170,6 +174,47 @@ export const DEMO_PROJECT: ProjectData = {
       pickedBy: 'Alex Chen',
       datePicked: '2026-04-13',
       pickedItems: JSON.stringify({ 0: true, 1: true, 2: true }),
+    },
+
+    // ── Certificate of Origin ─────────────────────────────────────────────────
+    'certificate-of-origin': {
+      exporter: 'Universal Simulation Ltd, 1 Innovation Way, London, United Kingdom',
+      consignee: 'Dubois Équipements SAS, 8 Rue de la Manche, Saint-Malo, France',
+      countryOfOrigin: 'United Kingdom',
+      referenceNo: 'CoO-2026-0089',
+      date: '2026-04-10',
+      placeOfIssue: 'London, United Kingdom',
+      transport: 'Sea — Brittany Ferries, MV Cotentin',
+      goodsDescription:
+        'Precision CNC cutting tools, industrial drill bits and digital measuring instruments — hardened and stainless steel, boxed',
+      declaration:
+        'We, the undersigned, hereby declare that the goods described above originate in the United Kingdom and qualify for UK preferential origin under the UK–EU Trade and Cooperation Agreement.',
+      notes: 'Origin declaration supports zero-tariff preferential treatment.',
+    },
+
+    // ── Bill of Lading ────────────────────────────────────────────────────────
+    'bill-of-lading': {
+      shipper: 'Universal Simulation Ltd, 1 Innovation Way, London, United Kingdom',
+      consignee: 'Dubois Équipements SAS, 8 Rue de la Manche, Saint-Malo, France',
+      notifyParty: 'Dubois Équipements SAS (same as consignee)',
+      vessel: 'MV Cotentin',
+      voyageNo: 'V.2604',
+      portOfLoading: 'London, United Kingdom',
+      portOfDischarge: 'Saint-Malo, France',
+      placeOfReceipt: 'London, United Kingdom',
+      placeOfDelivery: 'Saint-Malo, France',
+      marksNumbers: 'USL/DBE-0089 · Pallets 1-3',
+      numberOfPackages: '3 pallets',
+      grossWeight: '420 kg',
+      measurement: '1.2 m³',
+      freightTerms: 'Freight Prepaid',
+      goodsDescription:
+        'Precision CNC cutting tools, industrial drill bits and digital measuring instruments — hardened and stainless steel, boxed on 3 pallets',
+      referenceNo: 'BL-2026-0089',
+      date: '2026-04-14',
+      placeOfIssue: 'London, United Kingdom',
+      numberOfOriginals: '3',
+      notes: 'Clean on board. Shipped in apparent good order and condition.',
     },
 
     // ── Receipt ───────────────────────────────────────────────────────────────
