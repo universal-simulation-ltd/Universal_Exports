@@ -4,6 +4,8 @@ import App from "./App.tsx";
 import UsageTracker from "./UsageTracker";
 import "./index.css";
 
+console.log(`build: ${import.meta.env.VITE_BUILD_SHA}`);
+
 const universalConfig = {
   supabaseUrl: import.meta.env.VITE_PLATFORM_SUPABASE_URL,
   supabaseAnonKey: import.meta.env.VITE_PLATFORM_SUPABASE_ANON_KEY,
