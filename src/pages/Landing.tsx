@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FileCheck, Sparkles, Globe2, PenTool, FileSignature, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,14 @@ const features = [
 export default function Landing() {
   const navigate = useNavigate();
   const [projectName, setProjectName] = useState("");
+
+  // Focus the Project Name input so visitors can type straight away — but with
+  // preventScroll, because the input sits below the fold and a plain autoFocus
+  // makes the browser scroll it into view on load, skipping the hero headline.
+  const projectNameRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    projectNameRef.current?.focus({ preventScroll: true });
+  }, []);
 
   const handleContinue = () => {
     if (!projectName.trim()) return;
@@ -142,7 +150,7 @@ export default function Landing() {
                         if (e.key === "Enter") handleContinue();
                       }}
                       className="bg-secondary/50"
-                      autoFocus
+                      ref={projectNameRef}
                     />
                   </div>
                   <Button
