@@ -20,8 +20,11 @@ const BUILD_SHA = resolveBuildSha();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Universal Exports is served at opensource.unisim.co.uk/exports in production;
-  // local dev stays "/".
+  // Production asset URLs are emitted under /exports/ (the app is served at
+  // opensource.unisim.co.uk/exports); public/_redirects rewrites them so the
+  // same build also works at the root of universalexports.app. Runtime paths
+  // (router basename, share links) use src/lib/basePath.ts instead of this.
+  // Local dev stays "/".
   base: mode === "production" ? "/exports/" : "/",
   define: {
     "import.meta.env.VITE_BUILD_SHA": JSON.stringify(BUILD_SHA),

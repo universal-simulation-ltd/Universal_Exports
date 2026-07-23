@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
 import StyledQRCode from "@/components/StyledQRCode";
 import { supabase } from "@/lib/supabase";
+import { BASE_PATH } from "@/lib/basePath";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SignaturePadProps {
@@ -40,7 +41,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const mobileSignUrl = mobileToken
-    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/sign-mobile/${mobileToken}`
+    ? `${window.location.origin}${BASE_PATH}/sign-mobile/${mobileToken}`
     : "";
 
   // Generate a token + PIN on switching into Mobile Signature mode.

@@ -9,6 +9,7 @@ import {
   listSignatureTokens,
   type AgreementSignature,
 } from "@/lib/signatureStore";
+import { BASE_PATH } from "@/lib/basePath";
 
 interface Props {
   projectId:   string;
@@ -42,10 +43,10 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
   const active = tokens.find(t => t.status === "signed")
               ?? tokens.find(t => t.status === "pending")
               ?? null;
-  // Include the deploy base path ("/exports/" in production) — the app is
-  // served behind the portal Worker's path prefix, so origin alone 404s.
+  // Include the runtime base path ("/exports" behind the portal Worker's
+  // path prefix, "" on universalexports.app) — origin alone can 404.
   const signUrl = active
-    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/sign/${active.id}`
+    ? `${window.location.origin}${BASE_PATH}/sign/${active.id}`
     : "";
 
   // Initial load + polling. Polling stops once we have a signed row — no

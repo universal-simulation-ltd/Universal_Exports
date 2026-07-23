@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BASE_PATH } from "@/lib/basePath";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -119,7 +120,7 @@ const ExportAgreementWorkflow = ({
     const input = buildPdfInput(sig);
     const token = crypto.randomUUID();
     const viewUrl =
-      `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/view/${token}`;
+      `${window.location.origin}${BASE_PATH}/view/${token}`;
     let dataUrl = "";
     try {
       dataUrl = await qrPngDataUrl(viewUrl);

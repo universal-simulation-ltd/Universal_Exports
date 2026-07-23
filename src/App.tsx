@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
+import { BASE_PATH } from "@/lib/basePath";
 import { UniversalAppsNavBar } from "@unisim/sdk";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
@@ -60,9 +61,9 @@ function AppShell() {
       <UniversalAppsNavBar
         product="exports"
         productLogo={<ProductLogo />}
-        productHomeHref={import.meta.env.BASE_URL}
+        productHomeHref={`${BASE_PATH}/`}
         fileMenu={showFileMenu ? <FileMenu variant="header" /> : undefined}
-        suiteSwitcherIconSrc={`${import.meta.env.BASE_URL}unisim-icon.png`}
+        suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />
       {inDemoBypass && (
@@ -103,7 +104,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+        <BrowserRouter basename={BASE_PATH}>
           <AuthProvider>
             <AppShell />
           </AuthProvider>

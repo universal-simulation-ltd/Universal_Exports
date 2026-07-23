@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { BASE_PATH } from '@/lib/basePath'
 
 interface AuthContextType {
   user: User | null
@@ -12,11 +13,12 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-// The confirmation link should bring users back to THIS app (e.g.
-// .../exports/app); shared by signUp and resendConfirmation. Falls back to the
-// Supabase project Site URL if the target isn't in the redirect allowlist.
+// The confirmation link should bring users back to THIS app on THIS host
+// (e.g. .../exports/app, or universalexports.app/app); shared by signUp and
+// resendConfirmation. Falls back to the Supabase project Site URL if the
+// target isn't in the redirect allowlist.
 function appConfirmRedirect() {
-  return `${window.location.origin}${import.meta.env.BASE_URL}app`
+  return `${window.location.origin}${BASE_PATH}/app`
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
