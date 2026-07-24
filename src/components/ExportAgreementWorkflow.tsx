@@ -30,6 +30,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
+import StampUpload from "@/components/StampUpload";
 import CounterSignPanel from "@/components/CounterSignPanel";
 import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { type ProjectData } from "@/lib/projectStore";
@@ -108,6 +109,7 @@ const ExportAgreementWorkflow = ({
 
   const signature = formData["confirmSignature"] || "";
   const signerName = formData["confirmName"] || "";
+  const stamp = formData["confirmStamp"] || "";
 
   // Build the PDF with a header QR linking to a public read-only copy, and mint
   // the box-label QR. Order: render QR → build PDF → try to reserve the online
@@ -230,6 +232,7 @@ const ExportAgreementWorkflow = ({
       name: signerName.trim(),
       dataUrl: signature,
       date: format(today, "PPP"),
+      stampDataUrl: stamp.startsWith("data:") ? stamp : undefined,
     });
     revoke(signedUrl);
     revoke(finalUrl);
@@ -238,7 +241,7 @@ const ExportAgreementWorkflow = ({
     setFinalUrl(null);
     setQrInfo(labelQr);
     toast.success("Signature applied — the preview now shows the signed copy.");
-  }, [generatedUrl, signature, signerName, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
+  }, [generatedUrl, signature, signerName, stamp, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
   const handleUploadSignedPdf = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -367,6 +370,15 @@ const ExportAgreementWorkflow = ({
                   />
                 </div>
                 <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Role</label>
+                  <Input
+                    placeholder="e.g. Director, CEO"
+                    className="bg-secondary/50"
+                    value={formData["confirmRole"] || ""}
+                    onChange={(e) => onFieldChange("confirmRole", e.target.value)}
+                  />
+                </div>
+                <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -398,6 +410,15 @@ const ExportAgreementWorkflow = ({
                 <SignaturePad
                   value={formData["confirmSignature"] || ""}
                   onChange={(val) => onFieldChange("confirmSignature", val)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  Company stamp <span className="text-muted-foreground/70">(optional)</span>
+                </label>
+                <StampUpload
+                  value={formData["confirmStamp"] || ""}
+                  onChange={(val) => onFieldChange("confirmStamp", val)}
                 />
               </div>
               <Button

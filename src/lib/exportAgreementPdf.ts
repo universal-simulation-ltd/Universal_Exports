@@ -59,6 +59,11 @@ export interface AgreementSignatureBlock {
   dataUrl: string;
   /** Pre-formatted date string, e.g. "3 June 2026". */
   date: string;
+  /**
+   * Optional company stamp / seal image (base64 PNG data URL, transparency
+   * preferred). Rendered next to the signature when present.
+   */
+  stampDataUrl?: string;
 }
 
 export interface AgreementPdfInput {
@@ -84,8 +89,8 @@ export interface AgreementPdfInput {
    * other side, who counter-signs on the shared/printed copy.
    */
   signatories?: {
-    drafter: { label: string; name: string };
-    counterparty: { label: string; name: string };
+    drafter: { label: string; name: string; role?: string };
+    counterparty: { label: string; name: string; role?: string };
   } | null;
   /**
    * Online view link, stamped as a QR top-right of the header. `dataUrl` is
@@ -334,7 +339,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
 
   const signColumn = (
     x: number,
-    party: { label: string; name: string },
+    party: { label: string; name: string; role?: string },
     sig: AgreementSignatureBlock | null,
   ) => {
     let cy = y;
@@ -344,12 +349,20 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.setTextColor(100, 116, 139);
     doc.text(party.label.toUpperCase(), x, cy);
     cy += 8;
-    // Signature image sits just above the ruled line, when we have one.
+    // Signature image sits just above the ruled line, when we have one; an
+    // optional company stamp/seal sits to its right.
     if (sig) {
       try {
         doc.addImage(sig.dataUrl, "PNG", x, cy, 150, 46);
       } catch {
         // ignore malformed image
+      }
+      if (sig.stampDataUrl && sig.stampDataUrl.startsWith("data:")) {
+        try {
+          doc.addImage(sig.stampDataUrl, "PNG", x + 150 + 10, cy, 46, 46);
+        } catch {
+          // ignore malformed stamp image
+        }
       }
     }
     cy += 52;
@@ -363,9 +376,18 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.setTextColor(15, 23, 42);
     doc.text(party.name || "—", x, cy);
     cy += 13;
-    // Date (filled for the drafter's signed copy, blank prompt otherwise).
+    // Role / title (e.g. Director). Filled when supplied; a blank prompt on
+    // the awaiting side so it can be completed on a printed copy.
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
+    if (party.role) {
+      doc.text(`Role: ${party.role}`, x, cy);
+      cy += 13;
+    } else if (!sig) {
+      doc.text("Role: ______________", x, cy);
+      cy += 13;
+    }
+    // Date (filled for the drafter's signed copy, blank prompt otherwise).
     doc.text(sig ? `Date: ${sig.date}` : "Date: ______________", x, cy);
     if (!sig) {
       cy += 12;

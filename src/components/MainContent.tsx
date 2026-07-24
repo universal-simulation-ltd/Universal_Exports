@@ -2305,10 +2305,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               drafter: {
                 label: role === "seller" ? "Exporter (Seller)" : role === "buyer" ? "Importer (Buyer)" : "Party 1 (You)",
                 name: yourDetails.registeredName || preFrom,
+                role: formData["confirmRole"] || "",
               },
               counterparty: {
                 label: role === "seller" ? "Importer (Buyer)" : role === "buyer" ? "Exporter (Seller)" : "Party 2 (Counterparty)",
                 name: otherParty.registeredName || preCounterparty,
+                role: "",
               },
             },
           });
