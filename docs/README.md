@@ -18,7 +18,11 @@ Supabase, or use UNI·SIM's hosted deployment.
   projects are keyed by user id (see the in-repo `supabase/` folder).
 - **Signatures:** includes a draw-to-sign flow with a mobile hand-off — the
   desktop signature pad can show a QR that opens a `/sign-mobile/<token>`
-  route so the signature is drawn on a phone.
+  route so the signature is drawn on a phone. The drafter's "You sign" block
+  captures name, **role/title** (e.g. Director, CEO) and an optional **company
+  stamp/seal** upload (`StampUpload.tsx`); both are carried into the signature
+  block of the generated PDF (`lib/exportAgreementPdf.ts`) — role beneath the
+  signer's name, stamp beside the signature.
 
 Free and open source; the app is usable without an account (sign-in gates only
 the save-to-cloud features).
