@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/SignaturePad";
 import StampUpload from "@/components/StampUpload";
-import CounterSignPanel from "@/components/CounterSignPanel";
+import CounterSignPanel, { type CounterpartyHint } from "@/components/CounterSignPanel";
 import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { type ProjectData } from "@/lib/projectStore";
 import { qrPngDataUrl } from "@/components/StyledQRCode";
@@ -63,6 +63,8 @@ interface Props {
   onImportProject: (project: ProjectData) => void;
   /** Fired after a successful generate — lets the parent collapse the checklist. */
   onGenerated?: () => void;
+  /** The other party's details, defaulted into the counter-sign email form. */
+  counterparty?: CounterpartyHint;
 }
 
 /** A snapshot of the source data, ignoring the signature, for change detection. */
@@ -80,6 +82,7 @@ const ExportAgreementWorkflow = ({
   project,
   onImportProject,
   onGenerated,
+  counterparty,
 }: Props) => {
   // Unsigned overview, signed-by-drafter copy, and the uploaded finalised copy.
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -440,7 +443,7 @@ const ExportAgreementWorkflow = ({
             {/* ── They Sign — only reachable once the drafter has signed ──── */}
             <TabsContent value="them" className="space-y-5 pt-4">
               {projectId ? (
-                <CounterSignPanel projectId={projectId} projectName={projectName} />
+                <CounterSignPanel projectId={projectId} projectName={projectName} counterparty={counterparty} />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Save the project first so we can attach the counter-sign link to it.

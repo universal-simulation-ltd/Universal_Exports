@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Copy, Loader2, RotateCcw, CheckCircle2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import StyledQRCode from "@/components/StyledQRCode";
@@ -10,10 +10,23 @@ import {
   type AgreementSignature,
 } from "@/lib/signatureStore";
 import { BASE_PATH } from "@/lib/basePath";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+
+/** What we know about the other party, used to pre-fill the email form. */
+export interface CounterpartyHint {
+  email?: string;
+  contactName?: string;
+  registeredName?: string;
+  /** Their role/label in the agreement, e.g. "Buyer" / "Seller". */
+  role?: string;
+}
 
 interface Props {
   projectId:   string;
   projectName: string;
+  /** The other party's details, defaulted into the "email this request" form. */
+  counterparty?: CounterpartyHint;
 }
 
 /**
@@ -26,10 +39,30 @@ interface Props {
  * - Polls every 8 s while a token is pending so the panel auto-updates when
  *   the other party signs without a manual refresh.
  */
-const CounterSignPanel = ({ projectId, projectName }: Props) => {
+const CounterSignPanel = ({ projectId, projectName, counterparty }: Props) => {
+  const { user } = useAuth();
   const [tokens,      setTokens]      = useState<AgreementSignature[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [generating,  setGenerating]  = useState(false);
+
+  // "Email this request" form — pre-filled from the counterparty captured in the
+  // agreement, but editable (a different person may actually sign, e.g. their
+  // director). Sending goes through the send-export-sign-request Edge Function
+  // for signed-in, email-verified users; everyone else (and any provider outage)
+  // falls back to opening a mailto: draft, so nothing is ever blocked.
+  const [emailTo,   setEmailTo]   = useState(counterparty?.email ?? "");
+  const [emailName, setEmailName] = useState(counterparty?.contactName ?? "");
+  const [emailRole, setEmailRole] = useState(counterparty?.role ?? "");
+  const [sending,   setSending]   = useState(false);
+
+  // Fill the defaults once the counterparty details arrive, without clobbering
+  // anything the user has already typed.
+  useEffect(() => {
+    if (counterparty?.email && !emailTo) setEmailTo(counterparty.email);
+    if (counterparty?.contactName && !emailName) setEmailName(counterparty.contactName);
+    if (counterparty?.role && !emailRole) setEmailRole(counterparty.role);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [counterparty?.email, counterparty?.contactName, counterparty?.role]);
 
   // The hardcoded "Example" project lives only client-side and is never saved to
   // the backend, so there's nothing to attach a real token to (and creating one
@@ -123,6 +156,66 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
       toast.success("Link copied to clipboard.");
     } catch {
       toast.error("Could not copy. Please copy the URL manually.");
+    }
+  };
+
+  // Open the user's mail client with the request pre-drafted. The universal
+  // fallback: works with no account, no backend, offline — nothing is blocked.
+  const openMailtoDraft = () => {
+    const subject = `Please sign the Export Agreement: ${projectName}`;
+    const greeting = emailName ? `Hi ${emailName},` : "Hi,";
+    const body = `${greeting}
+
+Please review and sign the Export Agreement${projectName ? ` (${projectName})` : ""}.
+
+Open it here to sign — on this device or by handing it to your phone:
+${signUrl}
+
+Thank you.`;
+    window.location.href = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleSendEmail = async () => {
+    if (!signUrl) return;
+    const to = emailTo.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+
+    // Not signed in / unverified, or a demo project (no real token to email) —
+    // go straight to a mailto: draft. The Edge Function would reject these.
+    const canSendServerSide = !!user?.email_confirmed_at && !isDemo;
+    if (!canSendServerSide) {
+      openMailtoDraft();
+      toast.info("Opened an email draft with the signing link.");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-export-sign-request", {
+        body: {
+          to,
+          link: signUrl,
+          agreementTitle: projectName,
+          recipientName: emailName.trim(),
+          role: emailRole.trim(),
+          senderName: user?.user_metadata?.full_name || user?.email || "",
+        },
+      });
+      if (!error && (data as { ok?: boolean } | null)?.ok) {
+        toast.success(`Signature request emailed to ${to}.`);
+      } else {
+        // Provider not configured / outage / rejected — never lose the request.
+        openMailtoDraft();
+        toast.info("Couldn't send automatically — opened an email draft instead.");
+      }
+    } catch {
+      openMailtoDraft();
+      toast.info("Couldn't send automatically — opened an email draft instead.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -226,6 +319,65 @@ const CounterSignPanel = ({ projectId, projectName }: Props) => {
                 Regenerate link
               </Button>
             </div>
+          </div>
+
+          {/* Email the request directly to the other party. Defaults from the
+              counterparty captured in the agreement; editable in case someone
+              else signs. Sends via the Edge Function for verified users, else
+              opens a mailto: draft. */}
+          <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              Email this request
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label htmlFor="cs-email-name" className="text-xs text-muted-foreground block">Name</label>
+                <input
+                  id="cs-email-name"
+                  type="text"
+                  value={emailName}
+                  onChange={(e) => setEmailName(e.target.value)}
+                  placeholder="Their name"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="cs-email-role" className="text-xs text-muted-foreground block">Role <span className="opacity-60">(optional)</span></label>
+                <input
+                  id="cs-email-role"
+                  type="text"
+                  value={emailRole}
+                  onChange={(e) => setEmailRole(e.target.value)}
+                  placeholder="e.g. Director"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="cs-email-to" className="text-xs text-muted-foreground block">Email address</label>
+              <div className="flex gap-2">
+                <input
+                  id="cs-email-to"
+                  type="email"
+                  inputMode="email"
+                  value={emailTo}
+                  onChange={(e) => setEmailTo(e.target.value)}
+                  placeholder="name@company.com"
+                  className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <Button type="button" onClick={handleSendEmail} disabled={sending || !emailTo.trim()}>
+                  {sending ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending…</>
+                  ) : (
+                    <><Send className="mr-2 h-4 w-4" />Send</>
+                  )}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              We'll email them the signing link above. They can sign on their own device or hand it to their phone with the QR code + PIN.
+            </p>
           </div>
         </>
       )}

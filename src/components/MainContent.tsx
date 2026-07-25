@@ -2418,6 +2418,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 project={currentProject}
                 onImportProject={onImportProject}
                 onGenerated={() => setAgreementChecklistOpen(false)}
+                counterparty={{
+                  email: otherParty.email,
+                  contactName: otherParty.contactName,
+                  registeredName: otherParty.registeredName,
+                  role: counterpartyLabel,
+                }}
               />
             </div>
           );
