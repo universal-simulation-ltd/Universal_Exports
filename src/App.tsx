@@ -52,17 +52,23 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppShell() {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
-  // Hide the actions menu on the landing page — same convention as PDF/Images:
-  // actions only make sense once the user is inside the editor.
-  const showFileMenu = pathname !== "/";
   const inDemoBypass = !loading && !user && hasDemoAccess() && pathname === "/app";
+  // The Actions menu now rides in the profile pill instead of sitting in its own
+  // button on the left. It used to be hidden on the landing page, on the
+  // PDF/Images convention that actions only matter inside the editor — but what
+  // is left of it is the language picker (the account rows went as duplicates of
+  // the SDK's own), and that is worth having on the landing page too.
+  // `showLanguageSelector={false}` stands the SDK's row down: in one panel there
+  // would otherwise be two rows called "Language", and this is the one that
+  // actually translates the app.
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <UniversalAppsNavBar
         product="exports"
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}
-        fileMenu={showFileMenu ? <FileMenu variant="header" /> : undefined}
+        actions={<FileMenu variant="rows" />}
+        showLanguageSelector={false}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />
