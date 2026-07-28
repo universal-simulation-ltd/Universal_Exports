@@ -2,21 +2,29 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "eboxy-dev",
-      "runtimeExecutable": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Microsoft\\VisualStudio\\NodeJs\\node.exe",
-      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "8080"],
+      "name": "universal-exports",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "8080",
+        "--strictPort"
+      ],
       "port": 8080
     },
     {
-      "name": "exports-dev",
+      "name": "universal-exports-preview",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "8080"],
-      "port": 8080
-    },
-    {
-      "name": "exports-preview",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "preview", "--", "--port", "4173"],
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
       "port": 4173
     }
   ]
