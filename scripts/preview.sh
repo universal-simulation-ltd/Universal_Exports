@@ -32,4 +32,4 @@ if [[ ! -f .env.local && ! -f .env ]]; then
 fi
 
 echo "Universal Exports → http://localhost:$PORT"
-exec npm run dev -- --port "$PORT"
+exec npm run dev -- --port "$PORT" --strictPort
