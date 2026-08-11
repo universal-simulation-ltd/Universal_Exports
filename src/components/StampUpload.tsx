@@ -1,4 +1,5 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
+import { useFileDrop } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
 import { Stamp, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,11 +20,7 @@ const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
  * that format is recommended, but any raster image is accepted.
  */
 const StampUpload = ({ value, onChange }: StampUploadProps) => {
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
+  const handleUpload = useCallback((file: File | undefined) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file (PNG with a transparent background works best).");
@@ -43,6 +40,15 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
     reader.readAsDataURL(file);
   }, [onChange]);
 
+  // Buttons, not a drop zone — the SDK owns the input so a stamp rejected for
+  // its size or type can be re-picked once fixed, same filename and all.
+  const picker = useFileDrop({
+    onFiles: (files) => handleUpload(files[0]),
+    accept: "image/*",
+    multiple: false,
+    clickToBrowse: false,
+  });
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -50,7 +56,7 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => fileRef.current?.click()}
+          onClick={picker.open}
         >
           {value ? <Upload className="mr-1 h-3.5 w-3.5" /> : <Stamp className="mr-1 h-3.5 w-3.5" />}
           {value ? "Replace stamp" : "Upload stamp"}
@@ -63,14 +69,7 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
         )}
       </div>
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        aria-label="Upload company stamp"
-        className="hidden"
-        onChange={handleUpload}
-      />
+      <input {...picker.inputProps} aria-label="Upload company stamp" className="hidden" />
 
       {value && value.startsWith("data:") && (
         <div className="rounded-md border border-input bg-background p-2 inline-block">

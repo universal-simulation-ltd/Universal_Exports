@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useFileDrop } from "@unisim/sdk";
 import { BASE_PATH } from "@/lib/basePath";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +101,14 @@ const ExportAgreementWorkflow = ({
   // Snapshot of the data the current PDF was generated from — used to decide
   // whether a re-generate would discard a *different* agreement (and warn).
   const snapshotRef = useRef<string>("");
-  const uploadRef = useRef<HTMLInputElement>(null);
+  // A button, not a drop zone — this sits at the end of a long signing flow
+  // where a stray drop would be a surprise. SDK mechanics all the same.
+  const signedPicker = useFileDrop({
+    onFiles: (files) => handleUploadSignedPdf(files[0]),
+    accept: "application/pdf",
+    multiple: false,
+    clickToBrowse: false,
+  });
 
   // Revoke every object URL we own on unmount to avoid leaks.
   const urlsRef = useRef<Set<string>>(new Set());
@@ -247,9 +255,7 @@ const ExportAgreementWorkflow = ({
   }, [generatedUrl, signature, signerName, stamp, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
-  const handleUploadSignedPdf = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
+  const handleUploadSignedPdf = useCallback((file: File | undefined) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
       toast.error("Please upload a PDF file.");
@@ -457,15 +463,8 @@ const ExportAgreementWorkflow = ({
                   Upload the counter-signed PDF and it will replace the preview
                   above as the finalised agreement.
                 </p>
-                <input
-                  ref={uploadRef}
-                  type="file"
-                  accept="application/pdf"
-                  aria-label="Upload signed PDF"
-                  className="hidden"
-                  onChange={handleUploadSignedPdf}
-                />
-                <Button type="button" variant="outline" onClick={() => uploadRef.current?.click()}>
+                <input {...signedPicker.inputProps} aria-label="Upload signed PDF" className="hidden" />
+                <Button type="button" variant="outline" onClick={signedPicker.open}>
                   <Upload className="mr-2 h-4 w-4" />
                   Upload signed PDF
                 </Button>

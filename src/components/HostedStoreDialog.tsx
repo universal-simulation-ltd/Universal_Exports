@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useUniversal, useUser, useCredits, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
+import { useUniversal, useUser, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport } from "../lib/hostedStore";
 import { downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { type ProjectData } from "../lib/projectStore";
@@ -39,7 +39,13 @@ export default function HostedStoreDialog({
   const [error, setError] = useState<string | null>(null);
   const [justStored, setJustStored] = useState(false);
   const [importErr, setImportErr] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Declared above the `if (!open)` bail-out — hooks must run on every render.
+  const importPicker = useFileDrop({
+    onFiles: (files) => { void onImportFile(files[0]); },
+    accept: ".json,application/json",
+    multiple: false,
+    clickToBrowse: false,
+  });
 
   if (!open) return null;
 
@@ -60,9 +66,7 @@ export default function HostedStoreDialog({
     downloadBackup(project);
   }
 
-  async function onImportFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // let the same file be re-picked later
+  async function onImportFile(file: File | undefined) {
     if (!file) return;
     setImportErr(null);
     try {
@@ -177,7 +181,7 @@ export default function HostedStoreDialog({
               </button>
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={importPicker.open}
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50"
               >
                 <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -185,13 +189,7 @@ export default function HostedStoreDialog({
                 </svg>
                 Import a backup
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json,application/json"
-                onChange={onImportFile}
-                className="hidden"
-              />
+              <input {...importPicker.inputProps} className="hidden" />
             </div>
             {!hasProject && <p className="mt-2 text-xs text-slate-400">Fill in the agreement to back it up — or import a backup to restore a project.</p>}
             {importErr && <p className="mt-2 text-sm text-rose-600">{importErr}</p>}

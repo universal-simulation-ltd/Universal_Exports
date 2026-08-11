@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useFileDrop } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -108,11 +109,9 @@ function getProductTotals(allForms: Record<string, Record<string, string>>, cata
 const emptyCompany = emptyDetails;
 
 const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) => string; set: (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; onFieldChange: (f: string, v: string) => void }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const fileName = field("cooFileName");
-  
-  const handleAttach = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+
+  const handleAttach = useCallback((file: File | undefined) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File must be under 5MB");
@@ -127,15 +126,24 @@ const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) =
     reader.readAsDataURL(file);
   }, [onFieldChange]);
 
+  // The hook clears the input's value after every pick, so removing an
+  // attachment no longer has to reach into the DOM to make the same file
+  // attachable again.
+  const picker = useFileDrop({
+    onFiles: (files) => handleAttach(files[0]),
+    accept: ".pdf,.jpg,.jpeg,.png,.doc,.docx",
+    multiple: false,
+    clickToBrowse: false,
+  });
+
   const handleRemove = useCallback(() => {
     onFieldChange("cooFileName", "");
     onFieldChange("cooFileData", "");
-    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [onFieldChange]);
 
   return (
     <div className="flex items-center gap-2">
-      <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" className="hidden" onChange={handleAttach} />
+      <input {...picker.inputProps} className="hidden" />
       {fileName ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/30 px-3 py-1.5 text-sm">
           <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -145,7 +153,7 @@ const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) =
           </button>
         </div>
       ) : (
-        <Button variant="outline" size="sm" className="text-xs" onClick={() => fileInputRef.current?.click()}>
+        <Button variant="outline" size="sm" className="text-xs" onClick={picker.open}>
           <Paperclip className="mr-1 h-3.5 w-3.5" />
           Attach Certificate
         </Button>
@@ -576,7 +584,6 @@ const MainContent = ({
     }
   }, [demoParties]);
   const [logoDataUrl, setLogoDataUrl] = useState<string>(() => localStorage.getItem("ebill-logo") || "");
-  const logoInputRef = useRef<HTMLInputElement>(null);
   const [editingContactIndex, setEditingContactIndex] = useState<number | null>(null);
 
   const field = (key: string) => (formData || {})[key] || "";
@@ -629,8 +636,7 @@ const MainContent = ({
     // Don't reset otherParty — keep it for the project overview
   }, [onStart, yourDetails]);
 
-  const handleLogoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleLogoUpload = useCallback((file: File | undefined) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
@@ -650,10 +656,19 @@ const MainContent = ({
     reader.readAsDataURL(file);
   }, []);
 
+  // Same picker for both places the logo control is rendered (the standalone
+  // "Your details" panel and the one inside the project drawer) — one input,
+  // one set of mechanics, and re-uploading the same file still fires.
+  const logoPicker = useFileDrop({
+    onFiles: (files) => handleLogoUpload(files[0]),
+    accept: "image/*",
+    multiple: false,
+    clickToBrowse: false,
+  });
+
   const handleRemoveLogo = useCallback(() => {
     setLogoDataUrl("");
     localStorage.removeItem("ebill-logo");
-    if (logoInputRef.current) logoInputRef.current.value = "";
   }, []);
 
   const handleSaveYourDetails = useCallback(async () => {
@@ -745,13 +760,7 @@ const MainContent = ({
           {/* Logo upload */}
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleLogoUpload}
-            />
+            <input {...logoPicker.inputProps} className="hidden" />
             {logoDataUrl ? (
               <div className="flex items-center gap-3">
                 <img
@@ -760,7 +769,7 @@ const MainContent = ({
                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                 />
                 <div className="flex gap-1">
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                     Change
                   </Button>
                   <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
@@ -769,7 +778,7 @@ const MainContent = ({
                 </div>
               </div>
             ) : (
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+              <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                 <Upload className="mr-1 h-3.5 w-3.5" />
                 Upload Logo
               </Button>
@@ -999,13 +1008,7 @@ const MainContent = ({
                           {/* Logo upload */}
                           <div>
                             <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
-                            <input
-                              ref={logoInputRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleLogoUpload}
-                            />
+                            <input {...logoPicker.inputProps} className="hidden" />
                             {logoDataUrl ? (
                               <div className="flex items-center gap-3">
                                 <img
@@ -1014,7 +1017,7 @@ const MainContent = ({
                                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                                 />
                                 <div className="flex gap-1">
-                                  <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+                                  <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                                     Change
                                   </Button>
                                   <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
@@ -1023,7 +1026,7 @@ const MainContent = ({
                                 </div>
                               </div>
                             ) : (
-                              <Button variant="outline" size="sm" className="text-xs" onClick={() => logoInputRef.current?.click()}>
+                              <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                                 <Upload className="mr-1 h-3.5 w-3.5" />
                                 Upload Logo
                               </Button>
