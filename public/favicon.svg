@@ -1,10 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#0f172a"/>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="27" cy="36" r="13" stroke="#FFFFFF" stroke-width="2.6"/>
-    <ellipse cx="27" cy="36" rx="13" ry="4.6" stroke="#FFFFFF" stroke-width="1.6" opacity="0.6"/>
-    <line x1="27" y1="23" x2="27" y2="49" stroke="#FFFFFF" stroke-width="1.6" opacity="0.6"/>
-    <path d="M40 22 L54 8" stroke="#fe8c01" stroke-width="3.2"/>
-    <path d="M44 8 L54 8 L54 18" stroke="#fe8c01" stroke-width="3.2"/>
+<!-- GENERATED FILE — do not edit by hand.
+     Source: backoffice/universal-platform/scripts/app-marks/marks.mjs
+     Regenerate: node scripts/app-marks/build.mjs (from backoffice/universal-platform)
+     Mark: Universal Exports — A globe, and something leaving it. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Universal Exports">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#0f172a"/>
+  <circle cx="27" cy="36" r="13" fill="none" stroke-width="2.8" stroke="#ffffff"/>
+  <g fill="none" opacity="0.6" stroke-linecap="round" stroke-linejoin="round" stroke="#ffffff">
+    <ellipse cx="27" cy="36" rx="13" ry="4.6" stroke-width="1.6"/>
+    <line x1="27" y1="23" x2="27" y2="49" stroke-width="1.6"/>
+    <path d="M27 23c4.6 3.6 4.6 22.4 0 26" stroke-width="1.6"/>
+    <path d="M27 23c-4.6 3.6-4.6 22.4 0 26" stroke-width="1.6"/>
+  </g>
+  <g fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" stroke="#fe8c01">
+    <path d="M40 22 L54 8"/>
+    <path d="M44 8 L54 8 L54 18"/>
   </g>
 </svg>
