@@ -6,4 +6,4 @@
 // Note the padding scale is md: here, not sm:/lg: like the other apps — it
 // mirrors what Landing.tsx already used. The navbar takes the class verbatim,
 // so the two cannot drift.
-export const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-6'
+export const CONTAINER = 'max-w-7xl mx-auto px-4 md:px-6'
