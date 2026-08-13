@@ -35,7 +35,7 @@ import StampUpload from "@/components/StampUpload";
 import CounterSignPanel, { type CounterpartyHint } from "@/components/CounterSignPanel";
 import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { type ProjectData } from "@/lib/projectStore";
-import { qrPngDataUrl } from "@/components/StyledQRCode";
+import { unisimQrPngDataUrl } from "@unisim/sdk";
 import { saveAgreementView } from "@/lib/agreementViewStore";
 import { buildQrSheetPdf } from "@/lib/qrSheetPdf";
 import { downloadDealXml } from "@/lib/dealXml";
@@ -136,7 +136,7 @@ const ExportAgreementWorkflow = ({
       `${window.location.origin}${BASE_PATH}/view/${token}`;
     let dataUrl = "";
     try {
-      dataUrl = await qrPngDataUrl(viewUrl);
+      dataUrl = await unisimQrPngDataUrl(viewUrl, 256);
     } catch (e) {
       console.error("[exports] QR render failed:", e);
     }

@@ -7,12 +7,12 @@ import { jsPDF } from "jspdf";
  * Every label opens the same public `/view/:token` link as the agreement's
  * header QR, so a seller can cut these out and stick one on each box / carton —
  * customs (or the buyer) scans any label to pull up the full export pack
- * online. The QR PNG is pre-rendered by qrPngDataUrl() so it carries the same
+ * online. The QR PNG is pre-rendered by the SDK's unisimQrPngDataUrl() so it carries the same
  * brand styling (orange modules, UniSim mark) as everywhere else.
  */
 
 export interface QrSheetInput {
-  /** Pre-rendered brand-styled QR PNG data URL (see qrPngDataUrl). */
+  /** Pre-rendered house-style QR PNG data URL (see @unisim/sdk). */
   dataUrl: string;
   /** The URL each label opens — added as a click-through link annotation. */
   url: string;

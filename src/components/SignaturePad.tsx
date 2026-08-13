@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
-import StyledQRCode from "@/components/StyledQRCode";
+import { UnisimQr } from "@unisim/sdk";
 import { supabase } from "@/lib/supabase";
 import { BASE_PATH } from "@/lib/basePath";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -251,8 +251,8 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
       {mode === "mobile" && !isMobile && (
         <div className="rounded-md border border-input bg-background p-3 flex flex-col sm:flex-row gap-3 items-start">
-          <div className="rounded-2xl border border-border bg-[#0b0b0c] p-1.5 shrink-0">
-            <StyledQRCode value={mobileSignUrl} size={176} aria-label="Mobile signature QR code" />
+          <div className="rounded-2xl border border-border bg-white p-1.5 shrink-0">
+            <UnisimQr value={mobileSignUrl} size={176} label="signing on your phone" />
           </div>
           <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Scan to sign on your phone</p>

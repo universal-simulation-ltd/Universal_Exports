@@ -94,7 +94,7 @@ export interface AgreementPdfInput {
   } | null;
   /**
    * Online view link, stamped as a QR top-right of the header. `dataUrl` is
-   * the pre-rendered brand-styled PNG (see qrPngDataUrl); `url` doubles as a
+   * the pre-rendered house-style PNG (see the SDK's unisimQrPngDataUrl); `url` doubles as a
    * click-through link annotation on the QR for digital readers.
    */
   qr?: { dataUrl: string; url: string } | null;

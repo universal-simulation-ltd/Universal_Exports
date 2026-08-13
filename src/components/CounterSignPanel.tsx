@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Loader2, RotateCcw, CheckCircle2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import StyledQRCode from "@/components/StyledQRCode";
+import { UnisimQr } from "@unisim/sdk";
 import {
   createSignatureToken,
   listSignatureTokens,
@@ -289,8 +289,8 @@ Thank you.`;
             below updates automatically once they sign.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="rounded-2xl border border-border bg-[#0b0b0c] p-2">
-              <StyledQRCode value={signUrl} size={192} aria-label="Counter-sign QR code" />
+            <div className="rounded-2xl border border-border bg-white p-2">
+              <UnisimQr value={signUrl} size={192} label="counter-signing this agreement" />
             </div>
             <div className="flex-1 space-y-2 min-w-0">
               <label className="text-xs text-muted-foreground block">Link</label>
