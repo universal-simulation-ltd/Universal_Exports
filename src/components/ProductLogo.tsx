@@ -28,7 +28,13 @@ export default function ProductLogo() {
     >
       <style>{CSS}</style>
       <svg viewBox="0 0 64 64" className="h-6 w-6" aria-hidden="true">
-        <rect x="0" y="0" width="64" height="64" rx="14" fill="#0f172a" />
+        <defs>
+          <linearGradient id="uam-nav-exports-tile" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#fe8c01" />
+            <stop offset="1" stopColor="#e05504" />
+          </linearGradient>
+        </defs>
+        <rect width="64" height="64" rx="14" fill="url(#uam-nav-exports-tile)" />
         <circle cx={27} cy={36} r={13} fill="none" strokeWidth={2.8} stroke="#ffffff" />
         <g fill="none" opacity={0.6} strokeLinecap="round" strokeLinejoin="round" stroke="#ffffff">
           <ellipse cx={27} cy={36} rx={13} ry={4.6} strokeWidth={1.6} />
@@ -36,7 +42,7 @@ export default function ProductLogo() {
           <path d="M27 23c4.6 3.6 4.6 22.4 0 26" strokeWidth={1.6} />
           <path d="M27 23c-4.6 3.6-4.6 22.4 0 26" strokeWidth={1.6} />
         </g>
-        <g fill="none" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" stroke="#fe8c01" className="uam-exports-arrow">
+        <g fill="none" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" stroke="#ffffff" className="uam-exports-arrow">
           <path d="M40 22 L54 8" />
           <path d="M44 8 L54 8 L54 18" />
         </g>
