@@ -143,20 +143,28 @@ export default function HostedStoreDialog({
     }
   }
 
+  // ⚠️ The backdrop is z-[1100], not z-[80]. UniversalAppsNavBar sets an inline
+  // `zIndex: 1000`, so every value below it — including the old one — put the
+  // nav bar on top of the backdrop and, on a short screen, over this dialog's
+  // own Close button.
   return createPortal(
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4"
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}
     >
-      <div className="w-full max-w-lg max-h-[88vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      {/* One box that scrolls would take the title and the Close button with
+          it — this dialog is far taller than a 390x844 screen. It is a flex
+          column capped at the viewport instead, with the title row pinned
+          OUTSIDE the scrolling body. */}
+      <div className="flex max-h-[min(100%,100dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
           <h2 className="text-base font-bold text-slate-900">Back up this agreement</h2>
           <button onClick={close} aria-label="Close" className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
             <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /></svg>
           </button>
         </div>
 
-        <div className="space-y-4 p-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
           {/* Tier 1 — Download the finished PDF (free, on-device). */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center gap-2">

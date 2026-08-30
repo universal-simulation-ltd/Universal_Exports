@@ -6,7 +6,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ArrowRight, ArrowLeft, FileCheck, Upload, Wand2, Save, UserPlus, Trash2, Pencil, Paperclip, X, Copy, ExternalLink, CheckCircle2, Check, AlertTriangle, Circle, Search, Landmark, FolderPlus, Sparkles, Undo2, Loader2, FileText, Award, Anchor } from "lucide-react";
@@ -1271,7 +1271,7 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
           <DialogHeader>
             <DialogTitle>Custom Currency</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 py-2">
+          <DialogBody className="space-y-3 py-2">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Currency Code (e.g. JPY)</label>
               <Input
@@ -1292,7 +1292,7 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
                 onChange={(e) => setOtherSymbol(e.target.value)}
               />
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOtherOpen(false)}>Cancel</Button>
             <Button onClick={handleOtherConfirm} disabled={!otherCode.trim()}>Confirm</Button>
@@ -1519,9 +1519,11 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <DialogHeader>
             <DialogTitle>Delete Bank Details</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete the {confirmDelete?.currency} bank details for {confirmDelete?.type === "your" ? "your account" : "the other party"}? This cannot be undone.
-          </p>
+          <DialogBody>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete the {confirmDelete?.currency} bank details for {confirmDelete?.type === "your" ? "your account" : "the other party"}? This cannot be undone.
+            </p>
+          </DialogBody>
           <DialogFooter className="gap-2">
             <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
             <Button variant="destructive" size="sm" onClick={() => confirmDelete && handleDeleteBank(confirmDelete.type, confirmDelete.currency)}>
