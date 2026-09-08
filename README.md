@@ -10,3 +10,9 @@ Two ways to run it:
 - **Or use UNI SIM's hosted PRO plan** — skip the setup, [unisim.co.uk](https://www.unisim.co.uk)
 
 Source on [GitHub](https://github.com/jamesmarkeyuk/universal_exports).
+
+## Licence
+
+[AGPL-3.0-or-later](LICENSE), with an added permission for app-store
+distribution. Use it, change it, share it — and if you run a changed copy and
+let other people use it over a network, offer them your source.
