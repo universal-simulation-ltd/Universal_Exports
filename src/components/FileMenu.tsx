@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { languages, useI18n, type Language } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdvancedMenu } from "@unisim/sdk";
+// Generated — `npm run credits` after any dependency change. Never edit it by
+// hand: it is read off the installed tree, so a hand-kept list drifts from the
+// lockfile the first time anyone upgrades anything, and a credits list naming a
+// package we removed is worse than no list at all.
+import credits from "../generated/credits.json";
 
 interface Props {
   variant?: "header" | "toolbar" | "rows";
@@ -141,6 +146,8 @@ export default function FileMenu({ variant = "header" }: Props) {
         about={{
           repo:    "https://github.com/universal-simulation-ltd/Universal_Exports",
           privacy: false,
+          credits,
+          noticesHref: "https://github.com/universal-simulation-ltd/Universal_Exports/blob/main/THIRD-PARTY-NOTICES.md",
         }}
       />
     </>

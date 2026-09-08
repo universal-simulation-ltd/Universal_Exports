@@ -1,0 +1,723 @@
+{
+  "app": "universal-exports",
+  "appVersion": "0.0.0",
+  "generated": "2026-09-08",
+  "noticesCount": 152,
+  "ships": [
+    {
+      "name": "@hookform/resolvers",
+      "version": "3.10.0",
+      "licence": "MIT",
+      "repo": "https://github.com/react-hook-form/resolvers",
+      "homepage": "https://react-hook-form.com",
+      "authors": [
+        "bluebill1049"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-accordion",
+      "version": "1.2.12",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-alert-dialog",
+      "version": "1.1.15",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-aspect-ratio",
+      "version": "1.1.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-avatar",
+      "version": "1.1.11",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-checkbox",
+      "version": "1.3.3",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-collapsible",
+      "version": "1.1.12",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-context-menu",
+      "version": "2.2.16",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-dialog",
+      "version": "1.1.15",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-dropdown-menu",
+      "version": "2.1.16",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-hover-card",
+      "version": "1.1.15",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-label",
+      "version": "2.1.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-menubar",
+      "version": "1.1.16",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-navigation-menu",
+      "version": "1.2.14",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-popover",
+      "version": "1.1.15",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-progress",
+      "version": "1.1.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-radio-group",
+      "version": "1.3.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-scroll-area",
+      "version": "1.2.10",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-select",
+      "version": "2.2.6",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-separator",
+      "version": "1.1.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-slider",
+      "version": "1.3.6",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-slot",
+      "version": "1.2.4",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-switch",
+      "version": "1.2.6",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-tabs",
+      "version": "1.1.13",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-toast",
+      "version": "1.2.15",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-toggle",
+      "version": "1.1.10",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-toggle-group",
+      "version": "1.1.11",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@radix-ui/react-tooltip",
+      "version": "1.2.8",
+      "licence": "MIT",
+      "repo": "https://github.com/radix-ui/primitives",
+      "homepage": "https://radix-ui.com/primitives",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@supabase/supabase-js",
+      "title": "Supabase JS",
+      "version": "2.106.2",
+      "licence": "MIT",
+      "repo": "https://github.com/supabase/supabase-js",
+      "homepage": "https://github.com/supabase/supabase-js/tree/master/packages/core/supabase-js",
+      "description": "the client for Universal ID sign-in, licences and shared account data",
+      "authors": [
+        "Supabase"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "@tanstack/react-query",
+      "version": "5.100.14",
+      "licence": "MIT",
+      "repo": "https://github.com/TanStack/query",
+      "homepage": "https://tanstack.com/query",
+      "authors": [
+        "tannerlinsley"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "class-variance-authority",
+      "version": "0.7.1",
+      "licence": "Apache-2.0",
+      "repo": "https://github.com/joe-bell/cva",
+      "homepage": "https://github.com/joe-bell/cva#readme",
+      "authors": [
+        "Joe Bell"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "clsx",
+      "version": "2.1.1",
+      "licence": "MIT",
+      "repo": "https://github.com/lukeed/clsx",
+      "authors": [
+        "Luke Edwards"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "cmdk",
+      "version": "1.1.1",
+      "licence": "MIT",
+      "repo": "https://github.com/pacocoursey/cmdk",
+      "homepage": "https://github.com/pacocoursey/cmdk#readme",
+      "authors": [
+        "Paco"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "date-fns",
+      "version": "3.6.0",
+      "licence": "MIT",
+      "repo": "https://github.com/date-fns/date-fns",
+      "authors": [
+        "Sasha Koss",
+        "Lesha Koss"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "embla-carousel-react",
+      "version": "8.6.0",
+      "licence": "MIT",
+      "repo": "https://github.com/davidjerleke/embla-carousel",
+      "homepage": "https://www.embla-carousel.com",
+      "authors": [
+        "David Jerleke"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "input-otp",
+      "version": "1.4.2",
+      "licence": "MIT",
+      "repo": "https://github.com/guilhermerodz/input-otp",
+      "homepage": "https://input-otp.rodz.dev/",
+      "authors": [
+        "Guilherme Rodz"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "jspdf",
+      "version": "4.2.1",
+      "licence": "MIT",
+      "repo": "https://github.com/parallax/jsPDF",
+      "homepage": "https://github.com/parallax/jsPDF",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "lucide-react",
+      "version": "0.462.0",
+      "licence": "ISC",
+      "repo": "https://github.com/lucide-icons/lucide",
+      "homepage": "https://lucide.dev",
+      "authors": [
+        "Eric Fennis"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "next-themes",
+      "version": "0.3.0",
+      "licence": "MIT",
+      "repo": "https://github.com/pacocoursey/next-themes",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "react",
+      "title": "React",
+      "version": "18.3.1",
+      "licence": "MIT",
+      "repo": "https://github.com/facebook/react",
+      "homepage": "https://reactjs.org/",
+      "description": "the UI library every Universal App is built from",
+      "authors": [
+        "Jordan Walke"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "react-day-picker",
+      "version": "8.10.2",
+      "licence": "MIT",
+      "repo": "https://github.com/gpbl/react-day-picker",
+      "homepage": "http://react-day-picker.js.org",
+      "authors": [
+        "Giampaolo Bellavite"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "react-dom",
+      "title": "React DOM",
+      "version": "18.3.1",
+      "licence": "MIT",
+      "repo": "https://github.com/facebook/react",
+      "homepage": "https://reactjs.org/",
+      "description": "renders React to the browser DOM",
+      "authors": [
+        "Jordan Walke"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "react-hook-form",
+      "version": "7.76.1",
+      "licence": "MIT",
+      "repo": "https://github.com/react-hook-form/react-hook-form",
+      "homepage": "https://react-hook-form.com",
+      "authors": [
+        "Beier Luo"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "react-resizable-panels",
+      "version": "2.1.9",
+      "licence": "MIT",
+      "repo": "https://github.com/bvaughn/react-resizable-panels",
+      "authors": [
+        "Brian Vaughn"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "react-router-dom",
+      "version": "6.30.4",
+      "licence": "MIT",
+      "repo": "https://github.com/remix-run/react-router",
+      "authors": [
+        "Remix Software"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "recharts",
+      "version": "2.15.4",
+      "licence": "MIT",
+      "repo": "https://github.com/recharts/recharts",
+      "homepage": "https://github.com/recharts/recharts",
+      "authors": [
+        "recharts group"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "sonner",
+      "version": "1.7.4",
+      "licence": "MIT",
+      "repo": "https://github.com/emilkowalski/sonner",
+      "homepage": "https://sonner.emilkowal.ski/",
+      "authors": [
+        "Emil Kowalski"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "tailwind-merge",
+      "version": "2.6.1",
+      "licence": "MIT",
+      "repo": "https://github.com/dcastil/tailwind-merge",
+      "homepage": "https://github.com/dcastil/tailwind-merge",
+      "authors": [
+        "Dany Castillo"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "tailwindcss-animate",
+      "version": "1.0.7",
+      "licence": "MIT",
+      "authors": [
+        "Jamie Kyle"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "vaul",
+      "version": "0.9.9",
+      "licence": "MIT",
+      "repo": "https://github.com/emilkowalski/vaul",
+      "homepage": "https://vaul.emilkowal.ski/",
+      "authors": [
+        "Emil Kowalski"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "licence": "MIT",
+      "repo": "https://github.com/colinhacks/zod",
+      "homepage": "https://zod.dev",
+      "authors": [
+        "Colin McDonnell"
+      ],
+      "source": "node_modules"
+    }
+  ],
+  "builds": [
+    {
+      "name": "@eslint/js",
+      "version": "9.39.4",
+      "licence": "MIT",
+      "repo": "https://github.com/eslint/eslint",
+      "homepage": "https://eslint.org",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@playwright/test",
+      "version": "1.60.0",
+      "licence": "Apache-2.0",
+      "repo": "https://github.com/microsoft/playwright",
+      "homepage": "https://playwright.dev",
+      "authors": [
+        "Microsoft Corporation"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "@tailwindcss/typography",
+      "version": "0.5.19",
+      "licence": "MIT",
+      "repo": "https://github.com/tailwindlabs/tailwindcss-typography",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "@testing-library/jest-dom",
+      "version": "6.9.1",
+      "licence": "MIT",
+      "repo": "https://github.com/testing-library/jest-dom",
+      "homepage": "https://github.com/testing-library/jest-dom#readme",
+      "authors": [
+        "Ernesto Garcia"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "@testing-library/react",
+      "version": "16.3.2",
+      "licence": "MIT",
+      "repo": "https://github.com/testing-library/react-testing-library",
+      "homepage": "https://github.com/testing-library/react-testing-library#readme",
+      "authors": [
+        "Kent C. Dodds"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "@types/*",
+      "title": "DefinitelyTyped",
+      "licence": "MIT",
+      "repo": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "description": "the community type definitions TypeScript builds against",
+      "authors": [
+        "Boris Yankov"
+      ],
+      "source": "overlay"
+    },
+    {
+      "name": "@vitejs/plugin-react-swc",
+      "version": "4.3.1",
+      "licence": "MIT",
+      "repo": "https://github.com/vitejs/vite-plugin-react",
+      "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#readme",
+      "authors": [
+        "Arnaud Barré"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "autoprefixer",
+      "version": "10.5.0",
+      "licence": "MIT",
+      "repo": "https://github.com/postcss/autoprefixer",
+      "authors": [
+        "Andrey Sitnik"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "eslint",
+      "version": "9.39.4",
+      "licence": "MIT",
+      "repo": "https://github.com/eslint/eslint",
+      "homepage": "https://eslint.org",
+      "authors": [
+        "Nicholas C. Zakas"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "eslint-plugin-react-hooks",
+      "version": "5.2.0",
+      "licence": "MIT",
+      "repo": "https://github.com/facebook/react",
+      "homepage": "https://react.dev/",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "eslint-plugin-react-refresh",
+      "version": "0.4.26",
+      "licence": "MIT",
+      "authors": [
+        "Arnaud Barré"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "globals",
+      "version": "15.15.0",
+      "licence": "MIT",
+      "repo": "https://github.com/sindresorhus/globals",
+      "authors": [
+        "Sindre Sorhus"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "jsdom",
+      "version": "29.1.1",
+      "licence": "MIT",
+      "repo": "https://github.com/jsdom/jsdom",
+      "authors": [
+        "Elijah Insua",
+        "Domenic Denicola"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "lovable-tagger",
+      "version": "1.3.0",
+      "licence": "MIT",
+      "authors": [
+        "Emil Fagerholm"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.15",
+      "licence": "MIT",
+      "repo": "https://github.com/postcss/postcss",
+      "homepage": "https://postcss.org/",
+      "authors": [
+        "Andrey Sitnik"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "tailwindcss",
+      "title": "Tailwind CSS",
+      "version": "3.4.19",
+      "licence": "MIT",
+      "repo": "https://github.com/tailwindlabs/tailwindcss",
+      "homepage": "https://tailwindcss.com",
+      "description": "the CSS framework the interfaces are styled with",
+      "authors": [
+        "Adam Wathan"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "typescript",
+      "title": "TypeScript",
+      "version": "5.9.3",
+      "licence": "Apache-2.0",
+      "repo": "https://github.com/microsoft/TypeScript",
+      "homepage": "https://www.typescriptlang.org/",
+      "authors": [
+        "Microsoft"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "typescript-eslint",
+      "version": "8.60.0",
+      "licence": "MIT",
+      "repo": "https://github.com/typescript-eslint/typescript-eslint",
+      "homepage": "https://typescript-eslint.io/packages/typescript-eslint",
+      "authors": [],
+      "source": "node_modules"
+    },
+    {
+      "name": "vite",
+      "title": "Vite",
+      "version": "8.0.14",
+      "licence": "MIT",
+      "repo": "https://github.com/vitejs/vite",
+      "homepage": "https://vite.dev",
+      "description": "the build tool and dev server behind every web app in the suite",
+      "authors": [
+        "Evan You"
+      ],
+      "source": "node_modules"
+    },
+    {
+      "name": "vitest",
+      "version": "4.1.8",
+      "licence": "MIT",
+      "repo": "https://github.com/vitest-dev/vitest",
+      "homepage": "https://vitest.dev",
+      "authors": [
+        "Anthony Fu"
+      ],
+      "source": "node_modules"
+    }
+  ]
+}

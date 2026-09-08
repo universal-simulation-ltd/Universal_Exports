@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "credits": "node ../scripts/gen-credits.mjs . --repo https://github.com/universal-simulation-ltd/Universal_Exports",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
