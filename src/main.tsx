@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { UniversalProvider } from "@unisim/sdk";
 import App from "./App.tsx";
-import UsageTracker from "./UsageTracker";
+import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
 
 console.log(`build: ${import.meta.env.VITE_BUILD_SHA}`);
