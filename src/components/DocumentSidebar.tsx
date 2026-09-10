@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import {
   FileText,
   Package,
@@ -132,6 +132,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   const [documentsOpen, setDocumentsOpen] = useState(true);
   const [shipmentOpen, setShipmentOpen] = useState(true);
   const [ebillOpen, setEbillOpen] = useState(true);
+  const foldId = useId();
 
   // Scroll fade
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -352,6 +353,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         <div>
           <button
             onClick={() => setAddressBookOpen(!addressBookOpen)}
+            aria-expanded={addressBookOpen}
+            aria-controls={`${foldId}-contacts`}
             className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
           >
             <ChevronRight className={`h-3 w-3 transition-transform ${addressBookOpen ? "rotate-90" : ""}`} />
@@ -359,7 +362,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
             {accepted && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
           </button>
           {addressBookOpen && (
-            <nav className="space-y-1">
+            <nav id={`${foldId}-contacts`} className="space-y-1">
               <button onClick={() => onSelect("your-details")} className={btnClass("your-details")}>
                 <User className="h-4 w-4" />
                 <span>{t("sidebar.yourDetails")}</span>
@@ -376,6 +379,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         <div>
           <button
             onClick={() => setProjectsOpen(!projectsOpen)}
+            aria-expanded={projectsOpen}
+            aria-controls={`${foldId}-projects`}
             className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
           >
             <ChevronRight className={`h-3 w-3 transition-transform ${projectsOpen ? "rotate-90" : ""}`} />
@@ -383,7 +388,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
             {accepted && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
           </button>
           {projectsOpen && (
-            <nav className="space-y-1">
+            <nav id={`${foldId}-projects`} className="space-y-1">
               <button onClick={onNewProject} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                 <FolderPlus className="h-4 w-4" />
                 <span>{t("sidebar.new")}</span>
@@ -402,6 +407,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
             <div>
               <button
                 onClick={() => setProjectDetailsOpen(!projectDetailsOpen)}
+                aria-expanded={projectDetailsOpen}
+                aria-controls={`${foldId}-project-details`}
                 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
               >
                 <ChevronRight className={`h-3 w-3 transition-transform ${projectDetailsOpen ? "rotate-90" : ""}`} />
@@ -409,7 +416,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                 {allProjectDetailsComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
               </button>
               {projectDetailsOpen && (
-                <nav className="space-y-1">
+                <nav id={`${foldId}-project-details`} className="space-y-1">
                   {projectDetailItems.map((item) => (
                     <button key={item.id} onClick={() => onSelect(item.id)} className={btnClass(item.id)}>
                       <item.icon className="h-4 w-4" />
@@ -432,6 +439,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               <div className="animate-fade-in">
                 <button
                   onClick={() => setProductDetailsOpen(!productDetailsOpen)}
+                  aria-expanded={productDetailsOpen}
+                  aria-controls={`${foldId}-product-details`}
                   className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${productDetailsOpen ? "rotate-90" : ""}`} />
@@ -439,7 +448,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   {allProductDetailsComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
                 </button>
                 {productDetailsOpen && (
-                  <nav className="space-y-1">
+                  <nav id={`${foldId}-product-details`} className="space-y-1">
                     {productDetailItems.map((item) => (
                       <button key={item.id} onClick={() => onSelect(item.id)} disabled={disabledDocs.includes(item.id)} className={btnClass(item.id)}>
                         <item.icon className="h-4 w-4" />
@@ -463,6 +472,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               <div className="animate-fade-in">
                 <button
                   onClick={() => setDocumentsOpen(!documentsOpen)}
+                  aria-expanded={documentsOpen}
+                  aria-controls={`${foldId}-documents`}
                   className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${documentsOpen ? "rotate-90" : ""}`} />
@@ -470,7 +481,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   {allDocumentsComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
                 </button>
                 {documentsOpen && (
-                  <nav className="space-y-1">
+                  <nav id={`${foldId}-documents`} className="space-y-1">
                     {documentTypes.map((doc) => (
                       <button key={doc.id} onClick={() => onSelect(doc.id)} disabled={disabledDocs.includes(doc.id)} className={btnClass(doc.id)}>
                         <doc.icon className="h-4 w-4" />
@@ -488,6 +499,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               <div className="animate-fade-in">
                 <button
                   onClick={() => setShipmentOpen(!shipmentOpen)}
+                  aria-expanded={shipmentOpen}
+                  aria-controls={`${foldId}-shipment`}
                   className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${shipmentOpen ? "rotate-90" : ""}`} />
@@ -497,7 +510,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   )}
                 </button>
                 {shipmentOpen && (
-                  <nav className="space-y-1">
+                  <nav id={`${foldId}-shipment`} className="space-y-1">
                     <button onClick={() => onSelect("shipment")} className={btnClass("shipment")}>
                       <Ship className="h-4 w-4" />
                       <span className="flex-1 text-left">{t("sidebar.shipmentDetails")}</span>
@@ -522,6 +535,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               <div className="animate-fade-in">
                 <button
                   onClick={() => setPaymentOpen(!paymentOpen)}
+                  aria-expanded={paymentOpen}
+                  aria-controls={`${foldId}-payment`}
                   className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${paymentOpen ? "rotate-90" : ""}`} />
@@ -529,7 +544,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   {allPaymentComplete && <Check className="h-3.5 w-3.5 text-success ml-auto" />}
                 </button>
                 {paymentOpen && (
-                  <nav className="space-y-1">
+                  <nav id={`${foldId}-payment`} className="space-y-1">
                     {paymentItems.map((item) => (
                       <button key={item.id} onClick={() => onSelect(item.id)} disabled={disabledDocs.includes(item.id)} className={btnClass(item.id)}>
                         <item.icon className="h-4 w-4" />
@@ -547,13 +562,15 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
               <div className="animate-fade-in">
                 <button
                   onClick={() => setEbillOpen(!ebillOpen)}
+                  aria-expanded={ebillOpen}
+                  aria-controls={`${foldId}-customs`}
                   className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 hover:text-foreground transition-colors"
                 >
                   <ChevronRight className={`h-3 w-3 transition-transform ${ebillOpen ? "rotate-90" : ""}`} />
                   {t("sidebar.customsCompliance")}
                 </button>
                 {ebillOpen && (
-                  <nav className="space-y-1">
+                  <nav id={`${foldId}-customs`} className="space-y-1">
                     <button onClick={() => onSelect("customs")} disabled={disabledDocs.includes("customs")} className={btnClass("customs")}>
                       <ShieldCheck className="h-4 w-4" />
                       <span>{t("sidebar.tariffs")}</span>

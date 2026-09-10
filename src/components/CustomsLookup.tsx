@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadCatalogue, updateCatalogueProduct, CatalogueProduct } from "@/lib/productCatalogueStore";
@@ -156,6 +156,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
   const [catalogueVersion, setCatalogueVersion] = useState(0);
   const [productsOpen, setProductsOpen] = useState(true);
   const [appliedOpen, setAppliedOpen] = useState(false);
+  const foldId = useId();
 
   // The UK Trade Tariff Service only covers UK trade, so only show the checker
   // when the importer or exporter is UK-based. Reactive to country prop changes.
@@ -385,12 +386,14 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
             <button
               className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-foreground/80 transition-colors"
               onClick={() => setProductsOpen((o) => !o)}
+              aria-expanded={productsOpen}
+              aria-controls={`${foldId}-products`}
             >
               {productsOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
               Your Products ({groupedByHsCode.size} HS {groupedByHsCode.size === 1 ? "code" : "codes"})
             </button>
           </div>
-          {productsOpen && <div className="space-y-2">
+          {productsOpen && <div id={`${foldId}-products`} className="space-y-2">
             {[...groupedByHsCode.entries()].map(([key, products]) => {
               const firstProduct = products[0];
               const result = results[key];
@@ -420,6 +423,8 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                 <div key={key} className="rounded-md border border-border overflow-hidden">
                   <button
                     className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/20 hover:bg-secondary/30 transition-colors text-left"
+                    aria-expanded={result ? !!expandedResults[key] : undefined}
+                    aria-controls={result ? `${foldId}-hs-${key}` : undefined}
                     onClick={() => {
                       if (result) {
                         setExpandedResults((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -475,7 +480,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                   )}
 
                   {result && expandedResults[key] && (
-                    <div>
+                    <div id={`${foldId}-hs-${key}`}>
                       <TariffResultCard result={result} filterMeasure={isRelevantDuty} />
                       <div className="px-4 pb-3">
                         <Button
@@ -563,12 +568,14 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
           <button
             className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors w-full text-left"
             onClick={() => setAppliedOpen((o) => !o)}
+            aria-expanded={appliedOpen}
+            aria-controls={`${foldId}-applied`}
           >
             <Check className="h-4 w-4 text-primary" />
             Applied Tariff Rules ({appliedRules.length})
             {appliedOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground ml-auto" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />}
           </button>
-          {appliedOpen && <div className="space-y-2">
+          {appliedOpen && <div id={`${foldId}-applied`} className="space-y-2">
             {appliedRules.map((rule, i) => (
               <div key={i} className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
                 <div className="flex items-start justify-between gap-2">
@@ -610,14 +617,16 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
 const CollapsibleResult = ({ result, label, expanded, onToggle, onApply, isApplied, filterMeasure }: {
   result: TariffResult; label: string; expanded: boolean; onToggle: () => void; onApply: () => void; isApplied: boolean;
   filterMeasure?: (m: TariffMeasure) => boolean;
-}) => (
+}) => {
+  const panelId = useId();
+  return (
   <div className="rounded-md border border-border overflow-hidden">
-    <button className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/20 hover:bg-secondary/30 transition-colors" onClick={onToggle}>
+    <button className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/20 hover:bg-secondary/30 transition-colors" onClick={onToggle} aria-expanded={expanded} aria-controls={panelId}>
       <p className="text-sm font-medium text-foreground">{label}</p>
       {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
     </button>
     {expanded && (
-      <div>
+      <div id={panelId}>
         <TariffResultCard result={result} filterMeasure={filterMeasure} />
         <div className="px-4 pb-3">
           <Button size="sm" variant={isApplied ? "secondary" : "default"} onClick={onApply} disabled={isApplied}>
@@ -627,7 +636,8 @@ const CollapsibleResult = ({ result, label, expanded, onToggle, onApply, isAppli
       </div>
     )}
   </div>
-);
+  );
+};
 
 const TariffResultCard = ({ result, filterMeasure }: { result: TariffResult; filterMeasure?: (m: TariffMeasure) => boolean }) => {
   const visibleMeasures = filterMeasure ? result.measures.filter(filterMeasure) : result.measures;

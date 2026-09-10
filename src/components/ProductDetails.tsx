@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import TooltipLabel from "@/components/TooltipLabel";
@@ -64,6 +64,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
   const [catalogueOpen, setCatalogueOpen] = useState(false);
   const [catalogueSearch, setCatalogueSearch] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const addFormId = useId();
   const [newProduct, setNewProduct] = useState({ code: "", hsCode: "", name: "", description: "", unitPrice: "", vatPercent: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState({ code: "", hsCode: "", name: "", description: "", unitPrice: "", vatPercent: "" });
@@ -293,14 +294,14 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
             </PopoverContent>
           </Popover>
 
-          <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)}>
+          <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm} aria-controls={addFormId}>
             <Plus className="mr-1 h-3.5 w-3.5" />
             Add New
           </Button>
         </div>
 
         {showAddForm && (
-          <div className="rounded-md border border-border p-4 space-y-3 bg-secondary/20">
+          <div id={addFormId} className="rounded-md border border-border p-4 space-y-3 bg-secondary/20">
             <p className="text-xs font-medium text-muted-foreground">New catalogue product</p>
             <div className="grid grid-cols-2 gap-3">
               <div>

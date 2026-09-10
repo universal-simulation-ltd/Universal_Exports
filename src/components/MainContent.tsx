@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, useId } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFileDrop } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
@@ -532,6 +532,7 @@ const MainContent = ({
   const scrollIntoViewSmooth = useCallback((el: HTMLElement | null) => {
     if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }, []);
+  const foldId = useId();
 
   // Product catalogue (for totals)
   const [catalogue, setCatalogue] = useState<import("@/lib/productCatalogueStore").CatalogueProduct[]>([]);
@@ -819,7 +820,7 @@ const MainContent = ({
                     {c.email && <p className="text-xs text-muted-foreground">{t("field.email")}: {c.email}</p>}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setEditingContactIndex(editingContactIndex === i ? null : i)}>
+                    <Button variant="ghost" size="icon" onClick={() => setEditingContactIndex(editingContactIndex === i ? null : i)} aria-expanded={editingContactIndex === i} aria-controls={`${foldId}-contact-${i}`}>
                       <Pencil className="h-4 w-4 text-muted-foreground" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDeleteContact(c.id || '')}>
@@ -828,7 +829,7 @@ const MainContent = ({
                   </div>
                 </div>
                 {editingContactIndex === i && (
-                  <div className="px-4 pb-4 border-t border-border pt-3">
+                  <div id={`${foldId}-contact-${i}`} className="px-4 pb-4 border-t border-border pt-3">
                     {companyFields(c, (updated) => {
                       const newContacts = [...contacts];
                       newContacts[i] = updated;
@@ -954,6 +955,8 @@ const MainContent = ({
                       setShowSetupYourDetails(opening);
                       if (!opening) setYourDetailsMode("");
                     }}
+                    aria-expanded={showSetupYourDetails}
+                    aria-controls={`${foldId}-setup-you`}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                   >
                     <div>
@@ -963,7 +966,7 @@ const MainContent = ({
                     {showSetupYourDetails ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </button>
                   {showSetupYourDetails && (
-                    <div ref={scrollIntoViewSmooth} className="px-4 pb-4 pt-2 border-t border-border space-y-3">
+                    <div id={`${foldId}-setup-you`} className="px-4 pb-4 pt-2 border-t border-border space-y-3">
                       {/* When no details saved yet, show choice; otherwise show form */}
                       {!yourDetails.registeredName && yourDetailsMode !== "form" ? (
                         <div className="space-y-2 pt-1">
@@ -1046,6 +1049,8 @@ const MainContent = ({
                   <div className="flex items-center">
                     <button
                       onClick={() => setShowSetupOtherParty((v) => !v)}
+                      aria-expanded={showSetupOtherParty}
+                      aria-controls={`${foldId}-setup-other`}
                       className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                     >
                       <div>
@@ -1065,7 +1070,7 @@ const MainContent = ({
                     )}
                   </div>
                   {showSetupOtherParty && (
-                    <div ref={scrollIntoViewSmooth} className="px-4 pb-4 pt-2 border-t border-border space-y-3">
+                    <div id={`${foldId}-setup-other`} className="px-4 pb-4 pt-2 border-t border-border space-y-3">
                       {otherPartyMode === "" && (() => {
                         let lastContact: CompanyDetails | null = null;
                         try {
@@ -1310,6 +1315,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
   const [partyCurrency, setPartyCurrency] = useState("GBP");
   const [yourOpen, setYourOpen] = useState(false);
   const [partyOpen, setPartyOpen] = useState(false);
+  const foldId = useId();
   const [yourBanks, setYourBanks] = useState<Record<string, BankAccount>>({});
   const [partyBanks, setPartyBanks] = useState<Record<string, BankAccount>>({});
   const [confirmDelete, setConfirmDelete] = useState<{ type: "your" | "party"; currency: string } | null>(null);
@@ -1396,6 +1402,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       <div className="rounded-md border border-border overflow-hidden">
         <button
           onClick={() => setYourOpen((v) => !v)}
+          aria-expanded={yourOpen}
+          aria-controls={`${foldId}-your-bank`}
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
         >
           <div>
@@ -1407,7 +1415,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           {yourOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </button>
         {yourOpen && (
-          <div className="px-4 pb-4 pt-2 border-t border-border space-y-4">
+          <div id={`${foldId}-your-bank`} className="px-4 pb-4 pt-2 border-t border-border space-y-4">
             <div className="flex gap-1 rounded-lg bg-secondary/50 p-1">
               {currencies.map((cur) => (
                 <button
@@ -1455,6 +1463,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       <div className="rounded-md border border-border overflow-hidden">
         <button
           onClick={() => setPartyOpen((v) => !v)}
+          aria-expanded={partyOpen}
+          aria-controls={`${foldId}-party-bank`}
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
         >
           <div>
@@ -1466,7 +1476,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           {partyOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </button>
         {partyOpen && (
-          <div className="px-4 pb-4 pt-2 border-t border-border space-y-4">
+          <div id={`${foldId}-party-bank`} className="px-4 pb-4 pt-2 border-t border-border space-y-4">
             <div className="flex gap-1 rounded-lg bg-secondary/50 p-1">
               {currencies.map((cur) => (
                 <button
@@ -1675,6 +1685,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <div className="flex items-center">
                   <button
                     onClick={() => setExpandedParty(expandedParty === "you" ? null : "you")}
+                    aria-expanded={expandedParty === "you"}
+                    aria-controls={`${foldId}-party-you`}
                     className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                   >
                     <div>
@@ -1696,7 +1708,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   )}
                 </div>
                 {expandedParty === "you" && (
-                  <div className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
+                  <div id={`${foldId}-party-you`} className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
                     {editingYourDetails ? (
                       <div className="space-y-3 pt-2">
                         {companyFields(yourDetails, setYourDetails, "")}
@@ -1732,6 +1744,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <div className="flex items-center">
                   <button
                     onClick={() => setExpandedParty(expandedParty === "other" ? null : "other")}
+                    aria-expanded={expandedParty === "other"}
+                    aria-controls={`${foldId}-party-other`}
                     className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                   >
                     <div>
@@ -1760,7 +1774,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   </div>
                 </div>
                 {expandedParty === "other" && (
-                  <div className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
+                  <div id={`${foldId}-party-other`} className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
                     {editingOtherParty ? (
                       <div className="space-y-3 pt-2">
                         {companyFields(otherParty, setOtherParty, "")}
