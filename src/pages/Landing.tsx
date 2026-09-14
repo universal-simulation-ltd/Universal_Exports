@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FileCheck, Sparkles, Globe2, PenTool, FileSignature, Languages } from "lucide-react";
+import { Chip } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BrandFooter from "@/components/BrandFooter";
@@ -99,9 +100,7 @@ export default function Landing() {
                         <span className="text-sm leading-none" aria-label="United Kingdom">{f.flag}</span>
                       )}
                       {f.badge && (
-                        <span className="inline-flex items-center rounded-full bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 text-[10px] font-medium leading-none">
-                          {f.badge}
-                        </span>
+                        <Chip size="sm">{f.badge}</Chip>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 leading-snug">{f.desc}</p>

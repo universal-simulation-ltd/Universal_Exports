@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect, useId } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFileDrop } from "@unisim/sdk";
+import { Chip, ValueChip, useFileDrop } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1376,9 +1376,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       <div className="space-y-5">
         <div className="flex items-center gap-3">
           <h2 className="text-base font-semibold text-foreground">{t("sidebar.bankDetails")}</h2>
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-          </span>
+          <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
         </div>
         <div className="max-w-lg space-y-2">
           <p className="text-sm text-foreground">Your banks: {yourFilledCount} currency account{yourFilledCount !== 1 ? "s" : ""}</p>
@@ -1642,13 +1640,11 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <div className="space-y-5 max-w-lg">
               <div className="flex items-center gap-3">
                 <h2 className="text-base font-semibold text-foreground">{t("sidebar.projectOverview")}</h2>
-                <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
-                  <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-                </span>
+                <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
               </div>
               {(isDomestic || isInternational) && (
-                <p className="text-xs inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border text-muted-foreground">
-                  {isInternational ? "🌐 International trade" : "🏠 Domestic trade"}
+                <p>
+                  <Chip size="sm">{isInternational ? "🌐 International trade" : "🏠 Domestic trade"}</Chip>
                 </p>
               )}
               <PartyCard
@@ -2353,15 +2349,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
               {/* Summary */}
               <div className="flex gap-3 text-sm">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1 font-medium">
-                  ✓ {passed.length} passed
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 text-destructive px-3 py-1 font-medium">
-                  ⚠ {warnings.length} discrepanc{warnings.length === 1 ? "y" : "ies"}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted text-muted-foreground px-3 py-1 font-medium">
-                  ○ {missing.length} missing
-                </span>
+                <ValueChip tone="good" label={passed.length}>passed</ValueChip>
+                <ValueChip tone="crit" label={warnings.length}>discrepanc{warnings.length === 1 ? "y" : "ies"}</ValueChip>
+                <ValueChip label={missing.length}>missing</ValueChip>
               </div>
 
               {/* Non-passed items */}
@@ -2478,9 +2468,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             {/* Header */}
             <div className="flex items-center gap-3">
               <h2 className="text-base font-semibold text-foreground">Tariffs &amp; Customs</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-              </span>
+              <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
 
             {/* Applied Tariff Rules */}
@@ -2742,9 +2730,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <div className="space-y-5">
             <div className="flex items-center gap-3">
               <h2 className="text-base font-semibold text-foreground">Products</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-              </span>
+              <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
             <div className="overflow-x-auto">
               {(() => {
@@ -2816,9 +2802,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <div className="space-y-5">
             <div className="flex items-center gap-3">
               <h2 className="text-base font-semibold text-foreground">{t("txn.title")}</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-              </span>
+              <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
             <div className="grid grid-cols-2 gap-4 max-w-lg">
               {[
@@ -2912,9 +2896,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <div className="space-y-5">
             <div className="flex items-center gap-3">
               <h2 className="text-base font-semibold text-foreground">{t("ship.title")}</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-              </span>
+              <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
             {field("goodsDescription") && (
               <div>

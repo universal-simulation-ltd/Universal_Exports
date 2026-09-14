@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useUniversal, useUser, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
+import { Chip, useUniversal, useUser, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
 import { downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { type ProjectData } from "../lib/projectStore";
@@ -174,7 +174,7 @@ export default function HostedStoreDialog({
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-900">Download</span>
-              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600">Free</span>
+              <Chip size="sm">Free</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               The agreement PDF is built in this browser. Use Download PDF to save it to your device — free.
@@ -185,7 +185,7 @@ export default function HostedStoreDialog({
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-900">Save to desktop</span>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600">Re-import later</span>
+              <Chip size="sm">Re-import later</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Download a backup of this whole project — all your form data — as one file. Import it any time, on any device, to carry on editing and regenerate the agreement. (Signatures aren't included — sign again after importing.)
@@ -223,7 +223,7 @@ export default function HostedStoreDialog({
           <div className="rounded-xl border border-orange-200 bg-white p-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-900">Hosted by UNI SIM</span>
-              <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-orange-700">Universal subscription</span>
+              <Chip size="sm">Universal subscription</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Keep this agreement PDF online against your Universal ID. One token per upload — delete it and your token comes straight back.

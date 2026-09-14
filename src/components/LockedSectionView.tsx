@@ -1,4 +1,5 @@
 import { CheckCircle2, Download, Pencil } from "lucide-react";
+import { ValueChip } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { downloadDocumentPdf, type DocPdfParty } from "@/lib/documentPdf";
@@ -39,9 +40,7 @@ const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-          <CheckCircle2 className="h-3 w-3" /> {t("lock.sectionAccepted")}
-        </span>
+        <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-lg">
         {fields.map(([label, value]) => (

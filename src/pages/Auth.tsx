@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Building2, CheckCircle2, Search } from 'lucide-react'
+import { Chip } from '@unisim/sdk'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -145,9 +146,7 @@ export default function Auth() {
         {/* Free-for-UK-businesses badge — shown in both modes so it's the
             first thing anyone sees on the sign-in page. */}
         <div className="flex justify-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40">
-            <span aria-hidden="true">🇬🇧</span> 100% free for UK businesses
-          </span>
+          <Chip icon={<span>🇬🇧</span>}>100% free for UK businesses</Chip>
         </div>
 
         {/* Card */}
