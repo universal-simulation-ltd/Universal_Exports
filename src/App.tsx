@@ -58,9 +58,10 @@ function AppShell() {
   // PDF/Images convention that actions only matter inside the editor — but what
   // is left of it is the language picker (the account rows went as duplicates of
   // the SDK's own), and that is worth having on the landing page too.
-  // `showLanguageSelector={false}` stands the SDK's row down: in one panel there
-  // would otherwise be two rows called "Language", and this is the one that
-  // actually translates the app.
+  // `showLanguageSelector={false}` keeps Language out of the SDK's App
+  // preferences and Global preferences dialogs (SDK 0.143): the SDK language
+  // does not translate this app — `useI18n()` does, from the row above — so a
+  // second "Language" there would be a setting that changes nothing here.
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <UniversalAppsNavBar
