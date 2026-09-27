@@ -23,6 +23,7 @@ import Sign from "./pages/Sign.tsx";
 import SignMobile from "./pages/SignMobile.tsx";
 import AgreementView from "./pages/AgreementView.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { KNOWLEDGE_BASE } from './knowledge'
 
 // "About this app". Since SDK 0.161 the SDK draws the row at the foot of "Tune
 // this app" and opens its own AboutAppDialog; it used to be FileMenu's
@@ -88,6 +89,9 @@ function AppShell() {
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}
         actions={<FileMenu variant="rows" />}
+        // Actions ▸ Advanced ▸ Knowledge base (SDK 0.163.0): this app's own
+        // articles, bundled from ./knowledge so they read offline.
+        knowledgeBase={KNOWLEDGE_BASE}
         about={ABOUT}
         showLanguageSelector={false}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
