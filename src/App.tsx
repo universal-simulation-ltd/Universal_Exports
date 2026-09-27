@@ -7,7 +7,12 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
 import { BASE_PATH } from "@/lib/basePath";
-import { UniversalAppsNavBar } from "@unisim/sdk";
+import { UniversalAppsNavBar, type AboutAppConfig } from "@unisim/sdk";
+// Generated — `npm run credits` after any dependency change. Never edit it by
+// hand: it is read off the installed tree, so a hand-kept list drifts from the
+// lockfile the first time anyone upgrades anything, and a credits list naming a
+// package we removed is worse than no list at all.
+import credits from "./generated/credits.json";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
 import FileMenu from "@/components/FileMenu";
@@ -18,6 +23,20 @@ import Sign from "./pages/Sign.tsx";
 import SignMobile from "./pages/SignMobile.tsx";
 import AgreementView from "./pages/AgreementView.tsx";
 import NotFound from "./pages/NotFound.tsx";
+
+// "About this app". Since SDK 0.161 the SDK draws the row at the foot of "Tune
+// this app" and opens its own AboutAppDialog; it used to be FileMenu's
+// Advanced section.
+//
+// ⚠ privacy={false} on purpose. Universal Exports keeps agreements in a
+// database so the other side of a trade can reach them — "never leaves this
+// computer" would be false, and false in the one dialog somebody opens to check.
+const ABOUT: AboutAppConfig = {
+  repo:    "https://github.com/universal-simulation-ltd/Universal_Exports",
+  privacy: false,
+  credits,
+  noticesHref: "https://github.com/universal-simulation-ltd/Universal_Exports/blob/main/THIRD-PARTY-NOTICES.md",
+};
 
 const queryClient = new QueryClient();
 
@@ -69,6 +88,7 @@ function AppShell() {
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}
         actions={<FileMenu variant="rows" />}
+        about={ABOUT}
         showLanguageSelector={false}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}

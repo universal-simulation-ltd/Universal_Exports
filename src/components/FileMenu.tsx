@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n, type Language } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdvancedMenu } from "@unisim/sdk";
-// Generated — `npm run credits` after any dependency change. Never edit it by
-// hand: it is read off the installed tree, so a hand-kept list drifts from the
-// lockfile the first time anyone upgrades anything, and a credits list naming a
-// package we removed is worse than no list at all.
-import credits from "../generated/credits.json";
 
 interface Props {
   variant?: "header" | "toolbar" | "rows";
@@ -132,24 +126,6 @@ export default function FileMenu({ variant = "header" }: Props) {
             {l.code === lang && <span aria-hidden="true">✓</span>}
           </button>
         ))}
-
-      {/* Advanced — the SDK's own category, so every app in the suite has one
-          in the same place. Only the rows branch gets it: that is the variant
-          <UniversalAppsNavBar actions> renders, and the standalone dropdown
-          below is the legacy trigger this app no longer mounts.
-
-          ⚠ privacy={false} on purpose. Universal Exports keeps agreements in a
-          database so the other side of a trade can reach them — "never leaves
-          this computer" would be false, and false in the one dialog somebody
-          opens to check. */}
-      <AdvancedMenu
-        about={{
-          repo:    "https://github.com/universal-simulation-ltd/Universal_Exports",
-          privacy: false,
-          credits,
-          noticesHref: "https://github.com/universal-simulation-ltd/Universal_Exports/blob/main/THIRD-PARTY-NOTICES.md",
-        }}
-      />
     </>
   ) : (
     <>
