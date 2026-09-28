@@ -277,7 +277,9 @@ const SavedProjectsList = ({
   const pageProjects = filtered.slice(safePage * visibleCount, (safePage + 1) * visibleCount);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Delete "${name}"?`)) return;
+    // The project's QR view copies and counter-sign links are deleted with it
+    // (platform migration 0193), so a printed QR stops resolving — say so.
+    if (!window.confirm(`Delete "${name}"? Its QR view links and counter-sign links will stop working.`)) return;
     await deleteProject(id);
     const updated = projects.filter((p) => p.id !== id);
     setProjects(updated);

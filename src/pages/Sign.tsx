@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import SignaturePad from "@/components/SignaturePad";
 import { toast } from "sonner";
 import {
+  getSignaturePdf,
   getSignatureToken,
   markPdfViewed,
   submitCounterSignature,
@@ -18,14 +19,46 @@ import {
  *
  * Flow:
  *   1. Load the token row from Supabase.
- *   2. Show a blocker until they click "Open document" (records `viewed_pdf_at`
- *      and opens the agreement PDF in a new tab).
+ *   2. Show a blocker until they click "Open document", which opens the real
+ *      agreement PDF (the drafter's newest generated copy) in a new tab and
+ *      records `viewed_pdf_at`. No PDF stored yet ⇒ nothing is unlocked.
  *   3. After viewing, the name input + signature pad unlock. Date is auto-
  *      filled to today.
  *   4. Submit flips the row to status='signed' and shows a success state.
  *
  * No auth required — the token uuid in the URL is the bearer credential.
  */
+/** A stored `data:application/pdf;base64,…` URL as a Blob. A data: URL can't be
+ *  navigated to as a top-level page in Chromium, but a blob: URL can. */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, b64 = ""] = dataUrl.split(",", 2);
+  const mime = /^data:([^;,]+)/.exec(head)?.[1] ?? "application/pdf";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+/** A plain message in the review tab. Built with the DOM API rather than
+ *  innerHTML: project_name is set by the drafter and shown to the signer, so a
+ *  template string would be a stored-XSS sink; textContent escapes it. */
+function writeNote(doc: Document, projectName: string, message: string) {
+  doc.body.replaceChildren();
+  const wrap = doc.createElement("div");
+  wrap.setAttribute("style", "font-family: system-ui, sans-serif; padding: 40px; max-width: 720px; margin: 40px auto;");
+  const h1 = doc.createElement("h1");
+  h1.setAttribute("style", "font-size: 22px; margin-bottom: 8px;");
+  h1.textContent = "Export Agreement";
+  const name = doc.createElement("p");
+  name.setAttribute("style", "color: #475569;");
+  name.textContent = projectName;
+  const note = doc.createElement("p");
+  note.setAttribute("style", "color: #64748b; font-size: 14px; margin-top: 32px;");
+  note.textContent = message;
+  wrap.append(h1, name, note);
+  doc.body.append(wrap);
+}
+
 const Sign = () => {
   const { token = "" } = useParams<{ token: string }>();
   const [record, setRecord] = useState<AgreementSignature | null>(null);
@@ -47,34 +80,38 @@ const Sign = () => {
 
   const handleOpenDocument = async () => {
     // Pop the new tab synchronously inside the click handler so popup blockers
-    // don't trip — we'll update the URL once we have it. The drafter hasn't
-    // uploaded a real PDF yet (the generate flow is a placeholder), so for
-    // now we just stamp the viewed marker and open an "about:blank" preview.
+    // don't trip, then point it at the PDF once it has loaded.
     const pdfWindow = window.open("about:blank", "_blank");
+    const projectName = record?.project_name ?? "Export Agreement";
     if (pdfWindow) {
-      const projectName = record?.project_name ?? "Export Agreement";
       pdfWindow.document.title = `Export Agreement — ${projectName}`;
-      // Build the preview with the DOM API rather than interpolating into
-      // innerHTML: project_name is set by the drafter and shown to the signer,
-      // so an innerHTML template would be a stored-XSS sink. textContent escapes
-      // it for free.
-      const doc = pdfWindow.document;
-      const wrap = doc.createElement("div");
-      wrap.setAttribute("style", "font-family: system-ui, sans-serif; padding: 40px; max-width: 720px; margin: 40px auto;");
-      const h1 = doc.createElement("h1");
-      h1.setAttribute("style", "font-size: 22px; margin-bottom: 8px;");
-      h1.textContent = "Export Agreement preview";
-      const name = doc.createElement("p");
-      name.setAttribute("style", "color: #475569;");
-      name.textContent = projectName;
-      const note = doc.createElement("p");
-      note.setAttribute("style", "color: #94a3b8; font-size: 13px; margin-top: 32px;");
-      note.textContent =
-        "The drafter hasn't attached a finalised PDF yet — this is a stand-in preview. " +
-        "Once the generate flow ships, the real Export Agreement PDF will load here for review before signing.";
-      wrap.append(h1, name, note);
-      doc.body.append(wrap);
+      writeNote(pdfWindow.document, projectName, "Loading the agreement…");
     }
+
+    // The real agreement: the newest PDF the drafter generated or signed for
+    // this project, as stored for its QR view (platform migration 0193).
+    const pdf = await getSignaturePdf(token);
+    if (!pdf) {
+      // Nothing to review, so nothing is unlocked: signing a document you were
+      // never shown is exactly what the "open it first" gate exists to stop.
+      if (pdfWindow) {
+        writeNote(
+          pdfWindow.document,
+          projectName,
+          "The sender hasn't generated the Export Agreement PDF yet, so there is nothing to review. " +
+            "Ask them to generate it, then open your signing link again.",
+        );
+      }
+      toast.error("The agreement isn't ready to review yet — ask the sender to generate it.");
+      return;
+    }
+
+    const url = URL.createObjectURL(dataUrlToBlob(pdf.pdfData));
+    if (pdfWindow) pdfWindow.location.href = url;
+    else window.location.assign(url); // popup blocked: open it in this tab instead
+    // Long enough for the viewer to have read the blob; it holds no secret.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+
     const ok = await markPdfViewed(token);
     if (ok) {
       setRecord((r) => (r ? { ...r, viewed_pdf_at: new Date().toISOString() } : r));

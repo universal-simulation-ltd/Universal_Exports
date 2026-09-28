@@ -144,7 +144,7 @@ The signature travels between the two devices as a one-off live message. It is n
 
 From the counter-sign panel you create a signing link for the project. You can show it as a QR code, copy it, or email it. If your email address is verified, the app can send the request for you, with your address set as the reply-to; otherwise it opens a draft in your own email program.
 
-The other party opens the link, must open the document before the signature pad unlocks, then types their name and signs. The date is filled in automatically. Each link can be used to sign only once. Your panel checks for the signature every few seconds and shows the signer's name and the time they signed as soon as it arrives.
+The other party opens the link, must open the document before the signature pad unlocks, then types their name and signs. The date is filled in automatically. Each link can be used to sign only once. Your panel checks for the signature every few seconds and shows the signer's name and the time they signed as soon as it arrives. The document they open is the latest agreement PDF you generated or signed for the project; until you have generated one, the signature pad stays locked.
 
 ## What an electronic signature is, and is not
 
@@ -171,7 +171,7 @@ Your logo, your language choice and the last contact you picked are remembered b
 ## Links and QR codes
 
 - **The QR code on a generated agreement, and on the box labels,** opens a read-only online copy of that agreement, including the PDF. Anyone who has the link or can scan the code can view it; no sign-in is needed. That is the point, so a buyer or a customs officer can check the paperwork, but it also means you should share those codes only with people who should see the deal. The link is a long random code that cannot be guessed. The online copy is only created when you are signed in; without it, the agreement is made without a QR code and the box labels are marked as a preview.
-- **A counter-sign link** lets whoever holds it open the request and sign it once, and afterwards look up who signed it. Send it only to the person who should sign.
+- **A counter-sign link** lets whoever holds it open the request and sign it once, and afterwards look up who signed it. Send it only to the person who should sign. It also opens the latest agreement PDF for the project. Deleting a project deletes its online copies and counter-sign links, so its QR codes and signing links stop working.
 - **The phone signature hand-off** is not stored at all; see the signing article.
 
 ## Services the app talks to

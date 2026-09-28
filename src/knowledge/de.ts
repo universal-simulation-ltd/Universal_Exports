@@ -144,7 +144,7 @@ Die Unterschrift gelangt als einmalige Live-Nachricht von einem Gerät zum ander
 
 Im Bereich für die Gegenzeichnung erstellen Sie einen Unterschriftslink für das Projekt. Sie können ihn als QR-Code anzeigen, kopieren oder per E-Mail senden. Wenn Ihre E-Mail-Adresse bestätigt ist, kann die App die Anfrage für Sie senden, mit Ihrer Adresse als Antwortadresse; andernfalls öffnet sie einen Entwurf in Ihrem eigenen E-Mail-Programm.
 
-Die andere Partei öffnet den Link, muss das Dokument öffnen, bevor das Unterschriftenfeld freigeschaltet wird, und gibt dann ihren Namen ein und unterschreibt. Das Datum wird automatisch eingetragen. Jeder Link kann nur einmal zum Unterschreiben verwendet werden. Ihr Bereich prüft alle paar Sekunden, ob die Unterschrift vorliegt, und zeigt den Namen der unterzeichnenden Person und den Zeitpunkt der Unterschrift an, sobald sie eingeht.
+Die andere Partei öffnet den Link, muss das Dokument öffnen, bevor das Unterschriftenfeld freigeschaltet wird, und gibt dann ihren Namen ein und unterschreibt. Das Datum wird automatisch eingetragen. Jeder Link kann nur einmal zum Unterschreiben verwendet werden. Ihr Bereich prüft alle paar Sekunden, ob die Unterschrift vorliegt, und zeigt den Namen der unterzeichnenden Person und den Zeitpunkt der Unterschrift an, sobald sie eingeht. Das Dokument, das sie öffnet, ist das neueste Vereinbarungs-PDF, das Sie für das Projekt erstellt oder unterschrieben haben; solange Sie keines erstellt haben, bleibt das Unterschriftenfeld gesperrt.
 
 ## Was eine elektronische Unterschrift ist und was nicht
 
@@ -171,7 +171,7 @@ Ihr Logo, Ihre Sprachwahl und der zuletzt ausgewählte Kontakt werden von diesem
 ## Links und QR-Codes
 
 - **Der QR-Code auf einer erstellten Vereinbarung und auf den Kartonetiketten** öffnet eine schreibgeschützte Online-Kopie dieser Vereinbarung, einschließlich des PDFs. Jeder, der den Link hat oder den Code scannen kann, kann sie ansehen; eine Anmeldung ist nicht nötig. Das ist beabsichtigt, damit ein Käufer oder ein Zollbeamter die Unterlagen prüfen kann, bedeutet aber auch, dass Sie diese Codes nur mit Personen teilen sollten, die das Geschäft sehen sollen. Der Link ist ein langer Zufallscode, der nicht erraten werden kann. Die Online-Kopie wird nur erstellt, wenn Sie angemeldet sind; ohne sie wird die Vereinbarung ohne QR-Code erstellt und die Kartonetiketten werden als Vorschau gekennzeichnet.
-- **Ein Link zur Gegenzeichnung** erlaubt jedem, der ihn besitzt, die Anfrage zu öffnen und einmal zu unterschreiben und danach nachzusehen, wer unterschrieben hat. Senden Sie ihn nur an die Person, die unterschreiben soll.
+- **Ein Link zur Gegenzeichnung** erlaubt jedem, der ihn besitzt, die Anfrage zu öffnen und einmal zu unterschreiben und danach nachzusehen, wer unterschrieben hat. Senden Sie ihn nur an die Person, die unterschreiben soll. Er öffnet außerdem das neueste Vereinbarungs-PDF des Projekts. Wenn Sie ein Projekt löschen, werden seine Online-Kopien und Links zur Gegenzeichnung mitgelöscht, sodass seine QR-Codes und Unterschriftslinks nicht mehr funktionieren.
 - **Die Übergabe der Unterschrift ans Telefon** wird überhaupt nicht gespeichert; siehe den Artikel zum Unterschreiben.
 
 ## Dienste, mit denen die App kommuniziert

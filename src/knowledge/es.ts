@@ -144,7 +144,7 @@ La firma viaja entre los dos dispositivos como un mensaje en directo de un solo 
 
 Desde el panel de contrafirma se crea un enlace de firma para el proyecto. Puede mostrarlo como código QR, copiarlo o enviarlo por correo electrónico. Si su dirección de correo está verificada, la aplicación puede enviar la solicitud por usted, con su dirección como dirección de respuesta; de lo contrario, abre un borrador en su propio programa de correo.
 
-La otra parte abre el enlace, debe abrir el documento antes de que se desbloquee el panel de firma y, a continuación, escribe su nombre y firma. La fecha se rellena automáticamente. Cada enlace solo puede usarse para firmar una vez. Su panel comprueba cada pocos segundos si hay firma y muestra el nombre del firmante y la hora de la firma en cuanto llega.
+La otra parte abre el enlace, debe abrir el documento antes de que se desbloquee el panel de firma y, a continuación, escribe su nombre y firma. La fecha se rellena automáticamente. Cada enlace solo puede usarse para firmar una vez. Su panel comprueba cada pocos segundos si hay firma y muestra el nombre del firmante y la hora de la firma en cuanto llega. El documento que abre es el PDF del acuerdo más reciente que usted haya generado o firmado para el proyecto; hasta que genere uno, el panel de firma sigue bloqueado.
 
 ## Qué es una firma electrónica y qué no es
 
@@ -171,7 +171,7 @@ Su logotipo, el idioma elegido y el último contacto que seleccionó los recuerd
 ## Enlaces y códigos QR
 
 - **El código QR de un acuerdo generado, y el de las etiquetas para cajas,** abre una copia en línea de solo lectura de ese acuerdo, incluido el PDF. Cualquiera que tenga el enlace o pueda escanear el código puede verla; no hace falta iniciar sesión. Esa es la idea, para que un comprador o un funcionario de aduanas pueda comprobar la documentación, pero también significa que solo debe compartir esos códigos con personas que deban ver la operación. El enlace es un código aleatorio largo que no se puede adivinar. La copia en línea solo se crea cuando ha iniciado sesión; sin ella, el acuerdo se genera sin código QR y las etiquetas para cajas se marcan como vista previa.
-- **Un enlace de contrafirma** permite a quien lo tenga abrir la solicitud y firmarla una vez, y después consultar quién la firmó. Envíelo solo a la persona que deba firmar.
+- **Un enlace de contrafirma** permite a quien lo tenga abrir la solicitud y firmarla una vez, y después consultar quién la firmó. Envíelo solo a la persona que deba firmar. También abre el PDF del acuerdo más reciente del proyecto. Al eliminar un proyecto se eliminan sus copias en línea y sus enlaces de contrafirma, por lo que sus códigos QR y enlaces de firma dejan de funcionar.
 - **El paso de la firma por el teléfono** no se almacena en absoluto; consulte el artículo sobre la firma.
 
 ## Servicios con los que se comunica la aplicación

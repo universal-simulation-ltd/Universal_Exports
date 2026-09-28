@@ -144,7 +144,7 @@ A assinatura viaja entre os dois dispositivos como uma mensagem em direto, únic
 
 No painel de contra-assinatura, cria uma ligação de assinatura para o projeto. Pode apresentá-la como código QR, copiá-la ou enviá-la por e-mail. Se o seu endereço de e-mail estiver verificado, a aplicação pode enviar o pedido por si, com o seu endereço definido como endereço de resposta; caso contrário, abre um rascunho no seu próprio programa de e-mail.
 
-A outra parte abre a ligação, tem de abrir o documento antes de o campo de assinatura ser desbloqueado e, em seguida, escreve o nome e assina. A data é preenchida automaticamente. Cada ligação só pode ser utilizada para assinar uma vez. O seu painel verifica a assinatura a cada poucos segundos e mostra o nome do signatário e a hora a que assinou assim que esta chega.
+A outra parte abre a ligação, tem de abrir o documento antes de o campo de assinatura ser desbloqueado e, em seguida, escreve o nome e assina. A data é preenchida automaticamente. Cada ligação só pode ser utilizada para assinar uma vez. O seu painel verifica a assinatura a cada poucos segundos e mostra o nome do signatário e a hora a que assinou assim que esta chega. O documento que abre é o PDF do contrato mais recente que gerou ou assinou para o projeto; enquanto não gerar um, o campo de assinatura continua bloqueado.
 
 ## O que uma assinatura eletrónica é, e o que não é
 
@@ -171,7 +171,7 @@ O seu logótipo, o idioma escolhido e o último contacto selecionado ficam memor
 ## Ligações e códigos QR
 
 - **O código QR num contrato gerado, e nas etiquetas para caixas,** abre uma cópia online só de leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha a ligação ou consiga ler o código pode vê-la; não é necessário iniciar sessão. É esse o objetivo, para que um comprador ou um funcionário aduaneiro possa verificar a documentação, mas também significa que só deve partilhar esses códigos com pessoas que devam ver o negócio. A ligação é um código aleatório longo que não pode ser adivinhado. A cópia online só é criada quando tem sessão iniciada; sem ela, o contrato é gerado sem código QR e as etiquetas para caixas são marcadas como pré-visualização.
-- **Uma ligação de contra-assinatura** permite a quem a detiver abrir o pedido e assiná-lo uma vez e, depois, consultar quem o assinou. Envie-a apenas à pessoa que deve assinar.
+- **Uma ligação de contra-assinatura** permite a quem a detiver abrir o pedido e assiná-lo uma vez e, depois, consultar quem o assinou. Envie-a apenas à pessoa que deve assinar. Também abre o PDF do contrato mais recente do projeto. Eliminar um projeto elimina as respetivas cópias online e ligações de contra-assinatura, pelo que os códigos QR e as ligações de assinatura deixam de funcionar.
 - **A passagem da assinatura para o telemóvel** não é armazenada de todo; consulte o artigo sobre assinatura.
 
 ## Serviços com que a aplicação comunica

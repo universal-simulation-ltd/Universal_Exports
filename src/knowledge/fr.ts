@@ -144,7 +144,7 @@ La signature circule entre les deux appareils sous la forme d'un message en dire
 
 Depuis le panneau de contre-signature, vous créez un lien de signature pour le projet. Vous pouvez l'afficher sous forme de code QR, le copier ou l'envoyer par e-mail. Si votre adresse e-mail est vérifiée, l'application peut envoyer la demande pour vous, avec votre adresse comme adresse de réponse ; sinon, elle ouvre un brouillon dans votre propre logiciel de messagerie.
 
-L'autre partie ouvre le lien, doit ouvrir le document avant que le pavé de signature ne se déverrouille, puis saisit son nom et signe. La date est renseignée automatiquement. Chaque lien ne peut servir à signer qu'une seule fois. Votre panneau vérifie la présence de la signature toutes les quelques secondes et affiche le nom du signataire et l'heure de signature dès qu'elle arrive.
+L'autre partie ouvre le lien, doit ouvrir le document avant que le pavé de signature ne se déverrouille, puis saisit son nom et signe. La date est renseignée automatiquement. Chaque lien ne peut servir à signer qu'une seule fois. Votre panneau vérifie la présence de la signature toutes les quelques secondes et affiche le nom du signataire et l'heure de signature dès qu'elle arrive. Le document qu'elle ouvre est le PDF d'accord le plus récent que vous avez généré ou signé pour le projet ; tant que vous n'en avez pas généré, le pavé de signature reste verrouillé.
 
 ## Ce qu'est une signature électronique, et ce qu'elle n'est pas
 
@@ -171,7 +171,7 @@ Votre logo, votre choix de langue et le dernier contact que vous avez sélection
 ## Liens et codes QR
 
 - **Le code QR figurant sur un accord généré, ainsi que sur les étiquettes de colis,** ouvre une copie en ligne en lecture seule de cet accord, PDF compris. Toute personne qui dispose du lien ou peut scanner le code peut la consulter ; aucune connexion n'est nécessaire. C'est voulu, afin qu'un acheteur ou un agent des douanes puisse vérifier les documents, mais cela signifie aussi que vous ne devez partager ces codes qu'avec les personnes censées voir l'opération. Le lien est un long code aléatoire impossible à deviner. La copie en ligne n'est créée que si vous êtes connecté ; sinon, l'accord est produit sans code QR et les étiquettes de colis sont marquées comme un aperçu.
-- **Un lien de contre-signature** permet à quiconque le détient d'ouvrir la demande et de la signer une fois, puis de consulter qui l'a signée. Ne l'envoyez qu'à la personne qui doit signer.
+- **Un lien de contre-signature** permet à quiconque le détient d'ouvrir la demande et de la signer une fois, puis de consulter qui l'a signée. Ne l'envoyez qu'à la personne qui doit signer. Il ouvre aussi le PDF d'accord le plus récent du projet. Supprimer un projet supprime ses copies en ligne et ses liens de contre-signature : ses codes QR et ses liens de signature cessent alors de fonctionner.
 - **Le passage de la signature par le téléphone** n'est pas stocké du tout ; consultez l'article sur la signature.
 
 ## Services avec lesquels l'application communique

@@ -144,7 +144,7 @@ Fareyle çizmek zahmetli olduğundan uygulama, bilgisayarda bunun yerine bir QR 
 
 Karşı imza panelinden proje için bir imza bağlantısı oluşturursunuz. Bu bağlantıyı QR kod olarak gösterebilir, kopyalayabilir veya e-postayla gönderebilirsiniz. E-posta adresiniz doğrulanmışsa uygulama, yanıt adresi olarak sizin adresiniz ayarlanmış şekilde talebi sizin yerinize gönderebilir; aksi takdirde kendi e-posta programınızda bir taslak açar.
 
-Karşı taraf bağlantıyı açar, imza alanının kilidi açılmadan önce belgeyi açmak zorundadır, ardından adını yazar ve imzalar. Tarih otomatik olarak doldurulur. Her bağlantı yalnızca bir kez imzalamak için kullanılabilir. Paneliniz birkaç saniyede bir imzayı kontrol eder ve imza gelir gelmez imzalayanın adını ve imzaladığı saati gösterir.
+Karşı taraf bağlantıyı açar, imza alanının kilidi açılmadan önce belgeyi açmak zorundadır, ardından adını yazar ve imzalar. Tarih otomatik olarak doldurulur. Her bağlantı yalnızca bir kez imzalamak için kullanılabilir. Paneliniz birkaç saniyede bir imzayı kontrol eder ve imza gelir gelmez imzalayanın adını ve imzaladığı saati gösterir. Açtığı belge, proje için oluşturduğunuz veya imzaladığınız en son sözleşme PDF'sidir; siz bir tane oluşturana kadar imza alanı kilitli kalır.
 
 ## Elektronik imza nedir, ne değildir
 
@@ -171,7 +171,7 @@ Logonuz, dil tercihiniz ve en son seçtiğiniz kişi, bu bilgisayardaki bu taray
 ## Bağlantılar ve QR kodlar
 
 - **Oluşturulan bir sözleşmedeki ve koli etiketlerindeki QR kod,** PDF dahil olmak üzere o sözleşmenin salt okunur çevrimiçi bir kopyasını açar. Bağlantıya sahip olan veya kodu tarayabilen herkes bunu görüntüleyebilir; oturum açmak gerekmez. Amaç budur, böylece bir alıcı veya gümrük memuru evrakları kontrol edebilir; ancak bu, söz konusu kodları yalnızca anlaşmayı görmesi gereken kişilerle paylaşmanız gerektiği anlamına da gelir. Bağlantı, tahmin edilemeyen uzun ve rastgele bir koddur. Çevrimiçi kopya yalnızca oturum açmışken oluşturulur; o olmadan sözleşme QR kod olmadan hazırlanır ve koli etiketleri önizleme olarak işaretlenir.
-- **Karşı imza bağlantısı**, elinde bulunduran kişinin talebi açmasına ve bir kez imzalamasına, ardından kimin imzaladığını sorgulamasına olanak tanır. Bağlantıyı yalnızca imzalaması gereken kişiye gönderin.
+- **Karşı imza bağlantısı**, elinde bulunduran kişinin talebi açmasına ve bir kez imzalamasına, ardından kimin imzaladığını sorgulamasına olanak tanır. Bağlantıyı yalnızca imzalaması gereken kişiye gönderin. Ayrıca projenin en son sözleşme PDF'sini açar. Bir projeyi silmek, çevrimiçi kopyalarını ve karşı imza bağlantılarını da siler; böylece QR kodları ve imza bağlantıları artık çalışmaz.
 - **İmzanın telefona aktarımı** hiçbir şekilde saklanmaz; imzalama makalesine bakın.
 
 ## Uygulamanın iletişim kurduğu hizmetler

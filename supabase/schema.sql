@@ -261,3 +261,66 @@ grant execute on function public.exports_get_agreement_view(uuid) to anon, authe
 
 create index if not exists exports_agreement_views_user_project_idx
   on public.exports_agreement_views(user_id, project_id);
+
+-- ── PROJECT DELETE CLEANUP + SIGNER PDF (platform migration 0193) ──────────
+-- Deleting a project deletes its public agreement views (QR copies, PDFs
+-- included) and its counter-sign rows, matched on project id AND owner; and the
+-- /sign/:token page reads the newest stored agreement PDF for its project.
+create or replace function public.exports_project_delete_cleanup()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from public.exports_agreement_views
+   where project_id = old.id
+     and user_id = old.user_id;
+
+  delete from public.exports_agreement_signatures
+   where project_id = old.id
+     and user_id = old.user_id;
+
+  return old;
+end;
+$$;
+
+revoke all on function public.exports_project_delete_cleanup() from public;
+revoke all on function public.exports_project_delete_cleanup() from anon, authenticated;
+
+comment on function public.exports_project_delete_cleanup() is
+  'Universal Exports (0193): AFTER DELETE on exports_projects — removes the '
+  'project''s public agreement views (QR copies, PDFs included) and its '
+  'counter-sign rows, matched on project id AND owner.';
+
+drop trigger if exists exports_projects_after_delete_cleanup on public.exports_projects;
+create trigger exports_projects_after_delete_cleanup
+after delete on public.exports_projects
+for each row execute function public.exports_project_delete_cleanup();
+
+-- ── 2. The real PDF for the counter-signer ──────────────────────────────────
+create or replace function public.exports_get_agreement_signature_pdf(sig_token uuid)
+returns table (view_id uuid, pdf_data text, created_at timestamptz)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select v.id, v.pdf_data, v.created_at
+    from public.exports_agreement_signatures s
+    join public.exports_agreement_views v
+      on v.project_id = s.project_id
+     and v.user_id    = s.user_id          -- null owner matches nothing
+   where s.id = sig_token
+   order by v.created_at desc
+   limit 1;
+$$;
+
+revoke all on function public.exports_get_agreement_signature_pdf(uuid) from public;
+grant execute on function public.exports_get_agreement_signature_pdf(uuid) to anon, authenticated;
+
+comment on function public.exports_get_agreement_signature_pdf(uuid) is
+  'Universal Exports (0193): for the holder of a counter-sign token, the newest '
+  'stored agreement PDF of that token''s project (same owner). Empty when none '
+  'has been generated. SECURITY DEFINER: exports_agreement_views has no public '
+  'select.';

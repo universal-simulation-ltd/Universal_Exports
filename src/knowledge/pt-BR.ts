@@ -144,7 +144,7 @@ A assinatura viaja entre os dois dispositivos como uma mensagem ao vivo, única.
 
 No painel de contra-assinatura, você cria um link de assinatura para o projeto. Você pode mostrá-lo como QR code, copiá-lo ou enviá-lo por e-mail. Se o seu endereço de e-mail estiver verificado, o app pode enviar a solicitação por você, com o seu endereço como endereço de resposta; caso contrário, ele abre um rascunho no seu próprio programa de e-mail.
 
-A outra parte abre o link, precisa abrir o documento antes que o campo de assinatura seja desbloqueado e, em seguida, digita o nome e assina. A data é preenchida automaticamente. Cada link só pode ser usado para assinar uma vez. Seu painel verifica a assinatura a cada poucos segundos e mostra o nome de quem assinou e o horário da assinatura assim que ela chega.
+A outra parte abre o link, precisa abrir o documento antes que o campo de assinatura seja desbloqueado e, em seguida, digita o nome e assina. A data é preenchida automaticamente. Cada link só pode ser usado para assinar uma vez. Seu painel verifica a assinatura a cada poucos segundos e mostra o nome de quem assinou e o horário da assinatura assim que ela chega. O documento que ela abre é o PDF do contrato mais recente que você gerou ou assinou para o projeto; enquanto você não gerar um, o campo de assinatura continua bloqueado.
 
 ## O que uma assinatura eletrônica é, e o que não é
 
@@ -171,7 +171,7 @@ Seu logotipo, o idioma escolhido e o último contato selecionado ficam guardados
 ## Links e QR codes
 
 - **O QR code em um contrato gerado, e nas etiquetas para caixas,** abre uma cópia on-line somente leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha o link ou consiga escanear o código pode vê-la; não é preciso fazer login. Esse é o objetivo, para que um comprador ou um agente aduaneiro possa conferir a documentação, mas também significa que você deve compartilhar esses códigos apenas com pessoas que devem ver o negócio. O link é um código aleatório longo que não pode ser adivinhado. A cópia on-line só é criada quando você está conectado; sem ela, o contrato é gerado sem QR code e as etiquetas para caixas são marcadas como prévia.
-- **Um link de contra-assinatura** permite que quem o tiver abra a solicitação e assine uma vez e, depois, consulte quem assinou. Envie-o apenas para a pessoa que deve assinar.
+- **Um link de contra-assinatura** permite que quem o tiver abra a solicitação e assine uma vez e, depois, consulte quem assinou. Envie-o apenas para a pessoa que deve assinar. Ele também abre o PDF do contrato mais recente do projeto. Excluir um projeto exclui as cópias on-line e os links de contra-assinatura dele, então os QR codes e os links de assinatura param de funcionar.
 - **A transferência da assinatura pelo celular** não é armazenada de forma alguma; consulte o artigo sobre assinatura.
 
 ## Serviços com que o app se comunica

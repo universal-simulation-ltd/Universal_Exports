@@ -144,7 +144,7 @@ La firma viaggia tra i due dispositivi come messaggio in tempo reale monouso. Lu
 
 Dal pannello di controfirma crei un link di firma per il progetto. Puoi mostrarlo come codice QR, copiarlo o inviarlo via email. Se il tuo indirizzo email è verificato, l'app può inviare la richiesta al posto tuo, con il tuo indirizzo impostato come indirizzo di risposta; altrimenti apre una bozza nel tuo programma di posta.
 
-L'altra parte apre il link, deve aprire il documento prima che il riquadro di firma si sblocchi, poi digita il proprio nome e firma. La data viene inserita automaticamente. Ogni link può essere usato per firmare una sola volta. Il tuo pannello controlla la presenza della firma ogni pochi secondi e mostra il nome del firmatario e l'ora della firma non appena arriva.
+L'altra parte apre il link, deve aprire il documento prima che il riquadro di firma si sblocchi, poi digita il proprio nome e firma. La data viene inserita automaticamente. Ogni link può essere usato per firmare una sola volta. Il tuo pannello controlla la presenza della firma ogni pochi secondi e mostra il nome del firmatario e l'ora della firma non appena arriva. Il documento che apre è il PDF dell'accordo più recente che hai generato o firmato per il progetto; finché non ne generi uno, il riquadro di firma resta bloccato.
 
 ## Che cos'è una firma elettronica, e che cosa non è
 
@@ -171,7 +171,7 @@ Il tuo logo, la lingua scelta e l'ultimo contatto selezionato vengono ricordati 
 ## Link e codici QR
 
 - **Il codice QR su un accordo generato, e quello sulle etichette per i colli,** apre una copia online in sola lettura di quell'accordo, PDF compreso. Chiunque abbia il link o possa scansionare il codice può vederla; non serve accedere. È proprio lo scopo, così un acquirente o un funzionario doganale può controllare i documenti, ma significa anche che dovresti condividere quei codici solo con chi deve vedere l'operazione. Il link è un lungo codice casuale che non può essere indovinato. La copia online viene creata solo quando hai effettuato l'accesso; senza di essa, l'accordo viene prodotto senza codice QR e le etichette per i colli sono contrassegnate come anteprima.
-- **Un link di controfirma** permette a chiunque lo possieda di aprire la richiesta e firmarla una volta, e in seguito di vedere chi l'ha firmata. Invialo solo alla persona che deve firmare.
+- **Un link di controfirma** permette a chiunque lo possieda di aprire la richiesta e firmarla una volta, e in seguito di vedere chi l'ha firmata. Invialo solo alla persona che deve firmare. Apre anche il PDF dell'accordo più recente del progetto. Eliminando un progetto si eliminano anche le sue copie online e i link di controfirma, quindi i suoi codici QR e i link di firma smettono di funzionare.
 - **Il passaggio della firma tramite telefono** non viene archiviato affatto; consulta l'articolo sulla firma.
 
 ## Servizi con cui l'app comunica

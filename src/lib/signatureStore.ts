@@ -95,6 +95,24 @@ export async function getSignatureToken(token: string): Promise<AgreementSignatu
 }
 
 /**
+ * The agreement the counter-signer is being asked to sign: the newest PDF the
+ * drafter generated (or signed) for this token's project, as stored for its
+ * public QR view. Token-gated SECURITY DEFINER RPC (platform migration 0193) —
+ * the views table has no public select. Null when the drafter hasn't generated
+ * one yet, or on any error.
+ */
+export async function getSignaturePdf(token: string): Promise<{ pdfData: string; createdAt: string } | null> {
+  const { data, error } = await supabase.rpc('exports_get_agreement_signature_pdf', { sig_token: token })
+  if (error) {
+    console.error('[exports] getSignaturePdf failed:', error)
+    return null
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as { pdf_data?: string; created_at?: string } | null | undefined
+  if (!row?.pdf_data || !row.pdf_data.startsWith('data:application/pdf')) return null
+  return { pdfData: row.pdf_data, createdAt: row.created_at ?? '' }
+}
+
+/**
  * Mark the moment the counter-signer opened the PDF. Unlocks the signature
  * pad client-side so they can't sign without reviewing the document.
  */
