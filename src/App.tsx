@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { I18nProvider } from "@/lib/i18n";
+import { I18nRoot } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
 import { BASE_PATH } from "@/lib/basePath";
@@ -15,7 +15,6 @@ import { UniversalAppsNavBar, type AboutAppConfig } from "@unisim/sdk";
 import credits from "./generated/credits.json";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
-import FileMenu from "@/components/FileMenu";
 import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
 import Auth from "./pages/Auth.tsx";
@@ -73,27 +72,21 @@ function AppShell() {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
   const inDemoBypass = !loading && !user && hasDemoAccess() && pathname === "/app";
-  // The Actions menu now rides in the profile pill instead of sitting in its own
-  // button on the left. It used to be hidden on the landing page, on the
-  // PDF/Images convention that actions only matter inside the editor — but what
-  // is left of it is the language picker (the account rows went as duplicates of
-  // the SDK's own), and that is worth having on the landing page too.
-  // `showLanguageSelector={false}` keeps Language out of the SDK's App
-  // preferences and Global preferences dialogs (SDK 0.143): the SDK language
-  // does not translate this app — `useI18n()` does, from the row above — so a
-  // second "Language" there would be a setting that changes nothing here.
+  // Language is the SDK's (2026-09-29): App preferences / Global preferences in
+  // the profile menu set it, and `useI18n()` translates this app from the same
+  // value. The old Actions rows in the profile pill were only Exports' own
+  // Language picker (FileMenu.tsx), with `showLanguageSelector={false}` keeping
+  // the SDK's out — both went, so there is one Language, and it works.
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <UniversalAppsNavBar
         product="exports"
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}
-        actions={<FileMenu variant="rows" />}
-        // Actions ▸ Advanced ▸ Knowledge base (SDK 0.163.0): this app's own
+        // Profile menu ▸ Advanced ▸ Knowledge base (SDK 0.163.0): this app's own
         // articles, bundled from ./knowledge so they read offline.
         knowledgeBase={KNOWLEDGE_BASE}
         about={ABOUT}
-        showLanguageSelector={false}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />
@@ -131,7 +124,7 @@ function AppShell() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <I18nProvider>
+    <I18nRoot>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -141,7 +134,7 @@ const App = () => (
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </I18nProvider>
+    </I18nRoot>
   </QueryClientProvider>
 );
 

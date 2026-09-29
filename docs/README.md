@@ -99,6 +99,53 @@ never did — while the real file sat safely in the bucket the whole time.
 The same landmine was fixed in Universal PDF (`ffae15b`), Images, QR and
 Recorder — all five had copies of the identical three-step flow.
 
+## Language — the SDK's, since 2026-09-29
+
+There is one language setting, and it is the suite's: **Tune this app**
+(App preferences) and, once they appear, **Global preferences** in the profile
+menu. `src/lib/i18n/index.tsx` reads `useLanguage()` from `@unisim/sdk`, so the
+navbar, the SDK dialogs, the knowledge base and Exports' own strings always show
+the same language, and a change re-renders all of them. With no choice made it
+follows the browser, and English of any region is **English (GB)**.
+
+* **Dictionaries:** `src/lib/i18n/<code>.ts` — `en` (the shape; British
+  spelling, read by both English (GB) and English (US)), `fr`, `de`, `es`, `it`,
+  `pt-BR`, `pt-PT`, `tr`. Each is typed `Messages`, so `tsc` fails on a missing
+  or misspelt key, and `t()` only takes real keys. Lookups walk the SDK's
+  `languageFallbacks` chain, ending in English. `pt-BR`, `pt-PT` and `tr` (and
+  the five Certificate of Origin / Bill of Lading / Download PDF keys in the
+  older four) were machine-translated — worth a native speaker's pass.
+* **Coverage is partial, as it always was:** the sidebar, setup, the section
+  forms' labels and buttons, toasts and dialogs are translated; the landing
+  page, the AI import panel, CustomsLookup, the signing pages and much of
+  `MainContent.tsx` are still hard-coded English.
+* **What went:** the Language rows Exports put in the profile pill
+  (`FileMenu.tsx`, deleted — they were the only `actions` left) and
+  `showLanguageSelector={false}`, which had hidden Language from the SDK's
+  dialogs because the SDK's value did not translate this app.
+
+### ⚠️ The old `eboxy-lang` key, and Dutch
+
+Before this, Exports kept its own language in localStorage `eboxy-lang`, written
+only when somebody picked one. `src/lib/i18n/migrate.ts` runs once from
+`main.tsx`, before the provider mounts:
+
+* `en` → `en-gb`; `fr`/`de`/`es`/`it` → the same — written as **this app's
+  override** (`universal:language:exports`), never the global
+  `universal:language`. The old choice only ever applied to Exports, and every
+  Universal App on `opensource.unisim.co.uk` shares that origin's localStorage,
+  so writing the global value would re-language the neighbours too.
+* **`nl` → no override.** The SDK has no Dutch, so neither dialog could show it.
+  Those users follow the suite language — a global choice if one exists, else
+  the browser, which for a Dutch browser means English (GB). The Dutch
+  dictionary is in git history (`src/lib/i18n.tsx` before this change) for the
+  day the SDK adds `nl`.
+* An existing override wins; the legacy key is removed either way.
+
+People who never picked (no `eboxy-lang`) used to get English whatever their
+browser said; they now get their browser's language, or the global choice made
+in another Universal App on the same origin — the suite behaviour.
+
 ## Suite context
 
 This repo is one part of the **Universal Simulation suite** (the open-source

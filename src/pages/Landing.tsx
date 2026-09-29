@@ -111,7 +111,7 @@ export default function Landing() {
 
             <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <Languages className="h-3.5 w-3.5" /> 6 languages
+                <Languages className="h-3.5 w-3.5" /> 7 languages
               </span>
               <span aria-hidden>·</span>
               <span>Multi-currency</span>

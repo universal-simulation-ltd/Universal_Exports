@@ -3,6 +3,11 @@ import { UniversalProvider } from "@unisim/sdk";
 import App from "./App.tsx";
 import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
+import { migrateLegacyLanguage } from "./lib/i18n/migrate";
+
+// Before the provider mounts, so its first read of the language already sees an
+// old `eboxy-lang` choice carried across as this app's override.
+migrateLegacyLanguage();
 
 console.log(`build: ${import.meta.env.VITE_BUILD_SHA}`);
 
