@@ -4,6 +4,7 @@ import { Chip, useUniversal, useUser, useCredits, useFileDrop, useHostedUploads,
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
 import { downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { type ProjectData } from "../lib/projectStore";
+import { useFreeAllowance, nearFreeLimit } from "../lib/useFreeAllowance";
 
 const SIGNIN_URL = "https://app.unisim.co.uk/login";
 // Was /subscription.html until 2026-09-07, when the marketing site split its
@@ -21,8 +22,10 @@ const GET_TOKENS_URL = "https://www.unisim.co.uk/everyday";
 // Copy rule (2026-09-30): the allowance is never put in front of anyone before
 // they reach it. Signed out, the card only invites them to create a Universal
 // ID for FREE; signed in, there is no token talk at all (a purchased-token
-// count is the one exception). The limit is explained only once it is hit —
-// and never with a number, since the allowances are about to change.
+// count is the one exception). The limit is explained only once it is hit.
+// Near it (80%+ of the shared free "files" pool, migration 0199) one neutral
+// line gives the MB used — numbers read from free_allowance_status, never
+// hardcoded, and never shown below 80% or signed out.
 export default function HostedStoreDialog({
   open,
   onClose,
@@ -45,6 +48,8 @@ export default function HostedStoreDialog({
   // spends it before the purchased wallet, so the button gates on either.
   const { status: freeToken, refresh: refreshFreeToken } = useAppFreeToken("exports");
   const { uploads, loading: listLoading, refresh: refreshList } = useHostedUploads("exports");
+  // The shared free "files" pool's numbers — only for the near-the-limit line.
+  const { status: allowance, refresh: refreshAllowance } = useFreeAllowance("exports", open);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +70,9 @@ export default function HostedStoreDialog({
   const signedIn = !!session?.user && session.user.is_anonymous !== true;
   const tokens = credits ?? 0;
   const canStore = freeToken === "available" || tokens > 0;
+  // Talk about the limit only once it is close: 80%+ used and still room. At
+  // the limit the existing at-limit message takes over instead.
+  const near = signedIn && freeToken === "available" ? nearFreeLimit(allowance) : null;
   // What we say once the free allowance is used up and nothing was bought.
   // 'held' can be freed by deleting a backup; 'spent' cannot.
   const limitMessage = (status: typeof freeToken) =>
@@ -114,6 +122,7 @@ export default function HostedStoreDialog({
         setJustStored(true);
         refreshCredits();
         refreshFreeToken();
+        refreshAllowance();
         refreshList();
         window.setTimeout(() => setJustStored(false), 2200);
       }
@@ -153,6 +162,7 @@ export default function HostedStoreDialog({
         setMissingId((id) => (id === upload.id ? null : id));
         refreshCredits();
         refreshFreeToken();
+        refreshAllowance();
         refreshList();
       }
     } finally {
@@ -280,6 +290,12 @@ export default function HostedStoreDialog({
                   )
                 ) : (
                   <p className="mt-3 text-xs text-slate-500">Generate the agreement PDF to back it up.</p>
+                )}
+
+                {near && (
+                  <p className="mt-2 text-xs text-slate-500" data-testid="free-storage-near-limit">
+                    {`You've used ${near.usedMb} MB of your ${near.limitMb} MB of free online storage. It's shared by Universal PDF, Images, Exports and Recorder.`}
+                  </p>
                 )}
 
                 {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
