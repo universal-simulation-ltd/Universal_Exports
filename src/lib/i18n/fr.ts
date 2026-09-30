@@ -168,4 +168,9 @@ export const fr: Messages = {
   "unsaved.desc": "Vous avez des modifications non enregistrées. Voulez-vous les enregistrer ou les abandonner ?",
   "unsaved.discard": "Abandonner",
   "unsaved.save": "Enregistrer",
+  // Signature pad
+  "signature.mobile": "Signer sur mobile",
+  "signature.draw": "Dessiner",
+  "signature.upload": "Importer une signature",
+  "signature.opensOn": "La signature s'ouvre sur",
 };

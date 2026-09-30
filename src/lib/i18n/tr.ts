@@ -169,4 +169,9 @@ export const tr: Messages = {
   "unsaved.desc": "Bu bölümde kaydedilmemiş değişiklikler var. Kaydetmek mi yoksa vazgeçmek mi istersiniz?",
   "unsaved.discard": "Vazgeç",
   "unsaved.save": "Kaydet",
+  // Signature pad
+  "signature.mobile": "Telefonda imzala",
+  "signature.draw": "Çiz",
+  "signature.upload": "İmza yükle",
+  "signature.opensOn": "İmza şununla açılır",
 };

@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
-import { UnisimQr } from "@unisim/sdk";
+import { DefaultViewSelect, UnisimQr, useDefaultView } from "@unisim/sdk";
 import { supabase } from "@/lib/supabase";
 import { BASE_PATH } from "@/lib/basePath";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useI18n } from "@/lib/i18n";
 
 interface SignaturePadProps {
   value: string; // base64 data URL
@@ -28,13 +29,54 @@ function randomPin() {
   return String(n % 1_000_000).padStart(6, "0");
 }
 
+// The pad's three ways to sign. James, 2026-09-30: double-tap one to make it the
+// one the pad opens on (the SDK's useDefaultView, from Jukebox's library tabs).
+// Per device, like every default view. Draw is the app's own default.
+type SignatureMode = "mobile" | "draw" | "upload";
+const SIGNATURE_MODES = ["mobile", "draw", "upload"] as const satisfies readonly SignatureMode[];
+const SIGNATURE_MODE_ID = "signature-mode";
+const MODE_LABEL_KEYS = {
+  mobile: "signature.mobile",
+  draw: "signature.draw",
+  upload: "signature.upload",
+} as const;
+
+// The default mode is orange: filled while it is the one showing, an orange
+// outline while it is not (Jukebox's look — SDK README ▸ Default views).
+const DEFAULT_ACTIVE =
+  "data-[default-view=true]:bg-gradient-to-br data-[default-view=true]:from-[#FE8C01] data-[default-view=true]:to-[#E05504] data-[default-view=true]:text-white";
+const DEFAULT_IDLE =
+  "data-[default-view=true]:border-orange-400/70 data-[default-view=true]:text-orange-700 dark:data-[default-view=true]:text-orange-400";
+
+/** Tune this app ▸ the pad's default, for anybody who cannot double-tap. */
+export function SignatureModePreference() {
+  const { t } = useI18n();
+  return (
+    <DefaultViewSelect<SignatureMode>
+      id={SIGNATURE_MODE_ID}
+      label={t("signature.opensOn")}
+      fallback="draw"
+      views={SIGNATURE_MODES.map((m) => ({ value: m, label: t(MODE_LABEL_KEYS[m]) }))}
+    />
+  );
+}
+
 const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
+  const { t } = useI18n();
   // When the drafter is already on a phone there's no point offering the
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
+  const dv = useDefaultView<SignatureMode>(SIGNATURE_MODE_ID, "draw", { views: SIGNATURE_MODES });
+  // ⚠️ Worked out here, not from `isMobile`: that hook answers false on the
+  // first render and only corrects itself in an effect, and a phone that
+  // started in Mobile mode would already have minted a token and opened a
+  // Realtime channel for a QR it never shows. Same 768px breakpoint as
+  // hooks/use-mobile.
+  const [mode, setMode] = useState<SignatureMode>(() =>
+    dv.defaultView === "mobile" && window.innerWidth < 768 ? "draw" : dv.defaultView,
+  );
   const [mobileToken, setMobileToken] = useState<string | null>(null);
   const [mobilePin, setMobilePin] = useState<string | null>(null);
   const [mobileStatus, setMobileStatus] = useState<"idle" | "waiting" | "scanned" | "received">("idle");
@@ -187,29 +229,38 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             type="button"
             variant={mode === "mobile" ? "default" : "outline"}
             size="sm"
-            onClick={() => setMode("mobile")}
+            {...dv.buttonProps("mobile", t("signature.mobile"))}
+            className={mode === "mobile" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+            onClick={() => { dv.tap("mobile"); setMode("mobile"); }}
           >
             <Smartphone className="mr-1 h-3.5 w-3.5" />
-            Sign on mobile
+            {t("signature.mobile")}
           </Button>
         )}
         <Button
           type="button"
           variant={mode === "draw" ? "default" : "outline"}
           size="sm"
-          onClick={() => setMode("draw")}
+          {...dv.buttonProps("draw", t("signature.draw"))}
+          className={mode === "draw" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          onClick={() => { dv.tap("draw"); setMode("draw"); }}
         >
           <Pencil className="mr-1 h-3.5 w-3.5" />
-          Draw
+          {t("signature.draw")}
         </Button>
+        {/* ⚠️ The file picker opens on the first click, so its second click
+            never reaches the button on a desktop: Upload's default is set from
+            Tune this app ▸ "Signature opens on" (SignatureModePreference). */}
         <Button
           type="button"
           variant={mode === "upload" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setMode("upload"); fileRef.current?.click(); }}
+          {...dv.buttonProps("upload", t("signature.upload"))}
+          className={mode === "upload" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          onClick={() => { dv.tap("upload"); setMode("upload"); fileRef.current?.click(); }}
         >
           <Upload className="mr-1 h-3.5 w-3.5" />
-          Upload Signature
+          {t("signature.upload")}
         </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={handleClear}>

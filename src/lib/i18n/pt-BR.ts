@@ -169,4 +169,9 @@ export const ptBR: Messages = {
   "unsaved.desc": "Há alterações não salvas nesta seção. Deseja salvar ou descartar?",
   "unsaved.discard": "Descartar",
   "unsaved.save": "Salvar",
+  // Signature pad
+  "signature.mobile": "Assinar no celular",
+  "signature.draw": "Desenhar",
+  "signature.upload": "Enviar assinatura",
+  "signature.opensOn": "A assinatura abre em",
 };

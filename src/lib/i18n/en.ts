@@ -169,6 +169,12 @@ export const en = {
   "unsaved.desc": "You have unsaved changes in this section. Would you like to save or discard them?",
   "unsaved.discard": "Discard",
   "unsaved.save": "Save",
+  // Signature pad (SignaturePad.tsx) — its three ways to sign, and the
+  // Tune this app row for the one it opens on (2026-09-30).
+  "signature.mobile": "Sign on mobile",
+  "signature.draw": "Draw",
+  "signature.upload": "Upload Signature",
+  "signature.opensOn": "Signature opens on",
 } as const;
 
 export type MessageKey = keyof typeof en;

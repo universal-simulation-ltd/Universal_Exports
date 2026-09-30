@@ -168,4 +168,9 @@ export const de: Messages = {
   "unsaved.desc": "Sie haben ungespeicherte Änderungen. Möchten Sie speichern oder verwerfen?",
   "unsaved.discard": "Verwerfen",
   "unsaved.save": "Speichern",
+  // Signature pad
+  "signature.mobile": "Auf dem Handy unterschreiben",
+  "signature.draw": "Zeichnen",
+  "signature.upload": "Unterschrift hochladen",
+  "signature.opensOn": "Unterschrift öffnet mit",
 };

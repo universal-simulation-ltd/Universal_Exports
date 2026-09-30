@@ -168,4 +168,9 @@ export const es: Messages = {
   "unsaved.desc": "Tiene cambios sin guardar. ¿Desea guardar o descartar?",
   "unsaved.discard": "Descartar",
   "unsaved.save": "Guardar",
+  // Signature pad
+  "signature.mobile": "Firmar en el móvil",
+  "signature.draw": "Dibujar",
+  "signature.upload": "Subir firma",
+  "signature.opensOn": "La firma se abre en",
 };

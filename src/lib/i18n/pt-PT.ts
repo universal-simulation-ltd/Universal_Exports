@@ -169,4 +169,9 @@ export const ptPT: Messages = {
   "unsaved.desc": "Tem alterações por guardar nesta secção. Pretende guardá-las ou descartá-las?",
   "unsaved.discard": "Descartar",
   "unsaved.save": "Guardar",
+  // Signature pad
+  "signature.mobile": "Assinar no telemóvel",
+  "signature.draw": "Desenhar",
+  "signature.upload": "Carregar assinatura",
+  "signature.opensOn": "A assinatura abre em",
 };
