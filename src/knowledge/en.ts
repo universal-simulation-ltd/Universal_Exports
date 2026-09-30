@@ -112,7 +112,7 @@ The PDFs, including the export agreement and each individual document, are produ
 
 ## Hosted by UNI·SIM
 
-If you would rather keep a copy of the finished agreement online, you can store the PDF with UNI·SIM against your Universal ID. Each stored agreement uses one token, and you get the token back if you delete it.
+If you would rather keep a copy of the finished agreement online, you can store the PDF with UNI·SIM against your Universal ID. Storing agreements online is free with a Universal ID. Free accounts have a generous limit; if you ever reach it, delete an agreement you no longer need or get more.
 
 ## Demo project
 
@@ -182,7 +182,7 @@ Your logo, your language choice and the last contact you picked are remembered b
 
 ## Hosted backups
 
-If you store an agreement with Hosted by UNI·SIM, the PDF is kept in private storage tied to your Universal ID. Deleting it removes the file and returns the token.`,
+If you store an agreement with Hosted by UNI·SIM, the PDF is kept in private storage tied to your Universal ID. Deleting it removes the file.`,
   },
 ]
 

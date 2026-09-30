@@ -112,7 +112,7 @@ Bir bölümü bitirdiğinizde onu kilitleyebilirsiniz. Kilitli bir bölüm tamam
 
 ## Hosted by UNI·SIM
 
-Tamamlanmış sözleşmenin bir kopyasını çevrimiçi tutmayı tercih ederseniz PDF'i Universal ID'nize bağlı olarak UNI·SIM'de saklayabilirsiniz. Saklanan her sözleşme bir jeton kullanır ve sözleşmeyi silerseniz jetonu geri alırsınız.
+Tamamlanmış sözleşmenin bir kopyasını çevrimiçi tutmayı tercih ederseniz PDF'i Universal ID'nize bağlı olarak UNI·SIM'de saklayabilirsiniz. Sözleşmeleri çevrimiçi saklamak Universal ID ile ücretsizdir. Ücretsiz hesapların cömert bir sınırı vardır; bu sınıra bir gün ulaşırsanız artık ihtiyacınız olmayan bir sözleşmeyi silin ya da daha fazlasını edinin.
 
 ## Demo proje
 
@@ -182,7 +182,7 @@ Logonuz, dil tercihiniz ve en son seçtiğiniz kişi, bu bilgisayardaki bu taray
 
 ## Barındırılan yedekler
 
-Bir sözleşmeyi Hosted by UNI·SIM ile saklarsanız PDF, Universal ID'nize bağlı özel bir depolama alanında tutulur. Silmek dosyayı kaldırır ve jetonu iade eder.`,
+Bir sözleşmeyi Hosted by UNI·SIM ile saklarsanız PDF, Universal ID'nize bağlı özel bir depolama alanında tutulur. Silmek dosyayı kaldırır.`,
   },
 ]
 

@@ -112,7 +112,7 @@ I PDF, compresi l'accordo di esportazione e ogni singolo documento, vengono prod
 
 ## Hosted by UNI·SIM
 
-Se preferisci conservare online una copia dell'accordo finito, puoi archiviare il PDF presso UNI·SIM, associato al tuo Universal ID. Ogni accordo archiviato usa un token, e il token ti viene restituito se lo elimini.
+Se preferisci conservare online una copia dell'accordo finito, puoi archiviare il PDF presso UNI·SIM, associato al tuo Universal ID. Archiviare accordi online è gratuito con un Universal ID. Gli account gratuiti hanno un limite generoso; se mai lo raggiungi, elimina un accordo che non ti serve più oppure ottienine di più.
 
 ## Progetto dimostrativo
 
@@ -182,7 +182,7 @@ Il tuo logo, la lingua scelta e l'ultimo contatto selezionato vengono ricordati 
 
 ## Backup ospitati
 
-Se archivi un accordo con Hosted by UNI·SIM, il PDF viene conservato in uno spazio di archiviazione privato associato al tuo Universal ID. Eliminarlo rimuove il file e restituisce il token.`,
+Se archivi un accordo con Hosted by UNI·SIM, il PDF viene conservato in uno spazio di archiviazione privato associato al tuo Universal ID. Eliminarlo rimuove il file.`,
   },
 ]
 

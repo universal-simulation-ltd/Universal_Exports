@@ -112,7 +112,7 @@ Die PDFs, einschließlich der Exportvereinbarung und jedes einzelnen Dokuments, 
 
 ## Hosted by UNI·SIM
 
-Wenn Sie lieber eine Kopie der fertigen Vereinbarung online aufbewahren möchten, können Sie das PDF bei UNI·SIM unter Ihrer Universal ID speichern. Jede gespeicherte Vereinbarung verbraucht ein Token, und Sie erhalten das Token zurück, wenn Sie sie löschen.
+Wenn Sie lieber eine Kopie der fertigen Vereinbarung online aufbewahren möchten, können Sie das PDF bei UNI·SIM unter Ihrer Universal ID speichern. Vereinbarungen online zu speichern ist mit einer Universal ID kostenlos. Kostenlose Konten haben ein großzügiges Limit; sollten Sie es einmal erreichen, löschen Sie eine Vereinbarung, die Sie nicht mehr brauchen, oder holen Sie sich mehr.
 
 ## Demoprojekt
 
@@ -182,7 +182,7 @@ Ihr Logo, Ihre Sprachwahl und der zuletzt ausgewählte Kontakt werden von diesem
 
 ## Gehostete Sicherungen
 
-Wenn Sie eine Vereinbarung mit Hosted by UNI·SIM speichern, wird das PDF in einem privaten Speicher aufbewahrt, der mit Ihrer Universal ID verknüpft ist. Durch das Löschen wird die Datei entfernt und das Token zurückgegeben.`,
+Wenn Sie eine Vereinbarung mit Hosted by UNI·SIM speichern, wird das PDF in einem privaten Speicher aufbewahrt, der mit Ihrer Universal ID verknüpft ist. Durch das Löschen wird die Datei entfernt.`,
   },
 ]
 

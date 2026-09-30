@@ -112,7 +112,7 @@ Os PDFs, incluindo o contrato de exportação e cada documento individual, são 
 
 ## Hosted by UNI·SIM
 
-Se preferir manter uma cópia do contrato finalizado on-line, você pode armazenar o PDF com a UNI·SIM vinculado ao seu Universal ID. Cada contrato armazenado usa um token, e você recebe o token de volta se excluí-lo.
+Se preferir manter uma cópia do contrato finalizado on-line, você pode armazenar o PDF com a UNI·SIM vinculado ao seu Universal ID. Armazenar contratos on-line é gratuito com um Universal ID. Contas gratuitas têm um limite generoso; se algum dia você chegar a ele, exclua um contrato de que não precisa mais ou adquira mais.
 
 ## Projeto de demonstração
 
@@ -182,7 +182,7 @@ Seu logotipo, o idioma escolhido e o último contato selecionado ficam guardados
 
 ## Backups hospedados
 
-Se você armazenar um contrato com o Hosted by UNI·SIM, o PDF é mantido em um armazenamento privado vinculado ao seu Universal ID. Excluí-lo remove o arquivo e devolve o token.`,
+Se você armazenar um contrato com o Hosted by UNI·SIM, o PDF é mantido em um armazenamento privado vinculado ao seu Universal ID. Excluí-lo remove o arquivo.`,
   },
 ]
 

@@ -49,7 +49,7 @@ export async function storeExportPdf(
     sizeBytes: blob.size,
   });
   if (!consumed.ok || !consumed.upload_id) {
-    return { ok: false, error: consumed.error ?? "Could not reserve a token." };
+    return { ok: false, error: consumed.error ?? "Could not save right now." };
   }
 
   const { error: upErr } = await supabase.storage
@@ -73,7 +73,7 @@ export async function storeExportPdf(
 export async function deleteHostedExport(supabase: Supabase, upload: HostedUpload): Promise<StoreResult> {
   await supabase.storage.from(HOSTED_BUCKET).remove(hostedExportPathCandidates(upload));
   const res = await refundHostedUpload(supabase, upload.id);
-  if (!res.ok) return { ok: false, error: res.error ?? "Could not refund the token." };
+  if (!res.ok) return { ok: false, error: res.error ?? "Could not delete right now." };
   return { ok: true, creditsRemaining: res.credits };
 }
 
@@ -81,7 +81,7 @@ export async function deleteHostedExport(supabase: Supabase, upload: HostedUploa
  * Thrown when a listed backup has no object behind it anywhere we know to look.
  *
  * A distinct type so the dialog can answer honestly — name the file, say the
- * upload never completed, and offer to clear the entry and take the token back
+ * upload never completed, and offer to clear the entry (which refunds the token)
  * — instead of surfacing storage's bare "Object not found", which reads like
  * the app has lost the user's agreement.
  */

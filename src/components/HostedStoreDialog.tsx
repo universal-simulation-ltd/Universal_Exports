@@ -17,6 +17,12 @@ const GET_TOKENS_URL = "https://www.unisim.co.uk/everyday";
 // "Hosted by UNI·SIM" cloud option (one token per upload, refunded on delete) is
 // gated behind a Universal ID. Backend: 0041 + the SDK hosted helpers. The blob +
 // filename are passed in (Exports holds the PDF in local component state).
+//
+// Copy rule (2026-09-30): the allowance is never put in front of anyone before
+// they reach it. Signed out, the card only invites them to create a Universal
+// ID for FREE; signed in, there is no token talk at all (a purchased-token
+// count is the one exception). The limit is explained only once it is hit —
+// and never with a number, since the allowances are about to change.
 export default function HostedStoreDialog({
   open,
   onClose,
@@ -59,6 +65,12 @@ export default function HostedStoreDialog({
   const signedIn = !!session?.user && session.user.is_anonymous !== true;
   const tokens = credits ?? 0;
   const canStore = freeToken === "available" || tokens > 0;
+  // What we say once the free allowance is used up and nothing was bought.
+  // 'held' can be freed by deleting a backup; 'spent' cannot.
+  const limitMessage = (status: typeof freeToken) =>
+    status === "spent"
+      ? "You've used your free online storage for agreements. Get more to keep backing up agreements online."
+      : "You've used your free online storage for agreements. Delete a stored agreement to make room, or get more.";
   const hasProject = Object.keys(project.forms ?? {}).length > 0;
 
   function close() {
@@ -94,8 +106,8 @@ export default function HostedStoreDialog({
       const res = await storeExportPdf(supabase, activeOrgId, blob, fileName);
       if (!res.ok) {
         setError(
-          res.error === "no_credits"
-            ? "You have no tokens left. Get more to keep storing agreements online."
+          res.error === "no_credits" || res.error === "token_in_use"
+            ? limitMessage(freeToken === "spent" ? "spent" : "held")
             : res.error ?? "Could not store this agreement.",
         );
       } else {
@@ -223,15 +235,15 @@ export default function HostedStoreDialog({
           <div className="rounded-xl border border-orange-200 bg-white p-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-900">Hosted by UNI SIM</span>
-              <Chip size="sm">Universal subscription</Chip>
+              <Chip size="sm">Free with Universal ID</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              Keep this agreement PDF online against your Universal ID. One token per upload — delete it and your token comes straight back.
+              Keep this agreement PDF online against your Universal ID, so you can get it back on any device.
             </p>
 
             {!signedIn ? (
               <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                <p className="text-sm text-slate-700">Sign in with your <strong>Universal ID</strong> to store agreements online.</p>
+                <p className="text-sm text-slate-700">Create a <strong>Universal ID</strong> to keep export agreements online for FREE.</p>
                 <a href={SIGNIN_URL} className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
                   Create / sign in with Universal ID →
                 </a>
@@ -240,11 +252,11 @@ export default function HostedStoreDialog({
               <div className="mt-3">
                 <div className="flex items-center justify-between rounded-lg bg-orange-50/60 px-3 py-2 text-sm">
                   <span className="text-slate-600">{user?.email}</span>
-                  <span className="font-semibold text-orange-700">
-                    {freeToken === "available"
-                      ? `Free token${tokens > 0 ? ` + ${tokens} purchased` : " available"}`
-                      : `${tokens} token${tokens === 1 ? "" : "s"}`}
-                  </span>
+                  {tokens > 0 && (
+                    <span className="font-semibold text-orange-700">
+                      {`${tokens} purchased token${tokens === 1 ? "" : "s"}`}
+                    </span>
+                  )}
                 </div>
 
                 {blob ? (
@@ -254,17 +266,15 @@ export default function HostedStoreDialog({
                       disabled={busy}
                       className="mt-3 w-full rounded-lg bg-orange-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-orange-800 disabled:opacity-50"
                     >
-                      {busy ? "Backing up…" : justStored ? "✓ Backed up (1 token used)" : "Back up this agreement online (1 token)"}
+                      {busy ? "Backing up…" : justStored ? "✓ Backed up" : "Back up this agreement online"}
                     </button>
                   ) : freeToken === null ? null : (
                     <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
                       <p className="text-sm text-amber-800">
-                        {freeToken === "held"
-                          ? "Your free Exports token is in use — delete the stored agreement below to get it back, or add tokens."
-                          : "You have no tokens left."}
+                        {limitMessage(freeToken)}
                       </p>
                       <a href={GET_TOKENS_URL} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-3.5 py-2 text-sm font-semibold text-white hover:bg-orange-800">
-                        Get tokens →
+                        Get more →
                       </a>
                     </div>
                   )
@@ -291,14 +301,14 @@ export default function HostedStoreDialog({
                               <span className="block text-[10px] text-slate-400">{new Date(u.created_at).toLocaleDateString()}</span>
                             </span>
                             <button onClick={() => onOpen(u)} disabled={busy} className="shrink-0 rounded-md bg-orange-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-800 disabled:opacity-50">Open</button>
-                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 disabled:opacity-50" title="Delete and refund the token">Delete</button>
+                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 disabled:opacity-50" title="Delete this backup">Delete</button>
                           </div>
 
                           {/* A backup with nothing behind it. Say which file,
                               say plainly that the upload never finished, and
-                              make clearing it up one click — the token comes
-                              back with it, so there is nothing to lose by
-                              tidying. This replaces storage's bare "Object not
+                              make clearing it up one click (the token comes
+                              back with it, though the copy no longer says so —
+                              no token talk below the limit). This replaces storage's bare "Object not
                               found", which read like the app had mislaid the
                               user's agreement. */}
                           {missingId === u.id && (
@@ -310,7 +320,6 @@ export default function HostedStoreDialog({
                               <p className="text-[11px] leading-snug text-amber-900">
                                 <strong className="font-semibold">{u.file_name || "export-agreement.pdf"}</strong> is listed here,
                                 but there is no file behind it — this upload never finished, so nothing was ever stored.
-                                Your token is still being held for it.
                               </p>
                               <button
                                 type="button"
@@ -318,7 +327,7 @@ export default function HostedStoreDialog({
                                 disabled={busy}
                                 className="mt-2 inline-flex rounded-md bg-amber-700 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-amber-800 disabled:opacity-50"
                               >
-                                Remove this entry and get the token back
+                                Remove this entry
                               </button>
                             </div>
                           )}

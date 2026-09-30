@@ -112,7 +112,7 @@ Les PDF, y compris l'accord d'exportation et chaque document individuel, sont pr
 
 ## Hosted by UNI·SIM
 
-Si vous préférez conserver une copie en ligne de l'accord finalisé, vous pouvez stocker le PDF chez UNI·SIM, rattaché à votre Universal ID. Chaque accord stocké utilise un jeton, et le jeton vous est rendu si vous le supprimez.
+Si vous préférez conserver une copie en ligne de l'accord finalisé, vous pouvez stocker le PDF chez UNI·SIM, rattaché à votre Universal ID. Le stockage d'accords en ligne est gratuit avec un Universal ID. Les comptes gratuits disposent d'une limite généreuse ; si vous l'atteignez un jour, supprimez un accord dont vous n'avez plus besoin ou obtenez-en davantage.
 
 ## Projet de démonstration
 
@@ -182,7 +182,7 @@ Votre logo, votre choix de langue et le dernier contact que vous avez sélection
 
 ## Sauvegardes hébergées
 
-Si vous stockez un accord avec Hosted by UNI·SIM, le PDF est conservé dans un espace de stockage privé rattaché à votre Universal ID. Le supprimer efface le fichier et vous rend le jeton.`,
+Si vous stockez un accord avec Hosted by UNI·SIM, le PDF est conservé dans un espace de stockage privé rattaché à votre Universal ID. Le supprimer efface le fichier.`,
   },
 ]
 

@@ -112,7 +112,7 @@ Los PDF, incluidos el acuerdo de exportación y cada documento individual, los g
 
 ## Hosted by UNI·SIM
 
-Si prefiere conservar una copia del acuerdo terminado en línea, puede almacenar el PDF en UNI·SIM vinculado a su Universal ID. Cada acuerdo almacenado utiliza un token, y el token se le devuelve si lo elimina.
+Si prefiere conservar una copia del acuerdo terminado en línea, puede almacenar el PDF en UNI·SIM vinculado a su Universal ID. Almacenar acuerdos en línea es gratis con un Universal ID. Las cuentas gratuitas tienen un límite generoso; si alguna vez lo alcanza, elimine un acuerdo que ya no necesite u obtenga más.
 
 ## Proyecto de demostración
 
@@ -182,7 +182,7 @@ Su logotipo, el idioma elegido y el último contacto que seleccionó los recuerd
 
 ## Copias alojadas
 
-Si almacena un acuerdo con Hosted by UNI·SIM, el PDF se conserva en un almacenamiento privado vinculado a su Universal ID. Al eliminarlo se borra el archivo y se le devuelve el token.`,
+Si almacena un acuerdo con Hosted by UNI·SIM, el PDF se conserva en un almacenamiento privado vinculado a su Universal ID. Al eliminarlo se borra el archivo.`,
   },
 ]
 
