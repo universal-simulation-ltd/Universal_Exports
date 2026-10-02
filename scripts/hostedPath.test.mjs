@@ -104,6 +104,18 @@ eq(
   'the two never duplicate when they agree',
 )
 
+
+console.log('\nR2 rows (migration 0226 -- storage_backend says where the bytes live):')
+eq(
+  hostedExportPathCandidates({ id: UPLOAD, org_id: ORG, storage_path: `${ORG}/exports/moved-elsewhere.pdf`, file_name: 'x.pdf', storage_backend: 'r2' }),
+  [`${ORG}/exports/moved-elsewhere.pdf`],
+  'an R2 row is its recorded path only -- no legacy guess the R2 signer would refuse',
+)
+eq(
+  hostedExportPathCandidates({ id: UPLOAD, org_id: ORG, storage_path: `${ORG}/exports/moved-elsewhere.pdf`, file_name: 'x.pdf', storage_backend: 'supabase' }).length,
+  2,
+  "a 'supabase' row keeps the legacy fallback exactly as before",
+)
 console.log('\nnewObjectId:')
 const idA = newObjectId()
 const idB = newObjectId()
