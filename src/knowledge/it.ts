@@ -112,7 +112,7 @@ I PDF, compresi l'accordo di esportazione e ogni singolo documento, vengono prod
 
 ## Hosted by UNI·SIM
 
-Se preferisci conservare online una copia dell'accordo finito, puoi archiviare il PDF presso UNI·SIM, associato al tuo Universal ID. Archiviare accordi online è gratuito con un Universal ID. Gli account gratuiti hanno un limite generoso; se mai lo raggiungi, elimina un accordo che non ti serve più oppure ottienine di più.
+Se preferisci conservare online una copia dell'accordo finito, puoi archiviare il PDF presso UNI·SIM, associato al tuo Universal ID. Archiviare accordi online è gratuito con un Universal ID. Gli account gratuiti hanno un limite generoso; se mai lo raggiungi, elimina un accordo che non ti serve più. Se ti serve di più, faccelo sapere su unisim.co.uk/support.
 
 ## Progetto dimostrativo
 

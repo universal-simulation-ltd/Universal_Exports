@@ -112,7 +112,7 @@ Bir bölümü bitirdiğinizde onu kilitleyebilirsiniz. Kilitli bir bölüm tamam
 
 ## Hosted by UNI·SIM
 
-Tamamlanmış sözleşmenin bir kopyasını çevrimiçi tutmayı tercih ederseniz PDF'i Universal ID'nize bağlı olarak UNI·SIM'de saklayabilirsiniz. Sözleşmeleri çevrimiçi saklamak Universal ID ile ücretsizdir. Ücretsiz hesapların cömert bir sınırı vardır; bu sınıra bir gün ulaşırsanız artık ihtiyacınız olmayan bir sözleşmeyi silin ya da daha fazlasını edinin.
+Tamamlanmış sözleşmenin bir kopyasını çevrimiçi tutmayı tercih ederseniz PDF'i Universal ID'nize bağlı olarak UNI·SIM'de saklayabilirsiniz. Sözleşmeleri çevrimiçi saklamak Universal ID ile ücretsizdir. Ücretsiz hesapların cömert bir sınırı vardır; bu sınıra bir gün ulaşırsanız artık ihtiyacınız olmayan bir sözleşmeyi silin. Daha fazlasına ihtiyacınız olursa unisim.co.uk/support adresinden bize bildirin.
 
 ## Demo proje
 

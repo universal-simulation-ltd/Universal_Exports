@@ -112,7 +112,7 @@ The PDFs, including the export agreement and each individual document, are produ
 
 ## Hosted by UNI·SIM
 
-If you would rather keep a copy of the finished agreement online, you can store the PDF with UNI·SIM against your Universal ID. Storing agreements online is free with a Universal ID. Free accounts have a generous limit; if you ever reach it, delete an agreement you no longer need or get more.
+If you would rather keep a copy of the finished agreement online, you can store the PDF with UNI·SIM against your Universal ID. Storing agreements online is free with a Universal ID. Free accounts have a generous limit; if you ever reach it, delete an agreement you no longer need. If you need more, tell us at unisim.co.uk/support.
 
 ## Demo project
 

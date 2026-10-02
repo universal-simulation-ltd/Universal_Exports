@@ -7,12 +7,10 @@ import { type ProjectData } from "../lib/projectStore";
 import { useFreeAllowance, nearFreeLimit } from "../lib/useFreeAllowance";
 
 const SIGNIN_URL = "https://app.unisim.co.uk/login";
-// Was /subscription.html until 2026-09-07, when the marketing site split its
-// one pricing page in two. The token card moved to /everyday; /subscription is
-// now the Assess Suite's seats and licences and sells no tokens at all — so a
-// link left pointing there sends someone who wants one upload to a £5,000/year
-// enterprise plan. Not a 404: it renders fine, which is why it needed finding.
-const GET_TOKENS_URL = "https://www.unisim.co.uk/everyday";
+// Nothing is for sale for the everyday apps (2026-10-03): at the free limit the
+// note says how to make room, and one quiet link asks people who need more to
+// tell us — that is the signal for when a paid tier is worth building.
+const NEED_MORE_URL = "https://www.unisim.co.uk/support";
 // Where a signed-in Universal ID with no company sets one up. Opened in a new
 // tab so the agreement being worked on here is not navigated away from.
 const SET_UP_COMPANY_URL = "https://app.unisim.co.uk/branding";
@@ -85,8 +83,8 @@ export default function HostedStoreDialog({
   // 'held' can be freed by deleting a backup; 'spent' cannot.
   const limitMessage = (status: typeof freeToken) =>
     status === "spent"
-      ? "You've used your free online storage for agreements. Get more to keep backing up agreements online."
-      : "You've used your free online storage for agreements. Delete a stored agreement to make room, or get more.";
+      ? "You've used your free online storage for agreements."
+      : "You've used your free online storage for agreements. Delete a stored agreement to make room.";
   const hasProject = Object.keys(project.forms ?? {}).length > 0;
 
   function close() {
@@ -300,8 +298,8 @@ export default function HostedStoreDialog({
                       <p className="text-sm text-amber-800">
                         {limitMessage(freeToken)}
                       </p>
-                      <a href={GET_TOKENS_URL} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-3.5 py-2 text-sm font-semibold text-white hover:bg-orange-800">
-                        Get more →
+                      <a href={NEED_MORE_URL} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-xs text-amber-800 underline underline-offset-2 hover:text-amber-950">
+                        Need more? Tell us
                       </a>
                     </div>
                   )
