@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Chip, useUniversal, useUser, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
+import { Chip, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
 import { downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { type ProjectData } from "../lib/projectStore";
@@ -13,6 +13,9 @@ const SIGNIN_URL = "https://app.unisim.co.uk/login";
 // link left pointing there sends someone who wants one upload to a £5,000/year
 // enterprise plan. Not a 404: it renders fine, which is why it needed finding.
 const GET_TOKENS_URL = "https://www.unisim.co.uk/everyday";
+// Where a signed-in Universal ID with no company sets one up. Opened in a new
+// tab so the agreement being worked on here is not navigated away from.
+const SET_UP_COMPANY_URL = "https://app.unisim.co.uk/branding";
 
 // "Back up this agreement" — the export PDF is generated on-device; the paid
 // "Hosted by UNI·SIM" cloud option (one token per upload, refunded on delete) is
@@ -42,6 +45,11 @@ export default function HostedStoreDialog({
   onImportProject: (project: ProjectData) => void;
 }) {
   const { supabase, session, activeOrgId } = useUniversal();
+  // Online copies are kept with a company, so a signed-in ID that belongs to
+  // none has nowhere to store one. Only a SUCCESSFUL empty read counts as "no
+  // company" — a failed read is unknown, and never a reason to offer one.
+  const { orgs, loading: orgsLoading, error: orgsError } = useOrg();
+  const noCompany = !orgsLoading && !orgsError && orgs.length === 0;
   const { user } = useUser();
   const { credits, refresh: refreshCredits } = useCredits();
   // Every org gets one free returnable Exports token (migration 0045) — the RPC
@@ -72,7 +80,7 @@ export default function HostedStoreDialog({
   const canStore = freeToken === "available" || tokens > 0;
   // Talk about the limit only once it is close: 80%+ used and still room. At
   // the limit the existing at-limit message takes over instead.
-  const near = signedIn && freeToken === "available" ? nearFreeLimit(allowance) : null;
+  const near = signedIn && !noCompany && freeToken === "available" ? nearFreeLimit(allowance) : null;
   // What we say once the free allowance is used up and nothing was bought.
   // 'held' can be freed by deleting a backup; 'spent' cannot.
   const limitMessage = (status: typeof freeToken) =>
@@ -269,7 +277,16 @@ export default function HostedStoreDialog({
                   )}
                 </div>
 
-                {blob ? (
+                {noCompany ? (
+                  <div className="mt-3" data-testid="hosted-no-company">
+                    <p className="text-sm text-slate-600">
+                      Online agreements are kept with your company, and your Universal ID doesn’t have one yet. Setting one up is free.
+                    </p>
+                    <a href={SET_UP_COMPANY_URL} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
+                      Set up a company →
+                    </a>
+                  </div>
+                ) : blob ? (
                   canStore ? (
                     <button
                       onClick={onStore}
