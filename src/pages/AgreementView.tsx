@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Download, Eye, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAgreementView, type AgreementViewRow } from "@/lib/agreementViewStore";
+import { pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
 
 /**
  * Public read-only agreement page — the QR stamped on every generated Export
@@ -31,22 +32,15 @@ const AgreementView = () => {
 
   // The PDF is stored as a data URL; iframes and downloads behave better with
   // a blob URL (Safari refuses top-level data: navigation entirely).
+  // ⚠️ Built as application/pdf whatever the row claims: the row is written by
+  // the drafter, and a blob: URL of another type (text/html) would run as a
+  // page of THIS origin inside the iframe. See safeDataUrl.ts.
   useEffect(() => {
-    if (!view?.pdf_data.startsWith("data:")) return;
-    let url: string | null = null;
-    let active = true;
-    fetch(view.pdf_data)
-      .then((r) => r.blob())
-      .then((b) => {
-        if (!active) return;
-        url = URL.createObjectURL(b);
-        setPdfUrl(url);
-      })
-      .catch(() => { /* leave pdfUrl null — the snapshot still renders */ });
-    return () => {
-      active = false;
-      if (url) URL.revokeObjectURL(url);
-    };
+    const blob = pdfBlobFromDataUrl(view?.pdf_data);
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    setPdfUrl(url);
+    return () => URL.revokeObjectURL(url);
   }, [view]);
 
   if (loading) {
@@ -98,12 +92,12 @@ const AgreementView = () => {
             <span className="text-xs font-medium text-muted-foreground">
               {snap.signedBy ? "Signed copy" : "Overview (unsigned)"}
             </span>
-            <a href={pdfUrl} download={downloadName}>
-              <Button type="button" variant="outline" size="sm">
-                <Download className="mr-1.5 h-3.5 w-3.5" />
+            <Button asChild variant="outline" size="sm">
+              <a href={pdfUrl} download={downloadName}>
+                <Download className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                 Download PDF
-              </Button>
-            </a>
+              </a>
+            </Button>
           </div>
           <iframe
             title="Export Agreement"

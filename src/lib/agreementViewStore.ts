@@ -45,6 +45,10 @@ export async function saveAgreementView(args: {
   pdfBlob: Blob
 }): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser()
+  // Inserts are owner-only (RLS: user_id = auth.uid()), so signed out — the
+  // /demo walkthrough — the insert can only be refused with a 401. Don't send
+  // it: the caller already builds a QR-less PDF when this returns false.
+  if (!user) return false
 
   const { signature, qr: _qr, ...rest } = args.input
   const snapshot: AgreementViewSnapshot = {
@@ -57,7 +61,7 @@ export async function saveAgreementView(args: {
   const { error } = await supabase.from('exports_agreement_views').insert({
     id: args.id,
     project_id: args.projectId,
-    user_id: user?.id ?? null,
+    user_id: user.id,
     project_name: args.projectName,
     snapshot,
     pdf_data,

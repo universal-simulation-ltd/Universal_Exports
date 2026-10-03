@@ -13,6 +13,7 @@ import {
   submitCounterSignature,
   type AgreementSignature,
 } from "@/lib/signatureStore";
+import { isImageDataUrl, pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
 
 /**
  * Counter-sign landing page — the QR / link the drafter sends opens here.
@@ -28,17 +29,6 @@ import {
  *
  * No auth required — the token uuid in the URL is the bearer credential.
  */
-/** A stored `data:application/pdf;base64,…` URL as a Blob. A data: URL can't be
- *  navigated to as a top-level page in Chromium, but a blob: URL can. */
-function dataUrlToBlob(dataUrl: string): Blob {
-  const [head, b64 = ""] = dataUrl.split(",", 2);
-  const mime = /^data:([^;,]+)/.exec(head)?.[1] ?? "application/pdf";
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new Blob([bytes], { type: mime });
-}
-
 /** A plain message in the review tab. Built with the DOM API rather than
  *  innerHTML: project_name is set by the drafter and shown to the signer, so a
  *  template string would be a stored-XSS sink; textContent escapes it. */
@@ -91,7 +81,10 @@ const Sign = () => {
     // The real agreement: the newest PDF the drafter generated or signed for
     // this project, as stored for its QR view (platform migration 0193).
     const pdf = await getSignaturePdf(token);
-    if (!pdf) {
+    // Always an application/pdf Blob, whatever the stored string claims — a
+    // blob: URL of another type would open in this origin (see safeDataUrl.ts).
+    const pdfBlob = pdfBlobFromDataUrl(pdf?.pdfData);
+    if (!pdfBlob) {
       // Nothing to review, so nothing is unlocked: signing a document you were
       // never shown is exactly what the "open it first" gate exists to stop.
       if (pdfWindow) {
@@ -106,7 +99,7 @@ const Sign = () => {
       return;
     }
 
-    const url = URL.createObjectURL(dataUrlToBlob(pdf.pdfData));
+    const url = URL.createObjectURL(pdfBlob);
     if (pdfWindow) pdfWindow.location.href = url;
     else window.location.assign(url); // popup blocked: open it in this tab instead
     // Long enough for the viewer to have read the blob; it holds no secret.
@@ -196,7 +189,7 @@ const Sign = () => {
               ? format(new Date(record.counter_signed_at), "PPP")
               : "today"}.
           </p>
-          {record.counter_signer_signature && (
+          {isImageDataUrl(record.counter_signer_signature) && (
             <div className="rounded-md border border-emerald-200 bg-white p-2 inline-block">
               <img
                 src={record.counter_signer_signature}

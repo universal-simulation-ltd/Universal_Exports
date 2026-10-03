@@ -10,6 +10,7 @@ import {
   type AgreementSignature,
 } from "@/lib/signatureStore";
 import { BASE_PATH } from "@/lib/basePath";
+import { isImageDataUrl } from "@/lib/safeDataUrl";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -240,7 +241,8 @@ Thank you.`;
           <strong>{active.counter_signer_name}</strong> signed on{" "}
           {active.counter_signed_at ? format(new Date(active.counter_signed_at), "PPP p") : "—"}.
         </p>
-        {active.counter_signer_signature && (
+        {/* Written by whoever held the link: show it only if it really is an image. */}
+        {isImageDataUrl(active.counter_signer_signature) && (
           <div className="inline-block rounded-md border border-emerald-200 bg-white p-2">
             <img
               src={active.counter_signer_signature}
