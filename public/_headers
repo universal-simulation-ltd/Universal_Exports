@@ -1,5 +1,12 @@
 # Force HTTPS: instruct browsers to only ever connect over TLS (mirrors the
 # marketing site). The HTTP→HTTPS redirect itself is the Cloudflare zone
 # "Always Use HTTPS" setting.
+#
+# No framing: nothing embeds this app (the SDK's sign-in handoff is links, not
+# iframes), and the public signing pages must not be framed — a page inside
+# someone else's iframe can be overlaid to trick a click on "Submit
+# signature" (clickjacking). Both headers, for browsers that know only one.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'
