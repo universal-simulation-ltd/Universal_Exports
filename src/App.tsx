@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,13 +16,17 @@ import { UniversalAppsNavBar, type AboutAppConfig } from "@unisim/sdk";
 import credits from "./generated/credits.json";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
-import Index from "./pages/Index.tsx";
 import Landing from "./pages/Landing.tsx";
-import Auth from "./pages/Auth.tsx";
-import Sign from "./pages/Sign.tsx";
-import SignMobile from "./pages/SignMobile.tsx";
-import AgreementView from "./pages/AgreementView.tsx";
 import NotFound from "./pages/NotFound.tsx";
+
+// Every page but the landing page loads on demand. The editor (Index →
+// MainContent and the PDF builders) is most of the app's code, and the people
+// opening a /sign or /view link from an email or a QR code never need it.
+const Index = lazy(() => import("./pages/Index.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Sign = lazy(() => import("./pages/Sign.tsx"));
+const SignMobile = lazy(() => import("./pages/SignMobile.tsx"));
+const AgreementView = lazy(() => import("./pages/AgreementView.tsx"));
 import { KNOWLEDGE_BASE } from './knowledge'
 
 // "About this app". Since SDK 0.161 the SDK draws the row at the foot of "Tune
@@ -96,27 +101,29 @@ function AppShell() {
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-auto">
-        <Routes>
-          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          <Route path="/" element={<Landing />} />
-          <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-          {/* Hidden gate bypass for demos — not linked from anywhere. */}
-          <Route path="/demo" element={<DemoEntry />} />
-          {/* Public counter-sign route — no auth gate. The uuid token
-              in the URL is the bearer credential and the row is RLS-
-              readable only when the caller knows it. */}
-          <Route path="/sign/:token" element={<Sign />} />
-          {/* Mobile-signature handoff — desktop SignaturePad shows a
-              QR that opens this page on the user's phone. Public,
-              no auth needed (demo-only, same-device localStorage
-              handoff for now). */}
-          <Route path="/sign-mobile/:token" element={<SignMobile />} />
-          {/* Public read-only agreement view — the QR stamped on every
-              generated PDF opens here. Token-gated like /sign. */}
-          <Route path="/view/:token" element={<AgreementView />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* Hidden gate bypass for demos — not linked from anywhere. */}
+            <Route path="/demo" element={<DemoEntry />} />
+            {/* Public counter-sign route — no auth gate. The uuid token
+                in the URL is the bearer credential and the row is RLS-
+                readable only when the caller knows it. */}
+            <Route path="/sign/:token" element={<Sign />} />
+            {/* Mobile-signature handoff — desktop SignaturePad shows a
+                QR that opens this page on the user's phone. Public,
+                no auth needed (demo-only, same-device localStorage
+                handoff for now). */}
+            <Route path="/sign-mobile/:token" element={<SignMobile />} />
+            {/* Public read-only agreement view — the QR stamped on every
+                generated PDF opens here. Token-gated like /sign. */}
+            <Route path="/view/:token" element={<AgreementView />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );

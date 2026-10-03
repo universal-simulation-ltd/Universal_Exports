@@ -37,13 +37,13 @@ import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { type ProjectData } from "@/lib/projectStore";
 import { unisimQrPngDataUrl } from "@unisim/sdk";
 import { saveAgreementView } from "@/lib/agreementViewStore";
-import { buildQrSheetPdf } from "@/lib/qrSheetPdf";
 import { downloadDealXml } from "@/lib/dealXml";
-import {
-  buildAgreementPdf,
-  type AgreementPdfInput,
-  type AgreementSignatureBlock,
-} from "@/lib/exportAgreementPdf";
+import type { AgreementPdfInput, AgreementSignatureBlock } from "@/lib/exportAgreementPdf";
+
+// The PDF builders (and jsPDF behind them, ~300 kB) load on first use, not
+// with the editor: most visits never generate a PDF.
+const loadAgreementPdf = () => import("@/lib/exportAgreementPdf");
+const loadQrSheetPdf = () => import("@/lib/qrSheetPdf");
 
 interface Props {
   /** True only when the checklist has no missing items. */
@@ -131,6 +131,7 @@ const ExportAgreementWorkflow = ({
   // (the main document must never carry a code that points nowhere).
   const buildPdfWithViewLink = useCallback(async (sig: AgreementSignatureBlock | null) => {
     const input = buildPdfInput(sig);
+    const { buildAgreementPdf } = await loadAgreementPdf();
     const token = crypto.randomUUID();
     const viewUrl =
       `${window.location.origin}${BASE_PATH}/view/${token}`;
@@ -182,8 +183,9 @@ const ExportAgreementWorkflow = ({
   }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl, onGenerated]);
 
   // ── Sheet of 8 printable QR scan-labels (for sticking on products) ─────────
-  const handlePrintQrSheet = useCallback(() => {
+  const handlePrintQrSheet = useCallback(async () => {
     if (!qrInfo) return;
+    const { buildQrSheetPdf } = await loadQrSheetPdf();
     const { blob } = buildQrSheetPdf({
       dataUrl: qrInfo.dataUrl,
       url: qrInfo.url,

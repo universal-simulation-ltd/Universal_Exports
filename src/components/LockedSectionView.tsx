@@ -2,7 +2,7 @@ import { CheckCircle2, Download, Pencil } from "lucide-react";
 import { ValueChip } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { downloadDocumentPdf, type DocPdfParty } from "@/lib/documentPdf";
+import type { DocPdfParty } from "@/lib/documentPdf";
 
 export interface DocBranding {
   from?: DocPdfParty | null;
@@ -24,7 +24,9 @@ interface LockedSectionViewProps {
 const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding }: LockedSectionViewProps) => {
   const { t } = useI18n();
 
-  const handleDownload = () => {
+  // jsPDF loads on the first download, not with the editor.
+  const handleDownload = async () => {
+    const { downloadDocumentPdf } = await import("@/lib/documentPdf");
     downloadDocumentPdf({
       title,
       fields,
