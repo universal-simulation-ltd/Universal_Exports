@@ -94,8 +94,13 @@ const CounterSignPanel = ({ projectId, projectName, counterparty }: Props) => {
 
     let active = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    // Paused while the tab is hidden (a drafter can leave this open for
+    // hours); checked again the moment they come back to it.
+    let parked = false;
 
     const tick = async () => {
+      timer = null;
+      if (document.hidden) { parked = true; return; }
       const rows = await listSignatureTokens(projectId);
       if (!active) return;
       setTokens(rows);
@@ -105,11 +110,16 @@ const CounterSignPanel = ({ projectId, projectName, counterparty }: Props) => {
         timer = setTimeout(tick, 8000);
       }
     };
+    const onVisible = () => {
+      if (!document.hidden && parked && active) { parked = false; void tick(); }
+    };
+    document.addEventListener("visibilitychange", onVisible);
     tick();
 
     return () => {
       active = false;
       if (timer) clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [projectId, isDemo]);
 
