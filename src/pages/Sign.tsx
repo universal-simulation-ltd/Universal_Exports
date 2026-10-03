@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { format } from "date-fns";
-import { FileText, ShieldCheck, ExternalLink, CheckCircle2 } from "lucide-react";
+import { FileText, ShieldCheck, ExternalLink, CheckCircle2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignaturePad from "@/components/SignaturePad";
@@ -14,6 +13,8 @@ import {
   type AgreementSignature,
 } from "@/lib/signatureStore";
 import { isImageDataUrl, pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
+import { useI18n } from "@/lib/i18n";
+import { fillNodes, formatLongDate } from "@/lib/i18n/format";
 
 /**
  * Counter-sign landing page — the QR / link the drafter sends opens here.
@@ -32,13 +33,13 @@ import { isImageDataUrl, pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
 /** A plain message in the review tab. Built with the DOM API rather than
  *  innerHTML: project_name is set by the drafter and shown to the signer, so a
  *  template string would be a stored-XSS sink; textContent escapes it. */
-function writeNote(doc: Document, projectName: string, message: string) {
+function writeNote(doc: Document, heading: string, projectName: string, message: string) {
   doc.body.replaceChildren();
   const wrap = doc.createElement("div");
   wrap.setAttribute("style", "font-family: system-ui, sans-serif; padding: 40px; max-width: 720px; margin: 40px auto;");
   const h1 = doc.createElement("h1");
   h1.setAttribute("style", "font-size: 22px; margin-bottom: 8px;");
-  h1.textContent = "Export Agreement";
+  h1.textContent = heading;
   const name = doc.createElement("p");
   name.setAttribute("style", "color: #475569;");
   name.textContent = projectName;
@@ -51,31 +52,42 @@ function writeNote(doc: Document, projectName: string, message: string) {
 
 const Sign = () => {
   const { token = "" } = useParams<{ token: string }>();
+  // The signer is usually the OTHER side of the trade, often abroad: every
+  // string here follows their language (the SDK's: browser, unless they chose).
+  const { t, lang } = useI18n();
   const [record, setRecord] = useState<AgreementSignature | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [name, setName] = useState("");
   const [signature, setSignature] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = formatLongDate(lang, new Date());
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
-    getSignatureToken(token).then((r) => {
-      if (!active) return;
-      setRecord(r);
-      setLoading(false);
-    });
+    setStatus("loading");
+    getSignatureToken(token).then(
+      (r) => {
+        if (!active) return;
+        setRecord(r);
+        setStatus("ready");
+      },
+      () => { if (active) setStatus("error"); },
+    );
     return () => { active = false };
   }, [token]);
 
+  useEffect(() => load(), [load]);
+
   const handleOpenDocument = async () => {
+    const heading = t("public.agreement");
     // Pop the new tab synchronously inside the click handler so popup blockers
     // don't trip, then point it at the PDF once it has loaded.
     const pdfWindow = window.open("about:blank", "_blank");
-    const projectName = record?.project_name ?? "Export Agreement";
+    const projectName = record?.project_name || heading;
     if (pdfWindow) {
-      pdfWindow.document.title = `Export Agreement — ${projectName}`;
-      writeNote(pdfWindow.document, projectName, "Loading the agreement…");
+      pdfWindow.document.title = `${heading} — ${projectName}`;
+      pdfWindow.document.documentElement.lang = lang;
+      writeNote(pdfWindow.document, heading, projectName, t("sign.tabLoading"));
     }
 
     // The real agreement: the newest PDF the drafter generated or signed for
@@ -87,15 +99,8 @@ const Sign = () => {
     if (!pdfBlob) {
       // Nothing to review, so nothing is unlocked: signing a document you were
       // never shown is exactly what the "open it first" gate exists to stop.
-      if (pdfWindow) {
-        writeNote(
-          pdfWindow.document,
-          projectName,
-          "The sender hasn't generated the Export Agreement PDF yet, so there is nothing to review. " +
-            "Ask them to generate it, then open your signing link again.",
-        );
-      }
-      toast.error("The agreement isn't ready to review yet — ask the sender to generate it.");
+      if (pdfWindow) writeNote(pdfWindow.document, heading, projectName, t("sign.tabNotReady"));
+      toast.error(t("sign.toastNotReady"));
       return;
     }
 
@@ -109,38 +114,57 @@ const Sign = () => {
     if (ok) {
       setRecord((r) => (r ? { ...r, viewed_pdf_at: new Date().toISOString() } : r));
     } else {
-      toast.error("Could not record that you viewed the document. Please refresh and try again.");
+      toast.error(t("sign.toastViewFailed"));
     }
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !signature) {
-      toast.error("Please enter your name and sign before submitting.");
+    const signer = name.trim();
+    if (!signer || !signature) {
+      toast.error(t("sign.toastMissing"));
       return;
     }
     setSubmitting(true);
-    const ok = await submitCounterSignature({ token, name: name.trim(), signature });
-    setSubmitting(false);
+    const ok = await submitCounterSignature({ token, name: signer, signature });
+    // The RPC succeeds silently when it changes nothing (the link was already
+    // used, or revoked meanwhile), so read the row back rather than thanking
+    // someone whose signature was never stored.
+    let stored: AgreementSignature | null = null;
     if (ok) {
-      setRecord((r) => (
-        r ? {
-          ...r,
-          status: "signed",
-          counter_signer_name: name.trim(),
-          counter_signer_signature: signature,
-          counter_signed_at: new Date().toISOString(),
-        } : r
-      ));
-      toast.success("Signature submitted — thank you.");
+      try { stored = await getSignatureToken(token); } catch { stored = null; }
+    }
+    setSubmitting(false);
+    if (stored?.status === "signed" && stored.counter_signer_name === signer) {
+      setRecord(stored);
+      toast.success(t("sign.toastSigned"));
+    } else if (stored) {
+      // Someone else's signature (or none) is on record: show the row as it is.
+      setRecord(stored);
+      toast.error(t("sign.toastSaveFailed"));
     } else {
-      toast.error("Could not save your signature. Please try again.");
+      toast.error(t("sign.toastSaveFailed"));
     }
   };
 
-  if (loading) {
+  if (status === "loading") {
+    return (
+      <main className="flex min-h-[60vh] items-center justify-center p-6" aria-busy="true">
+        <p className="text-sm text-muted-foreground" role="status">{t("public.loading")}</p>
+      </main>
+    );
+  }
+
+  if (status === "error") {
     return (
       <main className="flex min-h-[60vh] items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <div className="max-w-md text-center space-y-3" role="alert">
+          <h1 className="text-xl font-semibold">{t("public.loadErrorTitle")}</h1>
+          <p className="text-sm text-muted-foreground">{t("public.loadErrorBody")}</p>
+          <Button variant="outline" onClick={load}>
+            <RotateCcw className="mr-2 h-4 w-4" aria-hidden="true" />
+            {t("public.retry")}
+          </Button>
+        </div>
       </main>
     );
   }
@@ -149,10 +173,8 @@ const Sign = () => {
     return (
       <main className="flex min-h-[60vh] items-center justify-center p-6">
         <div className="max-w-md text-center space-y-2">
-          <h1 className="text-xl font-semibold">Link not found</h1>
-          <p className="text-sm text-muted-foreground">
-            This counter-sign link is invalid or has been revoked. Please ask the sender for a fresh link.
-          </p>
+          <h1 className="text-xl font-semibold">{t("sign.notFoundTitle")}</h1>
+          <p className="text-sm text-muted-foreground">{t("sign.notFoundBody")}</p>
         </div>
       </main>
     );
@@ -162,38 +184,35 @@ const Sign = () => {
   const hasViewed = !!record.viewed_pdf_at;
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-6">
+    <main className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Counter-sign request
+          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          {t("sign.kicker")}
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">
-          {record.project_name || "Export Agreement"}
+        <h1 className="text-2xl font-semibold text-foreground break-words">
+          {record.project_name || t("public.agreement")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          You've been asked to counter-sign this Export Agreement. Please open and review
-          the document before signing below.
-        </p>
+        {!alreadySigned && <p className="text-sm text-muted-foreground">{t("sign.intro")}</p>}
       </header>
 
       {alreadySigned ? (
-        <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 space-y-3">
-          <div className="flex items-center gap-2 text-emerald-700 font-semibold">
-            <CheckCircle2 className="h-5 w-5" />
-            Signed — thank you
+        <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 space-y-3 dark:border-emerald-900 dark:bg-emerald-950/40" role="status">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+            {t("sign.signedTitle")}
           </div>
-          <p className="text-sm text-emerald-800">
-            Counter-signed by <strong>{record.counter_signer_name}</strong> on{" "}
-            {record.counter_signed_at
-              ? format(new Date(record.counter_signed_at), "PPP")
-              : "today"}.
+          <p className="text-sm text-emerald-800 dark:text-emerald-300">
+            {fillNodes(t("sign.signedBy"), {
+              name: <strong>{record.counter_signer_name}</strong>,
+              date: formatLongDate(lang, record.counter_signed_at ? new Date(record.counter_signed_at) : new Date()),
+            })}
           </p>
           {isImageDataUrl(record.counter_signer_signature) && (
             <div className="rounded-md border border-emerald-200 bg-white p-2 inline-block">
               <img
                 src={record.counter_signer_signature}
-                alt="Counter-signature"
+                alt={t("sign.signatureAlt")}
                 className="max-h-[80px] object-contain"
               />
             </div>
@@ -208,52 +227,57 @@ const Sign = () => {
               onClick={handleOpenDocument}
               className="w-full sm:w-auto"
             >
-              <FileText className="mr-2 h-4 w-4" />
-              {hasViewed ? "Open document again" : "Open document"}
-              <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" />
+              <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
+              {hasViewed ? t("sign.openAgain") : t("sign.open")}
+              <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" aria-hidden="true" />
             </Button>
-            {hasViewed && (
-              <p className="text-xs text-emerald-700 flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Document opened — you can now sign below.
-              </p>
-            )}
+            <div aria-live="polite">
+              {hasViewed && (
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> {t("sign.opened")}
+                </p>
+              )}
+            </div>
           </section>
 
-          {/* Sign panel — blocker until viewed */}
-          <section className="relative rounded-xl border border-border bg-card p-5 space-y-4">
+          {/* Sign panel — blocker until viewed. The fieldset disables every
+              control behind the overlay, so the keyboard can't reach them
+              either (the overlay only stops the mouse). */}
+          <section className="relative rounded-xl border border-border bg-card p-5">
             {!hasViewed && (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/85 backdrop-blur-sm p-4 text-center">
-                <p className="text-sm font-medium text-foreground max-w-xs">
-                  Please open and review the Export Agreement before signing.
-                </p>
+                <p className="text-sm font-medium text-foreground max-w-xs">{t("sign.gate")}</p>
               </div>
             )}
 
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
-              <Input
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={!hasViewed}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Date</label>
-              <Input value={today} readOnly className="bg-secondary/50" />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Signature</label>
-              <SignaturePad value={signature} onChange={setSignature} />
-            </div>
+            <fieldset disabled={!hasViewed} aria-hidden={!hasViewed || undefined} className="space-y-4 min-w-0">
+              <div>
+                <label htmlFor="sign-name" className="text-xs text-muted-foreground mb-1 block">{t("sign.fullName")}</label>
+                <Input
+                  id="sign-name"
+                  autoComplete="name"
+                  placeholder={t("sign.fullNamePlaceholder")}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="sign-date" className="text-xs text-muted-foreground mb-1 block">{t("sign.date")}</label>
+                <Input id="sign-date" value={today} readOnly className="bg-secondary/50" />
+              </div>
+              <div role="group" aria-labelledby="sign-signature-label">
+                <span id="sign-signature-label" className="text-xs text-muted-foreground mb-1 block">{t("sign.signature")}</span>
+                <SignaturePad value={signature} onChange={setSignature} />
+              </div>
 
-            <Button
-              onClick={handleSubmit}
-              disabled={!hasViewed || !name.trim() || !signature || submitting}
-              className="w-full sm:w-auto"
-            >
-              {submitting ? "Submitting…" : "Submit signature"}
-            </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!name.trim() || !signature || submitting}
+                className="w-full sm:w-auto"
+              >
+                {submitting ? t("sign.submitting") : t("sign.submit")}
+              </Button>
+            </fieldset>
           </section>
         </>
       )}

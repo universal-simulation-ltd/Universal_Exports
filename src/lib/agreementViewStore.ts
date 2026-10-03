@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { isUuid } from './signatureStore'
 import type { AgreementPdfInput } from './exportAgreementPdf'
 
 // Read-only agreement views — back the QR code stamped on every generated
@@ -77,14 +78,17 @@ export async function saveAgreementView(args: {
 /**
  * Public lookup by token — used by the /view/:token page. No auth required;
  * reads go through the token-gated get_agreement_view RPC (the table has no
- * public select policy, so knowing the uuid is the only way in).
+ * public select policy, so knowing the uuid is the only way in). Null when there
+ * is no such view; throws when the lookup itself failed.
  */
 export async function getAgreementView(token: string): Promise<AgreementViewRow | null> {
+  if (!isUuid(token)) return null
   const { data, error } = await supabase.rpc('exports_get_agreement_view', { view_token: token })
   if (error) {
-    // Includes malformed (non-uuid) tokens — surface as "not found".
+    // Offline / server error: throw, so the page offers Try again rather than
+    // calling a good QR code "invalid or removed".
     console.error('[exports] getAgreementView failed:', error)
-    return null
+    throw new Error(error.message || 'getAgreementView failed')
   }
   const row = Array.isArray(data) ? data[0] : data
   return (row as AgreementViewRow) ?? null

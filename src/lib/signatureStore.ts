@@ -1,5 +1,10 @@
 import { supabase } from './supabase'
 
+/** The tokens in /sign and /view links are uuids; anything else can't match a row. */
+export function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
 // Counter-sign tokens for the "They Sign" flow on the Export Agreement page.
 // See supabase/schema.sql → public.agreement_signatures for the table layout.
 
@@ -80,15 +85,19 @@ export async function listSignatureTokens(projectId: string): Promise<AgreementS
  * the token in the URL is the bearer credential. The table has no public select
  * policy (that would let anyone dump every row), so the read goes through the
  * token-gated get_agreement_signature RPC — you only get a row if you already
- * hold its uuid.
+ * hold its uuid. Null when there is no such link; throws when the lookup itself
+ * failed (offline, server error).
  */
 export async function getSignatureToken(token: string): Promise<AgreementSignature | null> {
+  if (!isUuid(token)) return null
   const { data, error } = await supabase.rpc('exports_get_agreement_signature', { sig_token: token })
 
   if (error) {
-    // Includes malformed (non-uuid) tokens — surface as "not found".
+    // A transport or server failure is NOT "this link doesn't exist": throw,
+    // so the page can offer Try again instead of telling the signer their
+    // perfectly good link was revoked.
     console.error('[exports] getSignatureToken failed:', error)
-    return null
+    throw new Error(error.message || 'getSignatureToken failed')
   }
   const row = Array.isArray(data) ? data[0] : data
   return (row as AgreementSignature) ?? null

@@ -92,3 +92,19 @@ describe("migrateLegacyLanguage", () => {
     expect(localStorage.getItem(APP_LANGUAGE_KEY)).toBeNull();
   });
 });
+
+describe("format helpers", () => {
+  it("fills named slots and leaves unknown ones", async () => {
+    const { fill } = await import("./format");
+    expect(fill("Prepared as {role}", { role: "Seller" })).toBe("Prepared as Seller");
+    expect(fill("{name} on {date}", { name: "Ana" })).toBe("Ana on {date}");
+  });
+
+  it("formats a long date in the given language", async () => {
+    const { formatLongDate } = await import("./format");
+    const d = new Date(Date.UTC(2026, 9, 4, 12));
+    expect(formatLongDate("en-gb", d)).toBe("4 October 2026");
+    expect(formatLongDate("de", d)).toBe("4. Oktober 2026");
+    expect(formatLongDate("not a locale!!", d)).toBeTruthy();
+  });
+});

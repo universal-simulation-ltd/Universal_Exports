@@ -5,6 +5,13 @@ import { UnisimQr } from "@unisim/sdk";
 import { supabase } from "@/lib/supabase";
 import { BASE_PATH } from "@/lib/basePath";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useI18n } from "@/lib/i18n";
+import { isImageDataUrl } from "@/lib/safeDataUrl";
+import { toast } from "sonner";
+
+// What an uploaded signature may be: these are what jsPDF embeds and what
+// every viewer of the counter-signature will accept (see safeDataUrl.ts).
+const UPLOAD_TYPES = ["image/png", "image/jpeg"];
 
 interface SignaturePadProps {
   value: string; // base64 data URL
@@ -32,6 +39,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   // When the drafter is already on a phone there's no point offering the
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
   const isMobile = useIsMobile();
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
@@ -75,7 +83,8 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
         if (!payload || typeof payload !== "object") return;
         if (payload.pin !== mobilePin) return; // wrong PIN — silently drop
         const sig = String(payload.signature || "");
-        if (!sig.startsWith("data:")) return;
+        // Only a real image — the phone side is a public page.
+        if (!isImageDataUrl(sig)) return;
         onChange(sig);
         setMobileStatus("received");
         // Brief delay so the user sees the "received" confirmation before
@@ -169,15 +178,20 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
 
   const handleUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = ""; // so choosing the same file again still fires
     if (!file) return;
+    if (!UPLOAD_TYPES.includes(file.type)) {
+      toast.error(t("pad.badFile"));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        onChange(reader.result);
+      if (isImageDataUrl(reader.result as string)) {
+        onChange(reader.result as string);
       }
     };
     reader.readAsDataURL(file);
-  }, [onChange]);
+  }, [onChange, t]);
 
   return (
     <div className="space-y-2">
@@ -188,9 +202,10 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             variant={mode === "mobile" ? "default" : "outline"}
             size="sm"
             onClick={() => setMode("mobile")}
+            aria-pressed={mode === "mobile"}
           >
-            <Smartphone className="mr-1 h-3.5 w-3.5" />
-            Sign on mobile
+            <Smartphone className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            {t("pad.mobile")}
           </Button>
         )}
         <Button
@@ -198,23 +213,25 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
           variant={mode === "draw" ? "default" : "outline"}
           size="sm"
           onClick={() => setMode("draw")}
+          aria-pressed={mode === "draw"}
         >
-          <Pencil className="mr-1 h-3.5 w-3.5" />
-          Draw
+          <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          {t("pad.draw")}
         </Button>
         <Button
           type="button"
           variant={mode === "upload" ? "default" : "outline"}
           size="sm"
           onClick={() => { setMode("upload"); fileRef.current?.click(); }}
+          aria-pressed={mode === "upload"}
         >
-          <Upload className="mr-1 h-3.5 w-3.5" />
-          Upload Signature
+          <Upload className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          {t("pad.upload")}
         </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
-            <Trash2 className="mr-1 h-3.5 w-3.5" />
-            Clear
+            <Trash2 className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            {t("pad.clear")}
           </Button>
         )}
       </div>
@@ -222,8 +239,10 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept={UPLOAD_TYPES.join(",")}
         className="hidden"
+        tabIndex={-1}
+        aria-hidden="true"
         onChange={handleUpload}
       />
 
@@ -232,7 +251,11 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
           ref={canvasRef}
           width={500}
           height={200}
-          className="w-full h-[140px] rounded-md border border-input bg-background cursor-crosshair touch-none"
+          role="img"
+          aria-label={t("pad.canvasLabel")}
+          // White like paper in both themes: the ink is dark, and on the dark
+          // theme's background a fresh signature was all but invisible.
+          className="w-full h-[140px] rounded-md border border-input bg-white cursor-crosshair touch-none"
           onMouseDown={startDraw}
           onMouseMove={draw}
           onMouseUp={endDraw}
@@ -244,8 +267,8 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
       )}
 
       {mode === "upload" && value && (
-        <div className="rounded-md border border-input bg-background p-2">
-          <img src={value} alt="Signature" className="max-h-[140px] object-contain" />
+        <div className="rounded-md border border-input bg-white p-2">
+          <img src={value} alt={t("pad.uploadedAlt")} className="max-h-[140px] object-contain" />
         </div>
       )}
 
@@ -255,15 +278,11 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             <UnisimQr value={mobileSignUrl} size={176} label="signing on your phone" />
           </div>
           <div className="flex-1 min-w-0 space-y-2 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Scan to sign on your phone</p>
-            <p>
-              Open the QR code on your phone. You'll be asked to enter the PIN
-              below to prove you're the same user, then draw your signature —
-              it'll appear here automatically.
-            </p>
+            <p className="font-medium text-foreground">{t("pad.scanTitle")}</p>
+            <p>{t("pad.scanBody")}</p>
             {mobilePin && (
               <div className="rounded-md bg-primary/10 border border-primary/30 p-2 flex items-center gap-3">
-                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">PIN</span>
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">{t("pad.pin")}</span>
                 <span className="font-mono text-lg font-bold tracking-[0.3em] text-foreground">
                   {mobilePin}
                 </span>
@@ -275,20 +294,20 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             {mobileStatus === "scanned" && (
               <p className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Phone connected — waiting for the signature.
+                {t("pad.connected")}
               </p>
             )}
             {mobileStatus === "received" && (
               <p className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3" />
-                Signature received.
+                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                {t("pad.received")}
               </p>
             )}
             {mobileStatus === "received" && value?.startsWith("data:") && (
               <div className="rounded-md border border-border bg-white p-1.5">
                 <img
                   src={value}
-                  alt="Returned signature preview"
+                  alt={t("pad.receivedAlt")}
                   className="max-h-[120px] w-full object-contain"
                 />
               </div>
@@ -296,9 +315,9 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             <button
               type="button"
               onClick={regenerateMobileToken}
-              className="text-[11px] text-primary hover:underline"
+              className="text-[11px] text-primary hover:underline py-1"
             >
-              Generate a new code
+              {t("pad.newCode")}
             </button>
           </div>
         </div>

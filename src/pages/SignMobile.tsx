@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import SignaturePad from "@/components/SignaturePad";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Mobile Signature handoff page — the QR code on the desktop "Mobile
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 const SignMobile = () => {
   const { token = "" } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [pin, setPin] = useState("");
   const [signature, setSignature] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -56,11 +58,11 @@ const SignMobile = () => {
 
   const handleSubmit = async () => {
     if (!signature || !token) {
-      toast.error("Draw or upload a signature first.");
+      toast.error(t("mobileSign.toastNoSig"));
       return;
     }
     if (!/^\d{6}$/.test(pin)) {
-      toast.error("Enter the 6-digit PIN shown on your desktop.");
+      toast.error(t("mobileSign.toastPin"));
       return;
     }
     setSending(true);
@@ -89,7 +91,7 @@ const SignMobile = () => {
       setSubmitted(true);
     } catch (err) {
       console.error("[exports] mobile-sig broadcast failed:", err);
-      toast.error("Could not send signature — check your connection and try again.");
+      toast.error(t("mobileSign.toastFailed"));
     } finally {
       setSending(false);
       void supabase.removeChannel(channel);
@@ -101,14 +103,11 @@ const SignMobile = () => {
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
           <div className="mx-auto h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-            <CheckCircle2 className="h-7 w-7" />
+            <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
-          <h1 className="text-lg font-semibold">Signature sent</h1>
-          <p className="text-sm text-muted-foreground">
-            Check the desktop tab — if the PIN matched, your signature is now
-            on the form. You can close this page.
-          </p>
-          <Button variant="outline" onClick={() => navigate("/")}>Back to Universal Exports</Button>
+          <h1 className="text-lg font-semibold">{t("mobileSign.sentTitle")}</h1>
+          <p className="text-sm text-muted-foreground">{t("mobileSign.sentBody")}</p>
+          <Button variant="outline" onClick={() => navigate("/")}>{t("mobileSign.back")}</Button>
         </div>
       </div>
     );
@@ -118,16 +117,13 @@ const SignMobile = () => {
     <div className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="max-w-sm w-full space-y-4">
         <div className="flex items-center gap-2">
-          <Smartphone className="h-5 w-5 text-primary" />
-          <h1 className="text-base font-semibold">Mobile signature</h1>
+          <Smartphone className="h-5 w-5 text-primary" aria-hidden="true" />
+          <h1 className="text-base font-semibold">{t("mobileSign.title")}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Enter the 6-digit PIN shown on your desktop, draw your signature,
-          then tap Send. The signature will appear on the desktop form.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("mobileSign.intro")}</p>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-foreground" htmlFor="mobile-sig-pin">
-            PIN
+            {t("pad.pin")}
           </label>
           <Input
             id="mobile-sig-pin"
@@ -149,12 +145,9 @@ const SignMobile = () => {
           disabled={!signature || pin.length !== 6 || sending}
           onClick={handleSubmit}
         >
-          {sending ? "Sending…" : "Send signature"}
+          {sending ? t("mobileSign.sending") : t("mobileSign.send")}
         </Button>
-        <p className="text-[11px] text-muted-foreground text-center">
-          The PIN proves you're the same person at the desktop. Your signature
-          is sent over an encrypted realtime channel and never stored.
-        </p>
+        <p className="text-[11px] text-muted-foreground text-center">{t("mobileSign.footnote")}</p>
       </div>
     </div>
   );
