@@ -32,3 +32,6 @@ supabase/.temp/
 
 # Internal project notes — not published (matches the other Universal Apps repos)
 CLAUDE.md
+
+# Local Claude Code settings (machine-specific paths) — not published
+.claude/
