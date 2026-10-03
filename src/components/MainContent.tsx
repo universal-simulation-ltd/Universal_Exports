@@ -699,7 +699,7 @@ const MainContent = ({
   const handleSelectContact = useCallback((contact: CompanyDetails) => {
     setOtherParty({ ...contact });
     // Save as last used contact
-    try { localStorage.setItem("ebill-last-contact", JSON.stringify(contact)); } catch {}
+    try { localStorage.setItem("ebill-last-contact", JSON.stringify(contact)); } catch { /* storage blocked: only a convenience */ }
   }, []);
 
   // Company details form fragment
@@ -1078,7 +1078,7 @@ const MainContent = ({
                         try {
                           const raw = localStorage.getItem("ebill-last-contact");
                           if (raw) lastContact = JSON.parse(raw);
-                        } catch {}
+                        } catch { /* blocked storage or bad JSON: no suggestion */ }
 
                         return (
                           <div className="space-y-3">

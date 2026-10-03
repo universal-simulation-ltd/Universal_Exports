@@ -59,6 +59,22 @@ function isUkBased(country?: string): boolean {
   return UK_COUNTRY_VALUES.has(country.trim().toLowerCase());
 }
 
+/** The parts of a UK Trade Tariff JSON:API `included` resource this reads. */
+interface TariffResource {
+  id: string;
+  type: string;
+  attributes?: {
+    description?: string;
+    import?: boolean;
+    vat?: boolean;
+    verbose_duty?: string;
+    base?: string;
+    basic_third_country_duty?: string;
+    preferential_tariff_duty?: string;
+  };
+  relationships?: Record<string, { data?: { id?: string } | null } | undefined>;
+}
+
 async function lookupCommodity(hsCode: string): Promise<TariffResult> {
   // Strip non-digits, then right-pad to 10 digits only if under 10 chars
   const digits = hsCode.replace(/\D/g, "");
@@ -71,13 +87,13 @@ async function lookupCommodity(hsCode: string): Promise<TariffResult> {
 
   const json = await res.json();
   const attrs = json.data?.attributes || {};
-  const included: any[] = json.included || [];
+  const included: TariffResource[] = json.included || [];
 
-  const summary = included.find((i: any) => i.type === "import_trade_summary");
+  const summary = included.find((i) => i.type === "import_trade_summary");
   const summaryAttrs = summary?.attributes || {};
 
   const mtMap: Record<string, string> = {};
-  const deMap: Record<string, any> = {};
+  const deMap: Record<string, NonNullable<TariffResource["attributes"]>> = {};
   const gaMap: Record<string, string> = {};
   for (const i of included) {
     if (i.type === "measure_type") mtMap[i.id] = i.attributes?.description || i.id;
@@ -86,8 +102,8 @@ async function lookupCommodity(hsCode: string): Promise<TariffResult> {
   }
 
   const measures: TariffMeasure[] = included
-    .filter((i: any) => i.type === "measure" && i.attributes?.import)
-    .map((m: any) => {
+    .filter((i) => i.type === "measure" && i.attributes?.import)
+    .map((m) => {
       const mtId = m.relationships?.measure_type?.data?.id || "";
       const deId = m.relationships?.duty_expression?.data?.id || "";
       const geoId = m.relationships?.geographical_area?.data?.id || "";
@@ -109,7 +125,7 @@ async function lookupCommodity(hsCode: string): Promise<TariffResult> {
     return true;
   });
 
-  const vatMeasure = included.find((i: any) => i.type === "measure" && i.attributes?.vat);
+  const vatMeasure = included.find((i) => i.type === "measure" && i.attributes?.vat);
   let vatRate = "20%";
   if (vatMeasure) {
     const deId = vatMeasure.relationships?.duty_expression?.data?.id || "";
@@ -117,7 +133,7 @@ async function lookupCommodity(hsCode: string): Promise<TariffResult> {
     if (de.verbose_duty) vatRate = de.verbose_duty;
   }
 
-  const stripHtml = (s: string) => s?.replace(/<[^>]*>/g, "") || "";
+  const stripHtml = (s?: string) => s?.replace(/<[^>]*>/g, "") || "";
 
   return {
     hsCode: code,
@@ -249,8 +265,8 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
     try {
       const result = await lookupCommodity(key);
       setResults((prev) => ({ ...prev, [key]: result }));
-    } catch (err: any) {
-      const msg = err.message || "Failed to look up tariff";
+    } catch (err) {
+      const msg = (err instanceof Error && err.message) || "Failed to look up tariff";
       setErrors((prev) => ({ ...prev, [key]: msg }));
     } finally {
       setLoading((prev) => ({ ...prev, [key]: false }));

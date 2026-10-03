@@ -39,7 +39,7 @@ function parseLines(formData: Record<string, string>): LineItem[] {
   try {
     const raw = formData["productLines"];
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch { /* unreadable lines: start empty */ }
   return [];
 }
 
@@ -99,8 +99,8 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
       const updated = [...lines, { catalogueId: product.id, units: "1", discount: "", discountAmount: "" }];
       updateLines(updated);
       toast.success(`${product.name} added to catalogue and order`);
-    } catch (err: any) {
-      toast.error(err?.message ?? "Failed to save to catalogue");
+    } catch (err) {
+      toast.error((err instanceof Error && err.message) || "Failed to save to catalogue");
     }
   }, [newProduct, lines, updateLines]);
 
