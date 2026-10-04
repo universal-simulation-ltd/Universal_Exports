@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 const AI_CENTER_X = 300;
 const AI_CENTER_Y = 180;
@@ -8,6 +9,7 @@ const FOLLOW_MAX = 28; // hard cap in SVG units
 const clamp = (v: number, max: number) => Math.max(-max, Math.min(max, v));
 
 const WorkflowAnimation = () => {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const [aiOffset, setAiOffset] = useState({ x: 0, y: 0 });
 
@@ -38,7 +40,7 @@ const WorkflowAnimation = () => {
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 w-full h-full"
         role="img"
-        aria-label="Animated workflow: a document is processed by AI and turned into completed export documents"
+        aria-label={t("anim.label")}
       >
         <defs>
           <linearGradient id="aiGrad" x1="0" y1="0" x2="1" y2="1">
@@ -290,10 +292,10 @@ const WorkflowAnimation = () => {
         </g>
 
         <text x="100" y="280" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
-          Upload
+          {t("anim.upload")}
         </text>
         <text x="506" y="290" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
-          Signed &amp; ready
+          {t("anim.signed")}
         </text>
       </svg>
     </div>

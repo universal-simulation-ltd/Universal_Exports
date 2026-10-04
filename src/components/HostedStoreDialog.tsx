@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Chip, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
-import { downloadBackup, readBackupFile } from "../lib/projectBackup";
+import { BackupError, downloadBackup, readBackupFile } from "../lib/projectBackup";
+import { fillNodes } from "../lib/i18n/format";
+import { useDrafterI18n } from "../lib/i18n/drafter/useDrafterI18n";
 import { type ProjectData } from "../lib/projectStore";
 import { useFreeAllowance, nearFreeLimit } from "../lib/useFreeAllowance";
 
@@ -43,6 +45,7 @@ export default function HostedStoreDialog({
   onImportProject: (project: ProjectData) => void;
 }) {
   const { supabase, session, activeOrgId } = useUniversal();
+  const { t, tf, tp, shortDate } = useDrafterI18n();
   // Online copies are kept with a company, so a signed-in ID that belongs to
   // none has nowhere to store one. Only a SUCCESSFUL empty read counts as "no
   // company" — a failed read is unknown, and never a reason to offer one.
@@ -82,9 +85,7 @@ export default function HostedStoreDialog({
   // What we say once the free allowance is used up and nothing was bought.
   // 'held' can be freed by deleting a backup; 'spent' cannot.
   const limitMessage = (status: typeof freeToken) =>
-    status === "spent"
-      ? "You've used your free online storage for agreements."
-      : "You've used your free online storage for agreements. Delete a stored agreement to make room.";
+    status === "spent" ? t("hosted.limitSpent") : t("hosted.limitHeld");
   const hasProject = Object.keys(project.forms ?? {}).length > 0;
 
   function close() {
@@ -108,7 +109,7 @@ export default function HostedStoreDialog({
       close(); // loading the project replaces this agreement view
       onImportProject(restored);
     } catch (err) {
-      setImportErr((err as Error).message);
+      setImportErr(err instanceof BackupError ? t(err.key) : (err as Error).message);
     }
   }
 
@@ -122,7 +123,7 @@ export default function HostedStoreDialog({
         setError(
           res.error === "no_credits" || res.error === "token_in_use"
             ? limitMessage(freeToken === "spent" ? "spent" : "held")
-            : res.error ?? "Could not store this agreement.",
+            : res.error ?? t("hosted.storeFailed"),
         );
       } else {
         setJustStored(true);
@@ -163,7 +164,7 @@ export default function HostedStoreDialog({
     setError(null);
     try {
       const res = await deleteHostedExport(supabase, upload);
-      if (!res.ok) setError(res.error ?? "Could not delete this agreement.");
+      if (!res.ok) setError(res.error ?? t("hosted.deleteFailed"));
       else {
         setMissingId((id) => (id === upload.id ? null : id));
         refreshCredits();
@@ -191,8 +192,8 @@ export default function HostedStoreDialog({
           OUTSIDE the scrolling body. */}
       <div className="flex max-h-[min(100%,100dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-bold text-slate-900">Back up this agreement</h2>
-          <button onClick={close} aria-label="Close" className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <h2 className="text-base font-bold text-slate-900">{t("hosted.title")}</h2>
+          <button onClick={close} aria-label={t("common.close")} className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
             <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /></svg>
           </button>
         </div>
@@ -201,22 +202,22 @@ export default function HostedStoreDialog({
           {/* Tier 1 — Download the finished PDF (free, on-device). */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">Download</span>
-              <Chip size="sm">Free</Chip>
+              <span className="text-sm font-semibold text-slate-900">{t("hosted.download")}</span>
+              <Chip size="sm">{t("hosted.free")}</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              The agreement PDF is built in this browser. Use Download PDF to save it to your device — free.
+              {t("hosted.downloadDesc")}
             </p>
           </div>
 
           {/* Tier 2 — Save to desktop: a re-importable backup of the whole project. */}
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">Save to desktop</span>
-              <Chip size="sm">Re-import later</Chip>
+              <span className="text-sm font-semibold text-slate-900">{t("hosted.desktop")}</span>
+              <Chip size="sm">{t("hosted.reimport")}</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              Download a backup of this whole project — all your form data — as one file. Import it any time, on any device, to carry on editing and regenerate the agreement. (Signatures aren't included — sign again after importing.)
+              {t("hosted.desktopDesc")}
             </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -229,7 +230,7 @@ export default function HostedStoreDialog({
                 <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M10 3v10m0 0l-3.5-3.5M10 13l3.5-3.5M4 16h12" />
                 </svg>
-                Download backup
+                {t("hosted.downloadBackup")}
               </button>
               <button
                 type="button"
@@ -239,29 +240,29 @@ export default function HostedStoreDialog({
                 <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M10 17V7m0 0L6.5 10.5M10 7l3.5 3.5M4 4h12" />
                 </svg>
-                Import a backup
+                {t("hosted.importBackup")}
               </button>
               <input {...importPicker.inputProps} className="hidden" />
             </div>
-            {!hasProject && <p className="mt-2 text-xs text-slate-400">Fill in the agreement to back it up — or import a backup to restore a project.</p>}
+            {!hasProject && <p className="mt-2 text-xs text-slate-400">{t("hosted.fillFirst")}</p>}
             {importErr && <p className="mt-2 text-sm text-rose-600">{importErr}</p>}
           </div>
 
           {/* Tier 3 — Universal subscription: paid "Hosted by UNI·SIM" cloud (the PDF). */}
           <div className="rounded-xl border border-orange-200 bg-white p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">Hosted by UNI SIM</span>
-              <Chip size="sm">Free with Universal ID</Chip>
+              <span className="text-sm font-semibold text-slate-900">{t("hosted.hostedTitle")}</span>
+              <Chip size="sm">{t("hosted.freeWithId")}</Chip>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              Keep this agreement PDF online against your Universal ID, so you can get it back on any device.
+              {t("hosted.hostedDesc")}
             </p>
 
             {!signedIn ? (
               <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                <p className="text-sm text-slate-700">Create a <strong>Universal ID</strong> to keep export agreements online for FREE.</p>
+                <p className="text-sm text-slate-700">{fillNodes(t("hosted.createId"), { id: <strong>Universal ID</strong> })}</p>
                 <a href={SIGNIN_URL} className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
-                  Create / sign in with Universal ID →
+                  {t("hosted.signIn")}
                 </a>
               </div>
             ) : (
@@ -270,7 +271,7 @@ export default function HostedStoreDialog({
                   <span className="text-slate-600">{user?.email}</span>
                   {tokens > 0 && (
                     <span className="font-semibold text-orange-700">
-                      {`${tokens} purchased token${tokens === 1 ? "" : "s"}`}
+                      {tp("hosted.tokens", tokens)}
                     </span>
                   )}
                 </div>
@@ -278,10 +279,10 @@ export default function HostedStoreDialog({
                 {noCompany ? (
                   <div className="mt-3" data-testid="hosted-no-company">
                     <p className="text-sm text-slate-600">
-                      Online agreements are kept with your company, and your Universal ID doesn’t have one yet. Setting one up is free.
+                      {t("hosted.noCompany")}
                     </p>
                     <a href={SET_UP_COMPANY_URL} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
-                      Set up a company →
+                      {t("hosted.setUpCompany")}
                     </a>
                   </div>
                 ) : blob ? (
@@ -291,7 +292,7 @@ export default function HostedStoreDialog({
                       disabled={busy}
                       className="mt-3 w-full rounded-lg bg-orange-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-orange-800 disabled:opacity-50"
                     >
-                      {busy ? "Backing up…" : justStored ? "✓ Backed up" : "Back up this agreement online"}
+                      {busy ? t("hosted.backingUp") : justStored ? `✓ ${t("hosted.backedUp")}` : t("hosted.backUpOnline")}
                     </button>
                   ) : freeToken === null ? null : (
                     <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
@@ -299,17 +300,17 @@ export default function HostedStoreDialog({
                         {limitMessage(freeToken)}
                       </p>
                       <a href={NEED_MORE_URL} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-xs text-amber-800 underline underline-offset-2 hover:text-amber-950">
-                        Need more? Tell us
+                        {t("hosted.needMore")}
                       </a>
                     </div>
                   )
                 ) : (
-                  <p className="mt-3 text-xs text-slate-500">Generate the agreement PDF to back it up.</p>
+                  <p className="mt-3 text-xs text-slate-500">{t("hosted.generateFirst")}</p>
                 )}
 
                 {near && (
                   <p className="mt-2 text-xs text-slate-500" data-testid="free-storage-near-limit">
-                    {`You've used ${near.usedMb} MB of your ${near.limitMb} MB of free online storage. It's shared by Universal PDF, Images, Exports and Recorder.`}
+                    {tf("hosted.near", { used: near.usedMb, limit: near.limitMb })}
                   </p>
                 )}
 
@@ -317,11 +318,11 @@ export default function HostedStoreDialog({
 
                 {/* The user's hosted agreements */}
                 <div className="mt-4">
-                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-500">Your backups</p>
+                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-500">{t("hosted.yourBackups")}</p>
                   {listLoading ? (
-                    <p className="text-xs text-slate-400">Loading…</p>
+                    <p className="text-xs text-slate-400">{t("hosted.loading")}</p>
                   ) : uploads.length === 0 ? (
-                    <p className="text-xs text-slate-400">None yet.</p>
+                    <p className="text-xs text-slate-400">{t("hosted.noneYet")}</p>
                   ) : (
                     <ul className="space-y-2">
                       {uploads.map((u) => (
@@ -329,10 +330,10 @@ export default function HostedStoreDialog({
                           <div className="flex items-center gap-2">
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-xs font-medium text-slate-700">{u.file_name || "export-agreement.pdf"}</span>
-                              <span className="block text-[10px] text-slate-400">{new Date(u.created_at).toLocaleDateString()}</span>
+                              <span className="block text-[10px] text-slate-400">{shortDate(u.created_at)}</span>
                             </span>
-                            <button onClick={() => onOpen(u)} disabled={busy} className="shrink-0 rounded-md bg-orange-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-800 disabled:opacity-50">Open</button>
-                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 disabled:opacity-50" title="Delete this backup">Delete</button>
+                            <button onClick={() => onOpen(u)} disabled={busy} className="shrink-0 rounded-md bg-orange-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-800 disabled:opacity-50">{t("hosted.open")}</button>
+                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 disabled:opacity-50" title={t("hosted.deleteTitle")}>{t("common.delete")}</button>
                           </div>
 
                           {/* A backup with nothing behind it. Say which file,
@@ -349,8 +350,9 @@ export default function HostedStoreDialog({
                               className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2"
                             >
                               <p className="text-[11px] leading-snug text-amber-900">
-                                <strong className="font-semibold">{u.file_name || "export-agreement.pdf"}</strong> is listed here,
-                                but there is no file behind it — this upload never finished, so nothing was ever stored.
+                                {fillNodes(t("hosted.missing"), {
+                                  file: <strong className="font-semibold">{u.file_name || "export-agreement.pdf"}</strong>,
+                                })}
                               </p>
                               <button
                                 type="button"
@@ -358,7 +360,7 @@ export default function HostedStoreDialog({
                                 disabled={busy}
                                 className="mt-2 inline-flex rounded-md bg-amber-700 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-amber-800 disabled:opacity-50"
                               >
-                                Remove this entry
+                                {t("hosted.removeEntry")}
                               </button>
                             </div>
                           )}

@@ -25,7 +25,9 @@ import { BankAccount, emptyBankAccount, loadYourBanks, saveYourBanks, loadPartyB
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { useI18n } from "@/lib/i18n";
+import { type MessageKey } from "@/lib/i18n";
+import { fillNodes } from "@/lib/i18n/format";
+import { useDrafterI18n } from "@/lib/i18n/drafter/useDrafterI18n";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -69,17 +71,51 @@ const documentTypes = [
   "estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "credit-note", "receipt",
 ];
 
-// Sensible default legal wording for a Certificate of Origin declaration
+// Sensible default legal wording for a Certificate of Origin declaration. It is
+// the document's own text (printed on the generated PDF, which stays in English
+// on purpose), so it is pre-filled in English whatever the app's language.
 const DEFAULT_COO_DECLARATION =
   "We, the undersigned, hereby declare that the goods described above originate in the country stated and comply with the applicable rules of origin.";
 
 // Documents the demo "AI import" pulls in — shown on the upload, processing and done screens
-const DEMO_IMPORT_DOCS = [
-  "Commercial Invoice — INV-2026-0089",
-  "Purchase Order — PO-DBE-20260312",
-  "Packing & Delivery Note — DN-2026-0089",
-  "Certificate of Origin (UK)",
-  "Shipment details & Incoterms",
+const DEMO_IMPORT_DOCS: { key: MessageKey; ref?: string }[] = [
+  { key: "ai.doc.invoice", ref: "INV-2026-0089" },
+  { key: "ai.doc.po", ref: "PO-DBE-20260312" },
+  { key: "ai.doc.dn", ref: "DN-2026-0089" },
+  { key: "ai.doc.coo" },
+  { key: "ai.doc.shipment" },
+];
+
+// The trade documents' names, by section id — the sidebar's labels.
+const DOC_TITLE_KEYS: Record<string, MessageKey> = {
+  "estimate-quote": "sidebar.estimateQuote",
+  "purchase-order": "sidebar.purchaseOrder",
+  "invoice": "sidebar.invoice",
+  "picking-list": "sidebar.pickingList",
+  "delivery-note": "sidebar.deliveryNote",
+  "credit-note": "sidebar.creditNote",
+  "receipt": "sidebar.receipt",
+};
+
+// Incoterms® 2020: the code is never translated, the rule's name is.
+const INCOTERM_CODES = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"] as const;
+
+// Compliance checklists: the form field each tick is stored under, and its label.
+const EXPORT_CHECKS: { key: string; label: MessageKey }[] = [
+  { key: "exportCds", label: "compl.exportCds" },
+  { key: "exportLicence", label: "compl.exportLicence" },
+  { key: "exportEori", label: "compl.eori" },
+  { key: "exportInvoice", label: "compl.exportInvoice" },
+  { key: "exportSanctions", label: "compl.exportSanctions" },
+];
+const IMPORT_CHECKS: { key: string; label: MessageKey }[] = [
+  { key: "importCds", label: "compl.importCds" },
+  { key: "importDuty", label: "compl.importDuty" },
+  { key: "importVat", label: "compl.importVat" },
+  { key: "importEori", label: "compl.eori" },
+  { key: "importLicence", label: "compl.importLicence" },
+  { key: "importSafety", label: "compl.importSafety" },
+  { key: "importPhyto", label: "compl.importPhyto" },
 ];
 
 function getProductTotals(allForms: Record<string, Record<string, string>>, catalogue: import("@/lib/productCatalogueStore").CatalogueProduct[]) {
@@ -110,21 +146,22 @@ const emptyCompany = emptyDetails;
 
 const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) => string; set: (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; onFieldChange: (f: string, v: string) => void }) => {
   const fileName = field("cooFileName");
+  const { t, tf } = useDrafterI18n();
 
   const handleAttach = useCallback((file: File | undefined) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File must be under 5MB");
+      toast.error(t("coo.fileTooLarge"));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       onFieldChange("cooFileName", file.name);
       onFieldChange("cooFileData", reader.result as string);
-      toast.success(`Attached: ${file.name}`);
+      toast.success(tf("coo.attached", { name: file.name }));
     };
     reader.readAsDataURL(file);
-  }, [onFieldChange]);
+  }, [onFieldChange, t, tf]);
 
   // The hook clears the input's value after every pick, so removing an
   // attachment no longer has to reach into the DOM to make the same file
@@ -148,14 +185,14 @@ const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) =
         <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/30 px-3 py-1.5 text-sm">
           <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           <span className="text-foreground truncate max-w-[200px]">{fileName}</span>
-          <button onClick={handleRemove} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={handleRemove} aria-label={t("coo.removeAttachment")} title={t("coo.removeAttachment")} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
       ) : (
         <Button variant="outline" size="sm" className="text-xs" onClick={picker.open}>
           <Paperclip className="mr-1 h-3.5 w-3.5" />
-          Attach Certificate
+          {t("coo.attach")}
         </Button>
       )}
     </div>
@@ -168,6 +205,7 @@ const EboxyCheckItem = ({ check, onNavigate }: {
   onNavigate?: (docId: string) => void;
 }) => {
   const [accepted, setAccepted] = useState(false);
+  const { t } = useDrafterI18n();
   const icon = check.status === "pass" || accepted
     ? <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
     : check.status === "warn"
@@ -199,11 +237,11 @@ const EboxyCheckItem = ({ check, onNavigate }: {
               onClick={() => setAccepted(true)}
               className="mt-2 text-xs text-destructive/80 hover:text-destructive underline"
             >
-              Accept discrepancy (not recommended)
+              {t("agree.acceptDiscrepancy")}
             </button>
           )}
           {accepted && (
-            <p className="mt-1 text-xs text-muted-foreground italic">Discrepancy accepted</p>
+            <p className="mt-1 text-xs text-muted-foreground italic">{t("agree.discrepancyAccepted")}</p>
           )}
         </div>
       </div>
@@ -235,7 +273,7 @@ const SavedProjectsList = ({
   savedProjects: ProjectData[];
   onLoadProject: (project: ProjectData) => void;
 }) => {
-  const { t } = useI18n();
+  const { t, tf, shortDate } = useDrafterI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(8);
   const [savedPage, setSavedPage] = useState(0);
@@ -279,11 +317,11 @@ const SavedProjectsList = ({
   const handleDelete = async (id: string, name: string) => {
     // The project's QR view copies and counter-sign links are deleted with it
     // (platform migration 0193), so a printed QR stops resolving — say so.
-    if (!window.confirm(`Delete "${name}"? Its QR view links and counter-sign links will stop working.`)) return;
+    if (!window.confirm(tf("main.deleteConfirm", { name }))) return;
     await deleteProject(id);
     const updated = projects.filter((p) => p.id !== id);
     setProjects(updated);
-    toast.success(`"${name}" deleted`);
+    toast.success(tf("main.deleted", { name }));
   };
 
   return (
@@ -295,7 +333,8 @@ const SavedProjectsList = ({
             <Search className="h-4 w-4 text-muted-foreground shrink-0" />
             <input
               type="text"
-              placeholder="Search projects..."
+              placeholder={t("main.searchProjects")}
+              aria-label={t("main.searchProjects")}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setSavedPage(0); }}
@@ -304,7 +343,7 @@ const SavedProjectsList = ({
         </div>
       )}
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{search ? "No matching projects" : t("saved.empty")}</p>
+        <p className="text-sm text-muted-foreground">{search ? t("main.noMatchingProjects") : t("saved.empty")}</p>
       ) : (
         <>
           <div className="space-y-2 max-w-md flex-1 min-h-0 overflow-y-auto">
@@ -319,7 +358,7 @@ const SavedProjectsList = ({
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">{shortDate(p.createdAt)}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </button>
@@ -327,10 +366,11 @@ const SavedProjectsList = ({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 shrink-0"
-                  title="Duplicate project"
+                  title={t("main.duplicate")}
+                  aria-label={t("main.duplicate")}
                   onClick={async (e) => {
                     e.stopPropagation();
-                    const newName = window.prompt("Name for the duplicate:", `${p.name} copy`);
+                    const newName = window.prompt(t("main.duplicateName"), tf("main.copyName", { name: p.name }));
                     if (!newName || !newName.trim()) return;
                     const duplicate: ProjectData = {
                       id: createProjectId(),
@@ -344,7 +384,7 @@ const SavedProjectsList = ({
                     };
                     await saveProject(duplicate);
                     setProjects([...projects, duplicate]);
-                    toast.success(`Duplicated as "${duplicate.name}"`);
+                    toast.success(tf("main.duplicated", { name: duplicate.name }));
                   }}
                 >
                   <Copy className="h-3.5 w-3.5 text-muted-foreground" />
@@ -353,7 +393,8 @@ const SavedProjectsList = ({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 shrink-0 hover:text-destructive"
-                  title="Delete project"
+                  title={t("main.deleteProject")}
+                  aria-label={t("main.deleteProject")}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(p.id, p.name);
@@ -370,6 +411,7 @@ const SavedProjectsList = ({
                 variant="outline"
                 size="sm"
                 disabled={safePage === 0}
+                aria-label={t("common.prevPage")}
                 onClick={() => setSavedPage((p) => p - 1)}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -381,6 +423,7 @@ const SavedProjectsList = ({
                 variant="outline"
                 size="sm"
                 disabled={safePage >= totalPages - 1}
+                aria-label={t("common.nextPage")}
                 onClick={() => setSavedPage((p) => p + 1)}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -426,7 +469,7 @@ const MainContent = ({
   demoImported,
   onRunDemoImport,
 }: MainContentProps) => {
-  const { t } = useI18n();
+  const { t, tf, tp, money, date } = useDrafterI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -436,7 +479,7 @@ const MainContent = ({
       return (
         <div className="flex gap-2 mt-2">
           <Button variant="outline" onClick={() => onCancelEdit?.(sectionId)}>
-            <Undo2 className="mr-1.5 h-3.5 w-3.5" /> Make no changes
+            <Undo2 className="mr-1.5 h-3.5 w-3.5" /> {t("main.makeNoChanges")}
           </Button>
           <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => { onSave(); onLockSection?.(sectionId); }}>
             <CheckCircle2 className="mr-1.5 h-4 w-4" /> {t("lock.acceptLock")}
@@ -494,10 +537,10 @@ const MainContent = ({
     try { return !(JSON.parse(raw) as boolean[]).every(Boolean); } catch { return true; }
   });
   const GS_ITEMS = [
-    { label: "Register Your Business", url: "https://www.gov.uk/set-up-business", desc: "Choose your business structure and register with Companies House and HMRC." },
-    { label: "Register for VAT", url: "https://www.gov.uk/vat-registration", desc: "Register your business for VAT if your taxable turnover exceeds the threshold." },
-    { label: "Get an EORI Number", url: "https://www.gov.uk/eori", desc: "Apply for an Economic Operators Registration and Identification number — required for all imports/exports." },
-    { label: "Customs Declaration Service Setup", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "Set up access to HMRC's Customs Declaration Service." },
+    { label: "tools.gs.business", url: "https://www.gov.uk/set-up-business", desc: "tools.gs.businessDesc" },
+    { label: "tools.gs.vat", url: "https://www.gov.uk/vat-registration", desc: "tools.gs.vatDesc" },
+    { label: "tools.gs.eori", url: "https://www.gov.uk/eori", desc: "tools.gs.eoriDesc" },
+    { label: "tools.gs.cds", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "tools.gs.cdsDesc" },
   ] as const;
   const gsChecked = useMemo((): boolean[] => {
     const raw = allForms["handy-tools"]?.gettingStartedChecked;
@@ -614,7 +657,8 @@ const MainContent = ({
   );
 
   // Dynamic counterparty label: if I'm seller, other party is buyer and vice versa
-  const counterpartyLabel = role === "seller" ? t("doc.buyer") : role === "buyer" ? t("doc.seller") : t("doc.counterparty");
+  const counterpartyKey: MessageKey = role === "seller" ? "doc.buyer" : role === "buyer" ? "doc.seller" : "doc.counterparty";
+  const counterpartyLabel = t(counterpartyKey);
 
   const docField = (key: string, preValue: string) => {
     const v = field(key);
@@ -642,11 +686,11 @@ const MainContent = ({
   const handleLogoUpload = useCallback((file: File | undefined) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t("main.logoNotImage"));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Logo must be under 2MB");
+      toast.error(t("main.logoTooLarge"));
       return;
     }
     const reader = new FileReader();
@@ -654,10 +698,10 @@ const MainContent = ({
       const dataUrl = reader.result as string;
       setLogoDataUrl(dataUrl);
       localStorage.setItem("ebill-logo", dataUrl);
-      toast.success("Logo uploaded");
+      toast.success(t("main.logoUploaded"));
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [t]);
 
   // Same picker for both places the logo control is rendered (the standalone
   // "Your details" panel and the one inside the project drawer) — one input,
@@ -687,8 +731,8 @@ const MainContent = ({
     }
     await saveContact(otherParty);
     loadContacts().then(setContacts);
-    toast.success(`${otherParty.registeredName} ${t("toast.contactSaved")}`);
-  }, [otherParty, t]);
+    toast.success(tf("proj.contactSaved", { name: otherParty.registeredName }));
+  }, [otherParty, t, tf]);
 
   const handleDeleteContact = useCallback(async (id: string) => {
     await deleteContact(id);
@@ -720,23 +764,23 @@ const MainContent = ({
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.companyNumber")}</label>
-        <Input placeholder="e.g. 12345678" className="bg-secondary/50" value={details.companyNumber} onChange={(e) => onChange({ ...details, companyNumber: e.target.value })} />
+        <Input placeholder={tf("common.eg", { example: "12345678" })} className="bg-secondary/50" value={details.companyNumber} onChange={(e) => onChange({ ...details, companyNumber: e.target.value })} />
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.vatNumber")}</label>
-        <Input placeholder="e.g. GB123456789" className="bg-secondary/50" value={details.vatNumber} onChange={(e) => onChange({ ...details, vatNumber: e.target.value })} />
+        <Input placeholder={tf("common.eg", { example: "GB123456789" })} className="bg-secondary/50" value={details.vatNumber} onChange={(e) => onChange({ ...details, vatNumber: e.target.value })} />
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">EORI Number</label>
-        <Input placeholder="e.g. GB123456789000" className="bg-secondary/50" value={details.eoriNumber || ""} onChange={(e) => onChange({ ...details, eoriNumber: e.target.value })} />
+        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("party.eori")}</label>
+        <Input placeholder={tf("common.eg", { example: "GB123456789000" })} className="bg-secondary/50" value={details.eoriNumber || ""} onChange={(e) => onChange({ ...details, eoriNumber: e.target.value })} />
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.address")}</label>
         <Input placeholder={t("field.address")} className="bg-secondary/50" value={details.address} onChange={(e) => onChange({ ...details, address: e.target.value })} />
       </div>
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Country</label>
-        <Input placeholder="e.g. United Kingdom" className="bg-secondary/50" value={details.country || ""} onChange={(e) => onChange({ ...details, country: e.target.value })} />
+        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("party.country")}</label>
+        <Input placeholder={t("party.countryPlaceholder")} className="bg-secondary/50" value={details.country || ""} onChange={(e) => onChange({ ...details, country: e.target.value })} />
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.contactName")}</label>
@@ -744,11 +788,11 @@ const MainContent = ({
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.telephone")}</label>
-        <Input placeholder="e.g. +44 20 1234 5678" className="bg-secondary/50" value={details.telephone || ""} onChange={(e) => onChange({ ...details, telephone: e.target.value })} />
+        <Input placeholder={tf("common.eg", { example: "+44 20 1234 5678" })} className="bg-secondary/50" value={details.telephone || ""} onChange={(e) => onChange({ ...details, telephone: e.target.value })} />
       </div>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.email")}</label>
-        <Input type="email" placeholder="e.g. john@example.com" className="bg-secondary/50" value={details.email || ""} onChange={(e) => onChange({ ...details, email: e.target.value })} />
+        <Input type="email" placeholder={tf("common.eg", { example: "john@example.com" })} className="bg-secondary/50" value={details.email || ""} onChange={(e) => onChange({ ...details, email: e.target.value })} />
       </div>
     </div>
   );
@@ -762,20 +806,20 @@ const MainContent = ({
         <div className="max-w-sm space-y-3">
           {/* Logo upload */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">{t("main.businessLogo")}</label>
             <input {...logoPicker.inputProps} className="hidden" />
             {logoDataUrl ? (
               <div className="flex items-center gap-3">
                 <img
                   src={logoDataUrl}
-                  alt="Business logo"
+                  alt={t("main.businessLogo")}
                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                 />
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
-                    Change
+                    {t("common.change")}
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
+                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -783,7 +827,7 @@ const MainContent = ({
             ) : (
               <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                 <Upload className="mr-1 h-3.5 w-3.5" />
-                Upload Logo
+                {t("main.uploadLogo")}
               </Button>
             )}
           </div>
@@ -812,20 +856,20 @@ const MainContent = ({
                 <div className="flex items-center justify-between px-4 py-3">
                   <div>
                     <p className="text-sm font-medium text-foreground">{c.registeredName}</p>
-                    {c.tradingName && <p className="text-xs text-muted-foreground">t/a {c.tradingName}</p>}
+                    {c.tradingName && <p className="text-xs text-muted-foreground">{tf("main.tradingAsShort", { name: c.tradingName })}</p>}
                     {c.companyNumber && <p className="text-xs text-muted-foreground">#{c.companyNumber}</p>}
                     {c.vatNumber && <p className="text-xs text-muted-foreground">{t("overview.vat")}: {c.vatNumber}</p>}
                     {c.address && <p className="text-xs text-muted-foreground">{c.address}</p>}
-                    {c.country && <p className="text-xs text-muted-foreground">Country: {c.country}</p>}
+                    {c.country && <p className="text-xs text-muted-foreground">{tf("party.countryValue", { country: c.country })}</p>}
                     {c.contactName && <p className="text-xs text-muted-foreground">{t("overview.contact")}: {c.contactName}</p>}
                     {c.telephone && <p className="text-xs text-muted-foreground">{t("overview.tel")}: {c.telephone}</p>}
                     {c.email && <p className="text-xs text-muted-foreground">{t("field.email")}: {c.email}</p>}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setEditingContactIndex(editingContactIndex === i ? null : i)} aria-expanded={editingContactIndex === i} aria-controls={`${foldId}-contact-${i}`}>
+                    <Button variant="ghost" size="icon" aria-label={t("main.editContact")} title={t("main.editContact")} onClick={() => setEditingContactIndex(editingContactIndex === i ? null : i)} aria-expanded={editingContactIndex === i} aria-controls={`${foldId}-contact-${i}`}>
                       <Pencil className="h-4 w-4 text-muted-foreground" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteContact(c.id || '')}>
+                    <Button variant="ghost" size="icon" aria-label={t("main.deleteContact")} title={t("main.deleteContact")} onClick={() => handleDeleteContact(c.id || '')}>
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
@@ -871,7 +915,7 @@ const MainContent = ({
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("setup.projectName")}</label>
               <Input
-                placeholder="e.g. Q2 Export Shipment"
+                placeholder={t("main.projectNamePlaceholder")}
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 className="bg-secondary/50"
@@ -886,7 +930,7 @@ const MainContent = ({
             <div className="mt-10 w-full max-w-xs">
               <div className="relative flex items-center mb-4">
                 <div className="flex-1 border-t border-border" />
-                <span className="mx-3 text-xs text-muted-foreground uppercase tracking-wider">or</span>
+                <span className="mx-3 text-xs text-muted-foreground uppercase tracking-wider">{t("common.or")}</span>
                 <div className="flex-1 border-t border-border" />
               </div>
               <div className="relative rounded-lg">
@@ -903,10 +947,10 @@ const MainContent = ({
                 >
                   <img src={ueIcon} alt="Universal Exports" className="h-10 w-auto shrink-0 object-contain group-hover:scale-110 transition-transform" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">Explore with an example project</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">A pre-filled UK export sale — see every section in action</p>
+                    <p className="text-sm font-medium text-foreground">{t("example.title")}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("example.desc")}</p>
                     {savedProjects.length === 0 && (
-                      <p className="text-xs text-primary mt-1 font-medium">New here? Start here ↑</p>
+                      <p className="text-xs text-primary mt-1 font-medium">{t("example.new")}</p>
                     )}
                   </div>
                 </button>
@@ -972,7 +1016,7 @@ const MainContent = ({
                       {/* When no details saved yet, show choice; otherwise show form */}
                       {!yourDetails.registeredName && yourDetailsMode !== "form" ? (
                         <div className="space-y-2 pt-1">
-                          <p className="text-xs text-muted-foreground">Choose how to set up your details:</p>
+                          <p className="text-xs text-muted-foreground">{t("proj.chooseDetails")}</p>
                           <button
                             onClick={() => {
                               setYourDetails({
@@ -992,8 +1036,8 @@ const MainContent = ({
                             className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
                           >
                             <div>
-                              <p className="text-sm font-medium text-foreground">Universal Simulation Ltd (Example)</p>
-                              <p className="text-xs text-muted-foreground">Use example company details to explore the app</p>
+                              <p className="text-sm font-medium text-foreground">{tf("proj.exampleCompany", { name: "Universal Simulation Ltd" })}</p>
+                              <p className="text-xs text-muted-foreground">{t("proj.exampleCompanyDesc")}</p>
                             </div>
                             <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                           </button>
@@ -1002,8 +1046,8 @@ const MainContent = ({
                             className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-border hover:bg-secondary/50 transition-colors text-left"
                           >
                             <div>
-                              <p className="text-sm font-medium text-foreground">Add your details</p>
-                              <p className="text-xs text-muted-foreground">Enter your real company information</p>
+                              <p className="text-sm font-medium text-foreground">{t("proj.addDetails")}</p>
+                              <p className="text-xs text-muted-foreground">{t("proj.addDetailsDesc")}</p>
                             </div>
                             <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                           </button>
@@ -1012,20 +1056,20 @@ const MainContent = ({
                         <>
                           {/* Logo upload */}
                           <div>
-                            <label className="text-sm font-medium text-foreground mb-1 block">Business Logo</label>
+                            <label className="text-sm font-medium text-foreground mb-1 block">{t("main.businessLogo")}</label>
                             <input {...logoPicker.inputProps} className="hidden" />
                             {logoDataUrl ? (
                               <div className="flex items-center gap-3">
                                 <img
                                   src={logoDataUrl}
-                                  alt="Business logo"
+                                  alt={t("main.businessLogo")}
                                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                                 />
                                 <div className="flex gap-1">
                                   <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
-                                    Change
+                                    {t("common.change")}
                                   </Button>
-                                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo}>
+                                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
                                     <X className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
@@ -1033,7 +1077,7 @@ const MainContent = ({
                             ) : (
                               <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
                                 <Upload className="mr-1 h-3.5 w-3.5" />
-                                Upload Logo
+                                {t("main.uploadLogo")}
                               </Button>
                             )}
                           </div>
@@ -1065,7 +1109,8 @@ const MainContent = ({
                       <button
                         onClick={() => { setOtherParty(emptyCompany()); setOtherPartyMode(""); setShowSetupOtherParty(true); }}
                         className="px-3 py-3 hover:bg-destructive/10 transition-colors"
-                        title="Remove selected party"
+                        title={t("proj.removeSelectedParty")}
+                        aria-label={t("proj.removeSelectedParty")}
                       >
                         <X className="h-4 w-4 text-destructive" />
                       </button>
@@ -1091,8 +1136,8 @@ const MainContent = ({
                               className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
                             >
                               <div>
-                                <p className="text-sm font-medium text-foreground">Dubois Équipements SAS (Example)</p>
-                                <p className="text-xs text-muted-foreground">Use example {role === "buyer" ? t("setup.seller") : t("setup.buyer")} details to explore the app</p>
+                                <p className="text-sm font-medium text-foreground">{tf("proj.exampleCompany", { name: "Dubois Équipements SAS" })}</p>
+                                <p className="text-xs text-muted-foreground">{tf("proj.exampleRoleDesc", { role: role === "buyer" ? t("setup.seller") : t("setup.buyer") })}</p>
                               </div>
                               <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                             </button>
@@ -1109,7 +1154,7 @@ const MainContent = ({
                                 onClick={() => { handleSelectContact(lastContact!); setOtherPartyMode("create"); setShowSetupOtherParty(false); }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
                               >
-                                <span className="text-xs text-muted-foreground shrink-0">Last used</span>
+                                <span className="text-xs text-muted-foreground shrink-0">{t("proj.lastUsed")}</span>
                                 <span className="text-sm font-medium text-foreground truncate flex-1">{lastContact.registeredName}</span>
                                 <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
                               </button>
@@ -1145,7 +1190,7 @@ const MainContent = ({
                                 >
                                   <div>
                                     <p className="text-sm font-medium text-foreground">{c.registeredName}</p>
-                                    {c.tradingName && <p className="text-xs text-muted-foreground">t/a {c.tradingName}</p>}
+                                    {c.tradingName && <p className="text-xs text-muted-foreground">{tf("main.tradingAsShort", { name: c.tradingName })}</p>}
                                   </div>
                                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                                 </button>
@@ -1197,30 +1242,30 @@ const BankAccountForm = ({ account, onChange, showSortCode }: {
 }) => (
   <div className="space-y-3">
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">Account Name</label>
-      <Input placeholder="e.g. Acme Ltd" className="bg-secondary/50" value={account.accountName} onChange={(e) => onChange({ ...account, accountName: e.target.value })} />
+      <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bank.accountName")}</label>
+      <Input placeholder={tf("common.eg", { example: "Acme Ltd" })} className="bg-secondary/50" value={account.accountName} onChange={(e) => onChange({ ...account, accountName: e.target.value })} />
     </div>
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">Bank Name</label>
-      <Input placeholder="e.g. Barclays" className="bg-secondary/50" value={account.bankName} onChange={(e) => onChange({ ...account, bankName: e.target.value })} />
+      <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bank.bankName")}</label>
+      <Input placeholder={tf("common.eg", { example: "Barclays" })} className="bg-secondary/50" value={account.bankName} onChange={(e) => onChange({ ...account, bankName: e.target.value })} />
     </div>
     {showSortCode && (
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Sort Code</label>
-        <Input placeholder="e.g. 20-00-00" className="bg-secondary/50" value={account.sortCode} onChange={(e) => onChange({ ...account, sortCode: e.target.value })} />
+        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bank.sortCode")}</label>
+        <Input placeholder={tf("common.eg", { example: "20-00-00" })} className="bg-secondary/50" value={account.sortCode} onChange={(e) => onChange({ ...account, sortCode: e.target.value })} />
       </div>
     )}
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">Account Number</label>
-      <Input placeholder="e.g. 12345678" className="bg-secondary/50" value={account.accountNumber} onChange={(e) => onChange({ ...account, accountNumber: e.target.value })} />
+      <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bank.accountNumber")}</label>
+      <Input placeholder={tf("common.eg", { example: "12345678" })} className="bg-secondary/50" value={account.accountNumber} onChange={(e) => onChange({ ...account, accountNumber: e.target.value })} />
     </div>
     <div>
       <label className="text-sm font-medium text-foreground mb-1.5 block">IBAN</label>
-      <Input placeholder="e.g. GB29 NWBK 6016 1331 9268 19" className="bg-secondary/50" value={account.iban} onChange={(e) => onChange({ ...account, iban: e.target.value })} />
+      <Input placeholder={tf("common.eg", { example: "GB29 NWBK 6016 1331 9268 19" })} className="bg-secondary/50" value={account.iban} onChange={(e) => onChange({ ...account, iban: e.target.value })} />
     </div>
     <div>
       <label className="text-sm font-medium text-foreground mb-1.5 block">BIC / SWIFT</label>
-      <Input placeholder="e.g. BARCGB22" className="bg-secondary/50" value={account.bicSwift} onChange={(e) => onChange({ ...account, bicSwift: e.target.value })} />
+      <Input placeholder={tf("common.eg", { example: "BARCGB22" })} className="bg-secondary/50" value={account.bicSwift} onChange={(e) => onChange({ ...account, bicSwift: e.target.value })} />
     </div>
   </div>
 );
@@ -1268,7 +1313,7 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
             <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
           ))}
           <SelectItem value="other">
-            {!isStandard && value ? `${value} (Other)` : "Other"}
+            {!isStandard && value ? tf("currency.otherValue", { code: value }) : t("currency.other")}
           </SelectItem>
         </SelectContent>
       </Select>
@@ -1276,11 +1321,11 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
       <Dialog open={otherOpen} onOpenChange={setOtherOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Custom Currency</DialogTitle>
+            <DialogTitle>{t("currency.customTitle")}</DialogTitle>
           </DialogHeader>
           <DialogBody className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Currency Code (e.g. JPY)</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{t("currency.code")}</label>
               <Input
                 placeholder="XXX"
                 maxLength={3}
@@ -1290,7 +1335,7 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Currency Symbol (e.g. ¥)</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{t("currency.symbol")}</label>
               <Input
                 placeholder="$"
                 maxLength={3}
@@ -1301,8 +1346,8 @@ const CurrencySelect = ({ value, onChange }: { value: string; onChange: (v: stri
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOtherOpen(false)}>Cancel</Button>
-            <Button onClick={handleOtherConfirm} disabled={!otherCode.trim()}>Confirm</Button>
+            <Button variant="outline" onClick={() => setOtherOpen(false)}>{t("setup.cancel")}</Button>
+            <Button onClick={handleOtherConfirm} disabled={!otherCode.trim()}>{t("common.confirm")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1362,7 +1407,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         return { ...updated };
       });
     }
-    toast.success(`${currency} bank details deleted`);
+    toast.success(tf("bank.deleted", { currency: currency === "Other" ? t("currency.other") : currency }));
     setConfirmDelete(null);
   }, []);
 
@@ -1372,6 +1417,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
   const partyFilledCount = currencies.filter((c) => isFilled(partyBanks[c] || emptyBankAccount())).length;
 
   const canLock = yourFilledCount >= 1 && partyFilledCount >= 1;
+  // "Other" is a stored key; only its label is translated.
+  const currencyLabel = (cur: string) => (cur === "Other" ? t("currency.other") : cur);
 
   if (locked) {
     return (
@@ -1381,8 +1428,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
         </div>
         <div className="max-w-lg space-y-2">
-          <p className="text-sm text-foreground">Your banks: {yourFilledCount} currency account{yourFilledCount !== 1 ? "s" : ""}</p>
-          <p className="text-sm text-foreground">Other party banks: {partyFilledCount} currency account{partyFilledCount !== 1 ? "s" : ""}</p>
+          <p className="text-sm text-foreground">{tp("bank.yourCount", yourFilledCount)}</p>
+          <p className="text-sm text-foreground">{tp("bank.partyCount", partyFilledCount)}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onUnlock}>
           <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
@@ -1395,7 +1442,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
     <div className="space-y-6">
       <div>
         <h2 className="text-base font-semibold text-foreground">{t("sidebar.bankDetails")}</h2>
-        <p className="text-sm text-muted-foreground mt-1">Manage bank details for each currency.</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("bank.desc")}</p>
       </div>
 
       {/* Your Bank Details - collapsible */}
@@ -1407,9 +1454,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
         >
           <div>
-            <p className="text-xs text-muted-foreground">Your Bank Details</p>
+            <p className="text-xs text-muted-foreground">{t("bank.yours")}</p>
             <p className="text-sm font-medium text-foreground">
-              {yourFilledCount > 0 ? `${yourFilledCount} currenc${yourFilledCount === 1 ? "y" : "ies"} set` : "Not set — click to edit"}
+              {yourFilledCount > 0 ? tp("bank.set", yourFilledCount) : t("bank.notSet")}
             </p>
           </div>
           {yourOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -1427,7 +1474,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {cur}
+                  {currencyLabel(cur)}
                   {isFilled(yourBanks[cur] || emptyBankAccount()) && (
                     <CheckCircle2 className="inline ml-1 h-3 w-3 text-primary" />
                   )}
@@ -1441,7 +1488,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 showSortCode={yourCurrency === "GBP"}
               />
               <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-muted-foreground">Changes are saved automatically.</p>
+                <p className="text-xs text-muted-foreground">{t("bank.autoSaved")}</p>
                 {isFilled(currentYourAccount) && (
                   <Button
                     variant="ghost"
@@ -1450,7 +1497,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     onClick={() => setConfirmDelete({ type: "your", currency: yourCurrency })}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
-                    Delete {yourCurrency}
+                    {tf("bank.deleteCurrency", { currency: currencyLabel(yourCurrency) })}
                   </Button>
                 )}
               </div>
@@ -1468,9 +1515,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
         >
           <div>
-            <p className="text-xs text-muted-foreground">Other Party Bank Details</p>
+            <p className="text-xs text-muted-foreground">{t("bank.party")}</p>
             <p className="text-sm font-medium text-foreground">
-              {partyFilledCount > 0 ? `${partyFilledCount} currenc${partyFilledCount === 1 ? "y" : "ies"} set` : "Not set — click to edit"}
+              {partyFilledCount > 0 ? tp("bank.set", partyFilledCount) : t("bank.notSet")}
             </p>
           </div>
           {partyOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -1488,7 +1535,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {cur}
+                  {currencyLabel(cur)}
                   {isFilled(partyBanks[cur] || emptyBankAccount()) && (
                     <CheckCircle2 className="inline ml-1 h-3 w-3 text-primary" />
                   )}
@@ -1496,7 +1543,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Enter the other party's bank details. {partyCurrency !== "GBP" && "Include BIC/SWIFT for international transfers."}
+              {t("bank.partyHint")} {partyCurrency !== "GBP" && t("bank.swiftHint")}
             </p>
             <div className="max-w-sm">
               <BankAccountForm
@@ -1505,7 +1552,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 showSortCode={partyCurrency === "GBP"}
               />
               <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-muted-foreground">Changes are saved automatically.</p>
+                <p className="text-xs text-muted-foreground">{t("bank.autoSaved")}</p>
                 {isFilled(currentPartyAccount) && (
                   <Button
                     variant="ghost"
@@ -1514,7 +1561,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     onClick={() => setConfirmDelete({ type: "party", currency: partyCurrency })}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
-                    Delete {partyCurrency}
+                    {tf("bank.deleteCurrency", { currency: currencyLabel(partyCurrency) })}
                   </Button>
                 )}
               </div>
@@ -1527,17 +1574,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       <Dialog open={!!confirmDelete} onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Bank Details</DialogTitle>
+            <DialogTitle>{t("bank.deleteTitle")}</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <p className="text-sm text-muted-foreground">
-              Are you sure you want to delete the {confirmDelete?.currency} bank details for {confirmDelete?.type === "your" ? "your account" : "the other party"}? This cannot be undone.
+              {tf(confirmDelete?.type === "your" ? "bank.deleteConfirmYours" : "bank.deleteConfirmParty", { currency: currencyLabel(confirmDelete?.currency ?? "") })}
             </p>
           </DialogBody>
           <DialogFooter className="gap-2">
-            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+            <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>{t("setup.cancel")}</Button>
             <Button variant="destructive" size="sm" onClick={() => confirmDelete && handleDeleteBank(confirmDelete.type, confirmDelete.currency)}>
-              Delete
+              {t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1547,7 +1594,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         <div className="flex gap-2">
           {isReEditing && (
             <Button variant="outline" onClick={onCancelEdit}>
-              <Undo2 className="mr-1.5 h-3.5 w-3.5" /> Make no changes
+              <Undo2 className="mr-1.5 h-3.5 w-3.5" /> {t("main.makeNoChanges")}
             </Button>
           )}
           <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={onLock}>
@@ -1579,7 +1626,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             role === "seller" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
           }`}>
-            {role === "seller" ? "Export" : "Import"}
+            {role === "seller" ? t("main.export") : t("main.import")}
           </span>
         )}
       </div>
@@ -1587,23 +1634,23 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       {selectedDoc === "new-project" ? (
         <div className="flex-1 flex flex-col items-center justify-center p-10">
           <img src={ueIcon} alt="Universal Exports" className="h-12 w-12 mb-4 object-contain" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Start a New Project?</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">{t("main.newTitle")}</h2>
           <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
-            This will close your current project <span className="font-medium text-foreground">"{projectName}"</span> and start fresh.
+            {fillNodes(t("main.newBody"), { name: <span className="font-medium text-foreground">"{projectName}"</span> })}
           </p>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => onNavigate?.("project-overview")}>
-              Cancel
+              {t("setup.cancel")}
             </Button>
             <Button onClick={handleConfirmNewProject}>
-              Continue
+              {t("setup.continue")}
             </Button>
           </div>
         </div>
       ) : !selectedDoc && accepted ? (
         <div className="flex-1 flex flex-col items-center justify-center p-10">
           <ChevronLeft className="h-10 w-10 text-primary mb-3" />
-          <p className="text-lg font-medium text-foreground">Select a section from the left to continue.</p>
+          <p className="text-lg font-medium text-foreground">{t("main.selectSection")}</p>
           <button
             onClick={() => onNavigate?.("ai-import")}
             className="mt-6 flex items-center gap-3 rounded-md border border-border px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
@@ -1611,7 +1658,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <Sparkles className="h-4 w-4 text-primary" />
             <div>
               <p className="text-sm font-medium text-foreground">{t("sidebar.eboxyAI")}</p>
-              <p className="text-xs text-muted-foreground">Import documents with AI</p>
+              <p className="text-xs text-muted-foreground">{t("main.importWithAi")}</p>
             </div>
           </button>
         </div>
@@ -1626,7 +1673,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <div className="rounded-md border border-border p-4 space-y-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{label}</p>
               <p className="text-sm font-semibold text-foreground">{party.registeredName || "—"}</p>
-              {party.tradingName && <p className="text-xs text-muted-foreground">Trading as: {party.tradingName}</p>}
+              {party.tradingName && <p className="text-xs text-muted-foreground">{t("overview.tradingAs")}: {party.tradingName}</p>}
               {party.companyNumber && <p className="text-xs text-muted-foreground">{t("overview.company")}: {party.companyNumber}</p>}
               {party.vatNumber && <p className="text-xs text-muted-foreground">{t("overview.vat")}: {party.vatNumber}</p>}
               {party.eoriNumber && <p className="text-xs text-muted-foreground">EORI: {party.eoriNumber}</p>}
@@ -1646,7 +1693,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               </div>
               {(isDomestic || isInternational) && (
                 <p>
-                  <Chip size="sm">{isInternational ? "🌐 International trade" : "🏠 Domestic trade"}</Chip>
+                  <Chip size="sm">{isInternational ? `🌐 ${t("proj.internationalTrade")}` : `🏠 ${t("proj.domesticTrade")}`}</Chip>
                 </p>
               )}
               <PartyCard
@@ -1659,7 +1706,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               />
               <div className="flex gap-2 pt-1">
                 <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("project-overview")}>
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
                 </Button>
               </div>
             </div>
@@ -1698,7 +1745,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       <button
                         onClick={() => { setEditingYourDetails(true); setExpandedParty("you"); }}
                         className="p-2 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Edit your details"
+                        title={t("proj.editYours")}
+                        aria-label={t("proj.editYours")}
                       >
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </button>
@@ -1711,12 +1759,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       <div className="space-y-3 pt-2">
                         {companyFields(yourDetails, setYourDetails, "")}
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={async () => { await saveYourDetails(yourDetails); setEditYourDetails(yourDetails); setEditingYourDetails(false); toast.success("Your details updated"); }}>
+                          <Button size="sm" onClick={async () => { await saveYourDetails(yourDetails); setEditYourDetails(yourDetails); setEditingYourDetails(false); toast.success(t("proj.yoursUpdated")); }}>
                             <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                            Done
+                            {t("save.done")}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => setEditingYourDetails(false)}>
-                            Cancel
+                            {t("setup.cancel")}
                           </Button>
                         </div>
                       </div>
@@ -1726,7 +1774,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         {yourDetails.companyNumber && <p className="text-sm text-muted-foreground">{t("overview.company")}: {yourDetails.companyNumber}</p>}
                         {yourDetails.vatNumber && <p className="text-sm text-muted-foreground">{t("overview.vat")}: {yourDetails.vatNumber}</p>}
                         {yourDetails.address && <p className="text-sm text-muted-foreground">{t("field.address")}: {yourDetails.address}</p>}
-                        {yourDetails.country && <p className="text-sm text-muted-foreground">Country: {yourDetails.country}</p>}
+                        {yourDetails.country && <p className="text-sm text-muted-foreground">{tf("party.countryValue", { country: yourDetails.country })}</p>}
                         {yourDetails.contactName && <p className="text-sm text-muted-foreground">{t("overview.contact")}: {yourDetails.contactName}</p>}
                         {yourDetails.telephone && <p className="text-sm text-muted-foreground">{t("overview.tel")}: {yourDetails.telephone}</p>}
                         {yourDetails.email && <p className="text-sm text-muted-foreground">{t("field.email")}: {yourDetails.email}</p>}
@@ -1756,7 +1804,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     <button
                       onClick={() => { setEditingOtherParty(true); setExpandedParty("other"); }}
                       className="p-2 hover:bg-secondary/50 rounded-md transition-colors"
-                      title="Edit other party"
+                      title={t("proj.editOther")}
+                      aria-label={t("proj.editOther")}
                     >
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
@@ -1764,7 +1813,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       <button
                         onClick={() => { setOtherParty(emptyCompany()); setEditingOtherParty(false); setOtherPartyMode(""); onBackToSetup?.(); }}
                         className="p-2 hover:bg-destructive/10 rounded-md transition-colors"
-                        title="Remove other party"
+                        title={t("proj.removeOther")}
+                        aria-label={t("proj.removeOther")}
                       >
                         <X className="h-3.5 w-3.5 text-destructive" />
                       </button>
@@ -1777,12 +1827,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       <div className="space-y-3 pt-2">
                         {companyFields(otherParty, setOtherParty, "")}
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => { setEditingOtherParty(false); toast.success("Other party details updated"); }}>
+                          <Button size="sm" onClick={() => { setEditingOtherParty(false); toast.success(t("proj.otherUpdated")); }}>
                             <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                            Done
+                            {t("save.done")}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => setEditingOtherParty(false)}>
-                            Cancel
+                            {t("setup.cancel")}
                           </Button>
                         </div>
                       </div>
@@ -1792,7 +1842,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         {otherParty.companyNumber && <p className="text-sm text-muted-foreground">{t("overview.company")}: {otherParty.companyNumber}</p>}
                         {otherParty.vatNumber && <p className="text-sm text-muted-foreground">{t("overview.vat")}: {otherParty.vatNumber}</p>}
                         {otherParty.address && <p className="text-sm text-muted-foreground">{t("field.address")}: {otherParty.address}</p>}
-                        {otherParty.country && <p className="text-sm text-muted-foreground">Country: {otherParty.country}</p>}
+                        {otherParty.country && <p className="text-sm text-muted-foreground">{tf("party.countryValue", { country: otherParty.country })}</p>}
                         {otherParty.contactName && <p className="text-sm text-muted-foreground">{t("overview.contact")}: {otherParty.contactName}</p>}
                         {otherParty.telephone && <p className="text-sm text-muted-foreground">{t("overview.tel")}: {otherParty.telephone}</p>}
                         {otherParty.email && <p className="text-sm text-muted-foreground">{t("field.email")}: {otherParty.email}</p>}
@@ -1823,7 +1873,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                             : "bg-secondary/50 text-muted-foreground border-border hover:border-muted-foreground/30"
                         }`}
                       >
-                        Domestic
+                        {t("proj.domestic")}
                       </button>
                       <button
                         onClick={() => setTradeTypeOverride("international")}
@@ -1833,16 +1883,21 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                             : "bg-secondary/50 text-muted-foreground border-border hover:border-muted-foreground/30"
                         }`}
                       >
-                        International
+                        {t("proj.international")}
                       </button>
                     </div>
                     {isOverridden && (
                       <p className="text-xs text-amber-600 flex items-center gap-1">
-                        ⚠️ Attention! {role === "buyer" ? "Buyer" : "Seller"}: {yourDisplay}, {role === "buyer" ? "Seller" : "Buyer"}: {otherDisplay}
+                        ⚠️ {tf("proj.mismatch", {
+                          roleA: role === "buyer" ? t("doc.buyer") : t("doc.seller"),
+                          countryA: yourDisplay,
+                          roleB: role === "buyer" ? t("doc.seller") : t("doc.buyer"),
+                          countryB: otherDisplay,
+                        })}
                       </p>
                     )}
                     {!bothCountriesSet && !tradeTypeOverride && (
-                      <p className="text-xs text-muted-foreground italic">Add country to both parties to auto-detect</p>
+                      <p className="text-xs text-muted-foreground italic">{t("proj.addCountry")}</p>
                     )}
                   </div>
                 );
@@ -1855,7 +1910,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Accept & Lock
+                  {t("lock.acceptLock")}
                 </Button>
               )}
               {accepted && editingSections?.has("project-overview") && (
@@ -1866,10 +1921,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     onClick={() => onLockSection?.("project-overview")}
                   >
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Accept & Lock
+                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> {t("lock.acceptLock")}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => onCancelEdit?.("project-overview")}>
-                    Cancel
+                    {t("setup.cancel")}
                   </Button>
                 </div>
               )}
@@ -1885,29 +1940,29 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <CheckCircle2 className="h-10 w-10 text-success" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-foreground">Documents imported &amp; extracted</h2>
+                <h2 className="text-lg font-semibold text-foreground">{t("ai.doneTitle")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Universal Exports AI has processed your PDFs and pre-filled every section from the uploaded trade documents.
+                  {t("ai.doneBody")}
                 </p>
               </div>
               <div className="w-full rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-left space-y-1.5">
                 {DEMO_IMPORT_DOCS.map((doc) => (
-                  <div key={doc} className="flex items-center gap-2 text-sm text-foreground">
+                  <div key={doc.key} className="flex items-center gap-2 text-sm text-foreground">
                     <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                    <span>{doc}</span>
+                    <span>{tf(doc.key, { ref: doc.ref ?? "" })}</span>
                   </div>
                 ))}
               </div>
               <div className="w-full flex items-center gap-2 text-sm font-medium text-success">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>No discrepancies found in the documents</span>
+                <span>{t("ai.noDiscrepancies")}</span>
               </div>
               <p className="text-xs text-muted-foreground italic">
-                This is an example project — in a live project you would upload your own documents here.
+                {t("ai.exampleLive")}
               </p>
               <div className="flex items-center gap-2 text-primary animate-pulse">
                 <ArrowLeft className="h-5 w-5 shrink-0" />
-                <p className="text-sm font-medium">Choose a section from the menu to get started</p>
+                <p className="text-sm font-medium">{t("ai.chooseSection")}</p>
               </div>
             </div>
           ) : demoImporting ? (
@@ -1917,16 +1972,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <Loader2 className="h-9 w-9 text-primary animate-spin" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-foreground">Extracting your documents…</h2>
+                <h2 className="text-lg font-semibold text-foreground">{t("ai.extractingTitle")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Universal Exports AI is reading your PDFs and pre-filling every section.
+                  {t("ai.extractingBody")}
                 </p>
               </div>
               <div className="w-full rounded-lg border border-border bg-secondary/30 px-4 py-3 text-left space-y-1.5">
                 {DEMO_IMPORT_DOCS.map((doc) => (
-                  <div key={doc} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div key={doc.key} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-3.5 w-3.5 text-primary shrink-0 animate-spin" />
-                    <span>{doc}</span>
+                    <span>{tf(doc.key, { ref: doc.ref ?? "" })}</span>
                   </div>
                 ))}
               </div>
@@ -1938,27 +1993,27 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <Wand2 className="h-8 w-8 text-primary" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-foreground">Universal Exports AI</h2>
+                <h2 className="text-lg font-semibold text-foreground">{t("sidebar.eboxyAI")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Upload your trade documents and Universal Exports AI will extract the details and pre-fill every section automatically.
+                  {t("ai.uploadBody")}
                 </p>
               </div>
               <div className="w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/[0.03] px-4 py-4 text-left space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ready to upload</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("ai.ready")}</p>
                 {DEMO_IMPORT_DOCS.map((doc) => (
-                  <div key={doc} className="flex items-center gap-2 text-sm text-foreground">
+                  <div key={doc.key} className="flex items-center gap-2 text-sm text-foreground">
                     <FileText className="h-4 w-4 text-primary/70 shrink-0" />
-                    <span>{doc}</span>
+                    <span>{tf(doc.key, { ref: doc.ref ?? "" })}</span>
                   </div>
                 ))}
               </div>
               {/* Point of truth — confirm the agreed total before importing. */}
               <div className="w-full rounded-lg border border-border bg-card px-4 py-3 text-left space-y-2">
                 <label htmlFor="pot-total" className="text-sm font-medium text-foreground">
-                  Confirm the total deal price
+                  {t("ai.potLabel")}
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  Enter the agreed total so we can check the imported documents against it. Required before uploading.
+                  {t("ai.potHint")}
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">{((allForms["transaction"]?.currency) || "GBP").toUpperCase()}</span>
@@ -1974,7 +2029,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               </div>
               <div className="flex items-center gap-1.5 text-primary text-sm font-semibold animate-bounce">
                 <ArrowRight className="h-4 w-4 rotate-90" />
-                <span>{potTotal.trim() ? "Click here to import the documents" : "Confirm the total deal price above to continue"}</span>
+                <span>{potTotal.trim() ? t("ai.clickImport") : t("ai.confirmAbove")}</span>
               </div>
               <Button
                 size="lg"
@@ -1982,10 +2037,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 onClick={handleUploadPdfs}
                 disabled={!potTotal.trim()}
               >
-                <Upload className="mr-2 h-4 w-4" /> Upload PDFs
+                <Upload className="mr-2 h-4 w-4" /> {t("ai.uploadPdfs")}
               </Button>
               <p className="text-xs text-muted-foreground italic">
-                This is an example project — the total is prefilled, just hit upload to see the extraction.
+                {t("ai.examplePrefilled")}
               </p>
             </div>
           )
@@ -1993,21 +2048,21 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Wand2 className="h-5 w-5" />
-            AI Import
+            {t("ai.title")}
           </h2>
           <p className="text-sm text-muted-foreground max-w-md">
-            Upload or paste any trade document (invoice, purchase order, packing list, etc.) and the system will attempt to extract and prefill the relevant fields automatically.
+            {t("ai.body")}
           </p>
           <div className="flex flex-col gap-3 max-w-md">
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center space-y-3">
               <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Drag &amp; drop a file here, or click to browse</p>
+              <p className="text-sm text-muted-foreground">{t("ai.drop")}</p>
               <Button variant="outline" size="sm" disabled>
-                Browse Files
+                {t("ai.browse")}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center">Supported: PDF, images, Word documents, Excel spreadsheets</p>
-            <p className="text-xs text-muted-foreground text-center italic">Coming soon — AI processing will be enabled in a future update.</p>
+            <p className="text-xs text-muted-foreground text-center">{t("ai.supported")}</p>
+            <p className="text-xs text-muted-foreground text-center italic">{t("ai.comingSoon")}</p>
           </div>
         </div>
         )
@@ -2025,72 +2080,82 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           const val = (form: string, key: string) => (allForms[form] || {})[key]?.trim() || "";
           const checks: CheckItem[] = [];
 
+          // Section names as the sidebar shows them, in the app's language.
+          const L = {
+            transaction: t("sidebar.transaction"),
+            estimate: t("sidebar.estimateQuote"),
+            po: t("sidebar.purchaseOrder"),
+            invoice: t("sidebar.invoice"),
+            deliveryNote: t("sidebar.deliveryNote"),
+          };
+          const num = (s: string) => money(parseFloat(s));
+
           // 1. Amount consistency across estimate, PO, invoice, transaction
           const amountSources: { label: string; docId: string; value: string }[] = [
-            { label: "Transaction", docId: "transaction", value: val("transaction", "billAmount") },
-            { label: "Estimate / Quote", docId: "estimate-quote", value: val("estimate-quote", "amount") },
-            { label: "Purchase Order", docId: "purchase-order", value: val("purchase-order", "amount") },
-            { label: "Invoice", docId: "invoice", value: val("invoice", "amount") },
+            { label: L.transaction, docId: "transaction", value: val("transaction", "billAmount") },
+            { label: L.estimate, docId: "estimate-quote", value: val("estimate-quote", "amount") },
+            { label: L.po, docId: "purchase-order", value: val("purchase-order", "amount") },
+            { label: L.invoice, docId: "invoice", value: val("invoice", "amount") },
           ].filter((s) => s.value);
 
           if (amountSources.length >= 2) {
             const amounts = amountSources.map((s) => parseFloat(s.value));
             const allMatch = amounts.every((a) => a === amounts[0]);
             if (allMatch) {
-              checks.push({ label: "Amounts match across documents", status: "pass", details: `All ${amountSources.length} sources show ${amounts[0].toFixed(2)}` });
+              checks.push({ label: t("agree.amountsMatch"), status: "pass", details: tf("agree.amountsMatchDetail", { count: amountSources.length, amount: money(amounts[0]) }) });
             } else {
               checks.push({
-                label: "Amount discrepancy detected",
+                label: t("agree.amountMismatch"),
                 status: "warn",
-                details: amountSources.map((s) => `${s.label}: ${parseFloat(s.value).toFixed(2)}`).join(" · "),
+                details: amountSources.map((s) => `${s.label}: ${num(s.value)}`).join(" · "),
                 links: amountSources.map((s) => ({ label: s.label, docId: s.docId })),
               });
             }
           } else if (amountSources.length === 1) {
-            checks.push({ label: "Amount", status: "pass", details: `Only ${amountSources[0].label} has an amount (${parseFloat(amountSources[0].value).toFixed(2)})` });
+            checks.push({ label: t("doc.amount"), status: "pass", details: tf("agree.amountOnlyOne", { doc: amountSources[0].label, amount: num(amountSources[0].value) }) });
           } else {
-            checks.push({ label: "Amount", status: "missing", details: "No amounts entered in any document", links: [{ label: "Transaction", docId: "transaction" }] });
+            checks.push({ label: t("doc.amount"), status: "missing", details: t("agree.noAmounts"), links: [{ label: L.transaction, docId: "transaction" }] });
           }
 
           // 2. Currency consistency
           const currSources: { label: string; docId: string; value: string }[] = [
-            { label: "Transaction", docId: "transaction", value: val("transaction", "currency") },
-            { label: "Estimate / Quote", docId: "estimate-quote", value: val("estimate-quote", "docCurrency") },
-            { label: "Purchase Order", docId: "purchase-order", value: val("purchase-order", "docCurrency") },
-            { label: "Invoice", docId: "invoice", value: val("invoice", "docCurrency") },
+            { label: L.transaction, docId: "transaction", value: val("transaction", "currency") },
+            { label: L.estimate, docId: "estimate-quote", value: val("estimate-quote", "docCurrency") },
+            { label: L.po, docId: "purchase-order", value: val("purchase-order", "docCurrency") },
+            { label: L.invoice, docId: "invoice", value: val("invoice", "docCurrency") },
           ].filter((s) => s.value);
 
           if (currSources.length >= 2) {
             const allMatch = currSources.every((s) => s.value.toUpperCase() === currSources[0].value.toUpperCase());
             if (allMatch) {
-              checks.push({ label: "Currencies match", status: "pass", details: currSources[0].value.toUpperCase() });
+              checks.push({ label: t("agree.currenciesMatch"), status: "pass", details: currSources[0].value.toUpperCase() });
             } else {
               checks.push({
-                label: "Currency mismatch",
+                label: t("agree.currencyMismatch"),
                 status: "warn",
                 details: currSources.map((s) => `${s.label}: ${s.value}`).join(" · "),
                 links: currSources.map((s) => ({ label: s.label, docId: s.docId })),
               });
             }
           } else if (currSources.length === 1) {
-            checks.push({ label: "Currency", status: "pass", details: currSources[0].value.toUpperCase() });
+            checks.push({ label: t("doc.currency"), status: "pass", details: currSources[0].value.toUpperCase() });
           }
 
           // 3. Counterparty consistency
-          const partyLabel = role === "seller" ? "Buyer" : role === "buyer" ? "Seller" : "Counterparty";
+          const partyLabel = counterpartyLabel;
           const partySources: { label: string; docId: string; value: string }[] = [
-            { label: "Estimate / Quote", docId: "estimate-quote", value: val("estimate-quote", "counterparty") },
-            { label: "Purchase Order", docId: "purchase-order", value: val("purchase-order", "counterparty") },
-            { label: "Invoice", docId: "invoice", value: val("invoice", "counterparty") },
+            { label: L.estimate, docId: "estimate-quote", value: val("estimate-quote", "counterparty") },
+            { label: L.po, docId: "purchase-order", value: val("purchase-order", "counterparty") },
+            { label: L.invoice, docId: "invoice", value: val("invoice", "counterparty") },
           ].filter((s) => s.value);
 
           if (partySources.length >= 2) {
             const allMatch = partySources.every((s) => s.value.toLowerCase() === partySources[0].value.toLowerCase());
             if (allMatch) {
-              checks.push({ label: `${partyLabel} matches`, status: "pass", details: partySources[0].value });
+              checks.push({ label: tf("agree.partyMatches", { party: partyLabel }), status: "pass", details: partySources[0].value });
             } else {
               checks.push({
-                label: `${partyLabel} name mismatch`,
+                label: tf("agree.partyMismatch", { party: partyLabel }),
                 status: "warn",
                 details: partySources.map((s) => `${s.label}: ${s.value}`).join(" · "),
                 links: partySources.map((s) => ({ label: s.label, docId: s.docId })),
@@ -2100,10 +2165,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
           // 4. Date ordering — documents should follow chronological sequence
           const dateSequence: { label: string; docId: string; dateKey: string }[] = [
-            { label: "Estimate / Quote", docId: "estimate-quote", dateKey: "date" },
-            { label: "Purchase Order", docId: "purchase-order", dateKey: "date" },
-            { label: "Invoice", docId: "invoice", dateKey: "date" },
-            { label: "Delivery Note", docId: "delivery-note", dateKey: "date" },
+            { label: L.estimate, docId: "estimate-quote", dateKey: "date" },
+            { label: L.po, docId: "purchase-order", dateKey: "date" },
+            { label: L.invoice, docId: "invoice", dateKey: "date" },
+            { label: L.deliveryNote, docId: "delivery-note", dateKey: "date" },
           ];
           const datedDocs = dateSequence.filter((d) => val(d.docId, d.dateKey));
 
@@ -2117,7 +2182,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               const dA = new Date(val(a.docId, a.dateKey));
               const dB = new Date(val(b.docId, b.dateKey));
               if (dA > dB) {
-                orderIssues.push(`${a.label} (${val(a.docId, a.dateKey)}) is after ${b.label} (${val(b.docId, b.dateKey)})`);
+                orderIssues.push(tf("agree.dateAfter", { a: a.label, dateA: date(val(a.docId, a.dateKey)), b: b.label, dateB: date(val(b.docId, b.dateKey)) }));
                 if (!orderLinks.find((l) => l.docId === a.docId)) orderLinks.push({ label: a.label, docId: a.docId });
                 if (!orderLinks.find((l) => l.docId === b.docId)) orderLinks.push({ label: b.label, docId: b.docId });
               }
@@ -2125,13 +2190,13 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
             if (orderIssues.length === 0) {
               checks.push({
-                label: "Document dates in order",
+                label: t("agree.datesInOrder"),
                 status: "pass",
-                details: datedDocs.map((d) => `${d.label}: ${val(d.docId, d.dateKey)}`).join(" → "),
+                details: datedDocs.map((d) => `${d.label}: ${date(val(d.docId, d.dateKey))}`).join(" → "),
               });
             } else {
               checks.push({
-                label: `Date order issue${orderIssues.length > 1 ? "s" : ""}`,
+                label: t(orderIssues.length > 1 ? "agree.dateIssue.other" : "agree.dateIssue.one"),
                 status: "warn",
                 details: orderIssues.join(" · "),
                 links: orderLinks,
@@ -2141,17 +2206,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
           // 5. Required sections filled
           const requiredSections = [
-            { label: "Transaction Details", docId: "transaction", keys: ["billAmount", "drawer", "drawee"] },
-            { label: "Shipment Details", docId: "shipment", keys: ["incoterms", "portLoading", "portDischarge"] },
-            { label: "Products", docId: "product-details", keys: ["productLines"] },
+            { label: t("txn.title"), docId: "transaction", keys: ["billAmount", "drawer", "drawee"] },
+            { label: t("ship.title"), docId: "shipment", keys: ["incoterms", "portLoading", "portDischarge"] },
+            { label: t("sidebar.products"), docId: "product-details", keys: ["productLines"] },
           ];
           for (const sec of requiredSections) {
             const data = allForms[sec.docId] || {};
             const filled = sec.keys.some((k) => data[k]?.trim());
             checks.push({
-              label: `${sec.label} completed`,
+              label: tf("agree.sectionCompleted", { section: sec.label }),
               status: filled ? "pass" : "missing",
-              details: filled ? undefined : "Section has no data",
+              details: filled ? undefined : t("agree.sectionEmpty"),
               links: [{ label: sec.label, docId: sec.docId }],
             });
           }
@@ -2161,16 +2226,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           const txnAmount = parseFloat(val("transaction", "billAmount")) || 0;
           if (prodTotal > 0 && txnAmount > 0 && Math.abs(prodTotal - txnAmount) > 0.01) {
             checks.push({
-              label: "Product total ≠ transaction amount",
+              label: t("agree.productTotalMismatch"),
               status: "warn",
-              details: `Products total: ${prodTotal.toFixed(2)} · Transaction: ${txnAmount.toFixed(2)}`,
+              details: tf("agree.productTotalDetail", { products: money(prodTotal), transaction: money(txnAmount) }),
               links: [
-                { label: "Products", docId: "product-details" },
-                { label: "Transaction", docId: "transaction" },
+                { label: t("sidebar.products"), docId: "product-details" },
+                { label: L.transaction, docId: "transaction" },
               ],
             });
           } else if (prodTotal > 0 && txnAmount > 0) {
-            checks.push({ label: "Product total matches transaction", status: "pass", details: prodTotal.toFixed(2) });
+            checks.push({ label: t("agree.productTotalMatches"), status: "pass", details: money(prodTotal) });
           }
 
           const warnings = checks.filter((c) => c.status === "warn");
@@ -2178,6 +2243,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           const passed = checks.filter((c) => c.status === "pass");
 
           // Gather the transaction overview that goes into the generated PDF.
+          // These labels (and the document names, signatory labels and the
+          // "Product" fallback below) are the PDF's own text, which stays in
+          // English on purpose — so they are not translated.
           const agreementCurrency = (
             val("transaction", "currency") || val("invoice", "docCurrency") || ""
           ).toUpperCase();
@@ -2243,6 +2311,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               const notes = val(docId, "notes");
               const provided = !!(reference || date || amount || notes);
               return {
+                docId,
                 label,
                 reference,
                 date,
@@ -2339,21 +2408,21 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="text-muted-foreground [&[data-state=open]>svg]:rotate-180">
-                      {agreementChecklistOpen ? "Hide checklist" : "Show checklist"}
+                      {agreementChecklistOpen ? t("agree.hideChecklist") : t("agree.showChecklist")}
                       <ChevronDown className="ml-1.5 h-4 w-4 transition-transform" />
                     </Button>
                   </CollapsibleTrigger>
                 </div>
                 <CollapsibleContent className="space-y-5">
                   <p className="text-sm text-muted-foreground max-w-md">
-                    Review the checklist below before generating your Export Agreement. Discrepancies are highlighted for your review.
+                    {t("agree.intro")}
                   </p>
 
               {/* Summary */}
               <div className="flex gap-3 text-sm">
-                <ValueChip tone="good" label={passed.length}>passed</ValueChip>
-                <ValueChip tone="crit" label={warnings.length}>discrepanc{warnings.length === 1 ? "y" : "ies"}</ValueChip>
-                <ValueChip label={missing.length}>missing</ValueChip>
+                <ValueChip tone="good" label={passed.length}>{t("agree.passed")}</ValueChip>
+                <ValueChip tone="crit" label={warnings.length}>{tp("agree.discrepancies", warnings.length)}</ValueChip>
+                <ValueChip label={missing.length}>{t("agree.missing")}</ValueChip>
               </div>
 
               {/* Non-passed items */}
@@ -2370,7 +2439,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <Collapsible className="max-w-lg">
                   <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-1 [&[data-state=open]>svg]:rotate-180">
                     <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-                    {passed.length} passed check{passed.length !== 1 ? "s" : ""}
+                    {tp("agree.passedChecks", passed.length)}
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-2 pt-2">
                     {checks.filter(c => c.status === "pass").map((check, i) => (
@@ -2385,23 +2454,23 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   the generated agreement PDF. */}
               {providedDocuments.length > 0 && (
                 <div className="max-w-lg space-y-2">
-                  <h3 className="text-sm font-semibold text-foreground">Documents provided</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{t("agree.docsProvided")}</h3>
                   <div className="overflow-hidden rounded-lg border border-border">
                     <table className="w-full text-sm">
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr>
-                          <th className="px-3 py-2 text-left font-medium">Document</th>
-                          <th className="px-3 py-2 text-left font-medium">Reference</th>
-                          <th className="px-3 py-2 text-left font-medium">Date</th>
-                          <th className="px-3 py-2 text-right font-medium">Value</th>
+                          <th className="px-3 py-2 text-left font-medium">{t("agree.colDocument")}</th>
+                          <th className="px-3 py-2 text-left font-medium">{t("agree.colReference")}</th>
+                          <th className="px-3 py-2 text-left font-medium">{t("doc.date")}</th>
+                          <th className="px-3 py-2 text-right font-medium">{t("agree.colValue")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {providedDocuments.map((d) => (
                           <tr key={d.label} className="border-t border-border">
-                            <td className="px-3 py-2 text-foreground">{d.label}</td>
+                            <td className="px-3 py-2 text-foreground">{DOC_TITLE_KEYS[d.docId] ? t(DOC_TITLE_KEYS[d.docId]) : d.label}</td>
                             <td className="px-3 py-2 text-muted-foreground">{d.reference || "—"}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{d.date || "—"}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{d.date ? date(d.date) : "—"}</td>
                             <td className="px-3 py-2 text-right text-muted-foreground">{d.value || "—"}</td>
                           </tr>
                         ))}
@@ -2441,23 +2510,23 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         })()
       ) : selectedDoc === "coo" ? (
         lockedSections.has("coo") ? (
-          <LockedSectionView title="Country of Origin (COO)" fields={[["Country of Origin", field("countryOfOrigin")], ["Certificate", field("cooFileName") || "None"]]} onEdit={() => onUnlockSection?.("coo")} branding={docBranding} />
+          <LockedSectionView title="coo.title" fields={[["coo.country", field("countryOfOrigin")], ["coo.certificate", field("cooFileName")]]} onEdit={() => onUnlockSection?.("coo")} branding={docBranding} />
         ) : (
         <div className="space-y-5">
-          <h2 className="text-base font-semibold text-foreground">Country of Origin (COO)</h2>
+          <h2 className="text-base font-semibold text-foreground">{t("coo.title")}</h2>
           <div className="max-w-lg space-y-4">
             <div>
-              <TooltipLabel label="Country of Origin" tooltip="The country where the goods were manufactured or produced." />
+              <TooltipLabel label={t("coo.country")} tooltip={t("coo.countryTip")} />
               <Input
-                placeholder="e.g. United Kingdom"
+                placeholder={t("party.countryPlaceholder")}
                 className="bg-secondary/50"
                 value={field("countryOfOrigin")}
                 onChange={set("countryOfOrigin")}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground block">COO Certificate (optional)</label>
-              <p className="text-xs text-muted-foreground">Attach a Certificate of Origin if required for customs.</p>
+              <label className="text-sm font-medium text-foreground block">{t("coo.certOptional")}</label>
+              <p className="text-xs text-muted-foreground">{t("coo.certHint")}</p>
               <CooFileAttachment field={field} set={set} onFieldChange={onFieldChange} />
             </div>
           </div>
@@ -2469,7 +2538,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-semibold text-foreground">Tariffs &amp; Customs</h2>
+              <h2 className="text-base font-semibold text-foreground">{t("tariff.title")}</h2>
               <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
 
@@ -2480,7 +2549,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               return applied.length > 0 ? (
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" /> Applied Tariff Rules ({applied.length})
+                    <Check className="h-4 w-4 text-primary" /> {tf("tariff.appliedCount", { count: applied.length })}
                   </h3>
                   <div className="space-y-2">
                     {applied.map((rule, i) => (
@@ -2488,46 +2557,30 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         <p className="text-sm font-medium text-foreground">{rule.productName}</p>
                         <p className="text-xs text-muted-foreground mb-1.5">{rule.description} · HS: {rule.hsCode}</p>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                          <span><span className="text-muted-foreground">Duty:</span> <span className="font-medium">{rule.thirdCountryDuty}</span></span>
-                          {rule.preferentialDuty && <span><span className="text-muted-foreground">Pref:</span> <span className="font-medium">{rule.preferentialDuty}</span></span>}
-                          <span><span className="text-muted-foreground">VAT:</span> <span className="font-medium">{rule.vat}</span></span>
+                          <span><span className="text-muted-foreground">{t("tariff.duty")}:</span> <span className="font-medium">{rule.thirdCountryDuty}</span></span>
+                          {rule.preferentialDuty && <span><span className="text-muted-foreground">{t("tariff.pref")}:</span> <span className="font-medium">{rule.preferentialDuty}</span></span>}
+                          <span><span className="text-muted-foreground">{t("overview.vat")}:</span> <span className="font-medium">{rule.vat}</span></span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No tariff rules applied.</p>
+                <p className="text-sm text-muted-foreground">{t("tariff.noneApplied")}</p>
               );
             })()}
 
             {/* Compliance Checklist Summary */}
             {(() => {
-              const exportItems = [
-                { key: "exportCds", label: "CDS export declaration submitted" },
-                { key: "exportLicence", label: "Export licence obtained (if required)" },
-                { key: "exportEori", label: "EORI number included on documents" },
-                { key: "exportInvoice", label: "Commercial invoice matches declaration" },
-                { key: "exportSanctions", label: "Sanctions & export controls checked" },
-              ];
-              const importItems = [
-                { key: "importCds", label: "CDS import declaration submitted" },
-                { key: "importDuty", label: "Import duty paid / deferred" },
-                { key: "importVat", label: "Import VAT accounted for" },
-                { key: "importEori", label: "EORI number included on documents" },
-                { key: "importLicence", label: "Import licence obtained (if required)" },
-                { key: "importSafety", label: "Safety & security declaration filed" },
-                { key: "importPhyto", label: "Phytosanitary / health certificates (if applicable)" },
-              ];
-              const relevantItems = role !== "buyer" ? exportItems : importItems;
+              const relevantItems = role !== "buyer" ? EXPORT_CHECKS : IMPORT_CHECKS;
               const checkedItems = relevantItems.filter((it) => field(it.key) === "true");
               const uncheckedItems = relevantItems.filter((it) => field(it.key) !== "true");
               return (
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-foreground">
-                    {role !== "buyer" ? "Export" : "Import"} Compliance Checklist
+                    {role !== "buyer" ? t("compl.exportTitle") : t("compl.importTitle")}
                     <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      {checkedItems.length}/{relevantItems.length} completed
+                      {tf("compl.progress", { done: checkedItems.length, total: relevantItems.length })}
                     </span>
                   </h3>
                   <div className="rounded-md border border-border divide-y divide-border overflow-hidden">
@@ -2538,7 +2591,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                           {done
                             ? <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
                             : <Circle className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />}
-                          <span className={done ? "text-foreground" : "text-muted-foreground"}>{it.label}</span>
+                          <span className={done ? "text-foreground" : "text-muted-foreground"}>{t(it.label)}</span>
                         </div>
                       );
                     })}
@@ -2546,7 +2599,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   {uncheckedItems.length > 0 && (
                     <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 shrink-0" />
-                      {uncheckedItems.length} item{uncheckedItems.length > 1 ? "s" : ""} not yet confirmed — edit to update
+                      {tp("compl.unconfirmed", uncheckedItems.length)}
                     </p>
                   )}
                 </div>
@@ -2563,27 +2616,21 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
           {/* Customs Checklists */}
           <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-sm font-semibold text-foreground">Compliance Checklists</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("compl.title")}</h3>
             {role !== "buyer" && (
               <Collapsible defaultOpen>
                 <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
                   <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-                  Export Checklist
+                  {t("compl.export")}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-5 space-y-2 pb-3">
-                  {[
-                    { key: "exportCds", label: "CDS export declaration submitted" },
-                    { key: "exportLicence", label: "Export licence obtained (if required)" },
-                    { key: "exportEori", label: "EORI number included on documents" },
-                    { key: "exportInvoice", label: "Commercial invoice matches declaration" },
-                    { key: "exportSanctions", label: "Sanctions & export controls checked" },
-                  ].map((item) => (
+                  {EXPORT_CHECKS.map((item) => (
                     <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
                       <Checkbox
                         checked={field(item.key) === "true"}
                         onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
                       />
-                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
+                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{t(item.label)}</span>
                     </label>
                   ))}
                 </CollapsibleContent>
@@ -2593,24 +2640,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               <Collapsible defaultOpen>
                 <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-medium text-foreground hover:text-primary transition-colors py-2">
                   <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-                  Import Checklist
+                  {t("compl.import")}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-5 space-y-2 pb-3">
-                  {[
-                    { key: "importCds", label: "CDS import declaration submitted" },
-                    { key: "importDuty", label: "Import duty paid / deferred" },
-                    { key: "importVat", label: "Import VAT accounted for" },
-                    { key: "importEori", label: "EORI number included on documents" },
-                    { key: "importLicence", label: "Import licence obtained (if required)" },
-                    { key: "importSafety", label: "Safety & security declaration filed" },
-                    { key: "importPhyto", label: "Phytosanitary / health certificates (if applicable)" },
-                  ].map((item) => (
+                  {IMPORT_CHECKS.map((item) => (
                     <label key={item.key} className="flex items-center gap-2.5 cursor-pointer group">
                       <Checkbox
                         checked={field(item.key) === "true"}
                         onCheckedChange={(v) => onFieldChange(item.key, v ? "true" : "")}
                       />
-                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{item.label}</span>
+                      <span className={cn("text-sm", field(item.key) === "true" ? "text-muted-foreground line-through" : "text-foreground")}>{t(item.label)}</span>
                     </label>
                   ))}
                 </CollapsibleContent>
@@ -2623,16 +2662,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         )
       ) : selectedDoc === "handy-tools" ? (
         <div className="space-y-5">
-          <h2 className="text-base font-semibold text-foreground">Handy Tools & Resources</h2>
+          <h2 className="text-base font-semibold text-foreground">{t("tools.title")}</h2>
           <p className="text-sm text-muted-foreground max-w-md">
-            Guides, tools and checklists for international trade — organised by what you need.
+            {t("tools.desc")}
           </p>
 
           {/* Getting Started */}
           <Collapsible open={gsOpen} onOpenChange={setGsOpen}>
             <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-foreground hover:text-primary transition-colors py-2 border-b border-border">
               {gsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              Getting Started — One-Time Setup
+              {t("tools.gettingStarted")}
               {gsAllChecked && <Check className="h-3.5 w-3.5 text-green-500 ml-1 shrink-0" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 pb-1">
@@ -2655,9 +2694,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                           gsChecked[i] ? "line-through text-muted-foreground" : "text-primary"
                         )}
                       >
-                        {item.label} <ExternalLink className="h-3 w-3 shrink-0" />
+                        {t(item.label)} <ExternalLink className="h-3 w-3 shrink-0" />
                       </a>
-                      <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t(item.desc)}</p>
                     </div>
                   </div>
                 ))}
@@ -2669,16 +2708,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <Collapsible defaultOpen={role === "seller"}>
             <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-foreground hover:text-primary transition-colors py-2 border-b border-border">
               <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-              Export Tools
+              {t("tools.export")}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 pb-1">
               <div className="grid gap-3 max-w-lg">
                 {[
-                  { label: "Export Goods from the UK", url: "https://www.gov.uk/export-goods", desc: "Step-by-step guide to exporting goods from the UK." },
-                  { label: "UK Export Finance", url: "https://www.gov.uk/government/organisations/uk-export-finance", desc: "Government-backed finance and insurance for UK exporters." },
-                  { label: "Check Export Licensing", url: "https://www.gov.uk/guidance/beginners-guide-to-export-controls", desc: "Determine if your goods need an export licence." },
-                  { label: "Customs Declaration Service", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "Submit export declarations through CDS." },
-                  { label: "Incoterms® 2020", url: "https://iccwbo.org/business-solutions/incoterms-rules/incoterms-2020/", desc: "ICC rules defining responsibilities of buyers and sellers." },
+                  // Names of official bodies and services stay as published.
+                  { label: t("tools.exportGoods"), url: "https://www.gov.uk/export-goods", desc: t("tools.exportGoodsDesc") },
+                  { label: "UK Export Finance", url: "https://www.gov.uk/government/organisations/uk-export-finance", desc: t("tools.ukefDesc") },
+                  { label: t("tools.licensing"), url: "https://www.gov.uk/guidance/beginners-guide-to-export-controls", desc: t("tools.licensingDesc") },
+                  { label: "Customs Declaration Service", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: t("tools.cdsExportDesc") },
+                  { label: "Incoterms® 2020", url: "https://iccwbo.org/business-solutions/incoterms-rules/incoterms-2020/", desc: t("tools.incotermsDesc") },
                 ].map((tool) => (
                   <ToolLink key={tool.url} {...tool} />
                 ))}
@@ -2690,16 +2730,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <Collapsible defaultOpen={role === "buyer"}>
             <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-foreground hover:text-primary transition-colors py-2 border-b border-border">
               <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-              Import Tools
+              {t("tools.import")}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 pb-1">
               <div className="grid gap-3 max-w-lg">
                 {[
-                  { label: "Import Goods into the UK", url: "https://www.gov.uk/import-goods-into-uk", desc: "Step-by-step guide to importing goods into the UK." },
-                  { label: "UK Trade Tariff", url: "https://www.trade-tariff.service.gov.uk", desc: "Look up commodity codes, duty rates, and trade restrictions." },
-                  { label: "Customs Declaration Service", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: "Submit import declarations through CDS." },
-                  { label: "Postponed VAT Accounting", url: "https://www.gov.uk/guidance/check-when-you-can-account-for-import-vat-on-your-vat-return", desc: "Account for import VAT on your VAT return instead of paying at the border." },
-                  { label: "Incoterms® 2020", url: "https://iccwbo.org/business-solutions/incoterms-rules/incoterms-2020/", desc: "ICC rules defining responsibilities of buyers and sellers." },
+                  { label: t("tools.importGoods"), url: "https://www.gov.uk/import-goods-into-uk", desc: t("tools.importGoodsDesc") },
+                  { label: "UK Trade Tariff", url: "https://www.trade-tariff.service.gov.uk", desc: t("tools.tariffDesc") },
+                  { label: "Customs Declaration Service", url: "https://www.gov.uk/guidance/get-access-to-the-customs-declaration-service", desc: t("tools.cdsImportDesc") },
+                  { label: t("tools.pva"), url: "https://www.gov.uk/guidance/check-when-you-can-account-for-import-vat-on-your-vat-return", desc: t("tools.pvaDesc") },
+                  { label: "Incoterms® 2020", url: "https://iccwbo.org/business-solutions/incoterms-rules/incoterms-2020/", desc: t("tools.incotermsDesc") },
                 ].map((tool) => (
                   <ToolLink key={tool.url} {...tool} />
                 ))}
@@ -2711,15 +2751,15 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <Collapsible>
             <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-foreground hover:text-primary transition-colors py-2 border-b border-border">
               <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
-              Handy Resources
+              {t("tools.resources")}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 pb-1">
               <div className="grid gap-3 max-w-lg">
                 {[
-                  { label: "Dept. for Business & Trade", url: "https://www.gov.uk/government/organisations/department-for-business-and-trade", desc: "Government department supporting UK businesses in international trade." },
-                  { label: "HMRC", url: "https://www.gov.uk/government/organisations/hm-revenue-customs", desc: "HM Revenue & Customs — tax, customs, and excise." },
-                  { label: "International Chamber of Commerce", url: "https://iccwbo.org", desc: "Global business organisation promoting trade and investment." },
-                  { label: "Check Sanctions List", url: "https://sanctionssearchapp.ofsi.hmtreasury.gov.uk", desc: "OFSI sanctions search — check if a party is on the UK sanctions list." },
+                  { label: "Dept. for Business & Trade", url: "https://www.gov.uk/government/organisations/department-for-business-and-trade", desc: t("tools.dbtDesc") },
+                  { label: "HMRC", url: "https://www.gov.uk/government/organisations/hm-revenue-customs", desc: t("tools.hmrcDesc") },
+                  { label: t("tools.icc"), url: "https://iccwbo.org", desc: t("tools.iccDesc") },
+                  { label: t("tools.sanctions"), url: "https://sanctionssearchapp.ofsi.hmtreasury.gov.uk", desc: t("tools.sanctionsDesc") },
                 ].map((tool) => (
                   <ToolLink key={tool.url} {...tool} />
                 ))}
@@ -2731,7 +2771,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         lockedSections.has("product-details") ? (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-semibold text-foreground">Products</h2>
+              <h2 className="text-base font-semibold text-foreground">{t("sidebar.products")}</h2>
               <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
             </div>
             <div className="overflow-x-auto">
@@ -2739,7 +2779,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 // Currency + line totals match the figures used on every other
                 // document (same maths as getProductTotals / the agreement PDF).
                 const curr = (allForms["transaction"]?.currency || allForms["invoice"]?.docCurrency || "").toUpperCase();
-                const money = (n: number) => `${curr} ${n.toFixed(2)}`.trim();
+                const withCurr = (n: number) => `${curr} ${money(n)}`.trim();
                 let lines: { catalogueId: string; units: string; discount?: string; discountAmount?: string }[] = [];
                 try { lines = JSON.parse(allForms["product-details"]?.["productLines"] || "[]"); } catch { lines = []; }
                 const effectiveCatalogue = demoParties
@@ -2757,10 +2797,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">Product</th>
-                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">HS Code</th>
-                        <th className="text-right text-xs text-muted-foreground font-medium pb-2 pr-4">Qty</th>
-                        <th className="text-right text-xs text-muted-foreground font-medium pb-2">Total (inc. tax)</th>
+                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">{t("product.colProduct")}</th>
+                        <th className="text-left text-xs text-muted-foreground font-medium pb-2 pr-4">{t("product.hsCode")}</th>
+                        <th className="text-right text-xs text-muted-foreground font-medium pb-2 pr-4">{t("product.qty")}</th>
+                        <th className="text-right text-xs text-muted-foreground font-medium pb-2">{t("product.totalIncTaxCol")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2772,15 +2812,15 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                             <td className="py-2 pr-4 font-medium text-foreground">{product.name}</td>
                             <td className="py-2 pr-4 text-muted-foreground font-mono text-xs">{product.hsCode || "—"}</td>
                             <td className="py-2 pr-4 text-right text-foreground">{line.units}</td>
-                            <td className="py-2 text-right text-foreground">{money(lineTotal(line, product))}</td>
+                            <td className="py-2 text-right text-foreground">{withCurr(lineTotal(line, product))}</td>
                           </tr>
                         );
                       })}
                     </tbody>
                     <tfoot>
                       <tr className="border-t border-border">
-                        <td className="py-2 pr-4 font-semibold text-foreground" colSpan={3}>Total</td>
-                        <td className="py-2 text-right font-semibold text-foreground">{money(productTotals.totalIncTax)}</td>
+                        <td className="py-2 pr-4 font-semibold text-foreground" colSpan={3}>{t("product.total")}</td>
+                        <td className="py-2 text-right font-semibold text-foreground">{withCurr(productTotals.totalIncTax)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -2831,7 +2871,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             </div>
             <div className="flex gap-2 mt-2">
               <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("transaction")}>
-                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
               </Button>
             </div>
           </div>
@@ -2860,32 +2900,24 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              </div>
              <div>
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("txn.placeOfIssue")}</label>
-               <Input placeholder={suggestedPlace || "City, Country"} className="bg-secondary/50" value={field("placeOfIssue") || suggestedPlace} onChange={set("placeOfIssue")} />
+               <Input placeholder={suggestedPlace || t("deal.placePlaceholder")} className="bg-secondary/50" value={field("placeOfIssue") || suggestedPlace} onChange={set("placeOfIssue")} />
              </div>
              <div>
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.incoterms")}</label>
                <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={field("incoterms")} onChange={set("incoterms")}>
                  <option value="">{t("ship.selectIncoterm")}</option>
-                 <option value="EXW">EXW – Ex Works</option>
-                 <option value="FCA">FCA – Free Carrier</option>
-                 <option value="FAS">FAS – Free Alongside Ship</option>
-                 <option value="FOB">FOB – Free on Board</option>
-                 <option value="CFR">CFR – Cost and Freight</option>
-                 <option value="CIF">CIF – Cost, Insurance &amp; Freight</option>
-                 <option value="CPT">CPT – Carriage Paid To</option>
-                 <option value="CIP">CIP – Carriage &amp; Insurance Paid To</option>
-                 <option value="DAP">DAP – Delivered at Place</option>
-                 <option value="DPU">DPU – Delivered at Place Unloaded</option>
-                 <option value="DDP">DDP – Delivered Duty Paid</option>
+                 {INCOTERM_CODES.map((code) => (
+                   <option key={code} value={code}>{code} – {t(`incoterm.${code}` as MessageKey)}</option>
+                 ))}
                </select>
              </div>
              <div className="col-span-2">
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("txn.paymentTerms")}</label>
-               <Input placeholder="e.g. At sight / 30 days after sight" className="bg-secondary/50" value={field("paymentTerms")} onChange={set("paymentTerms")} />
+               <Input placeholder={t("deal.paymentTermsPlaceholder")} className="bg-secondary/50" value={field("paymentTerms")} onChange={set("paymentTerms")} />
              </div>
              <div className="col-span-2">
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("txn.endorsementNotes")}</label>
-               <Input placeholder="Optional notes" className="bg-secondary/50" value={field("endorsementNotes")} onChange={set("endorsementNotes")} />
+               <Input placeholder={t("deal.optionalNotes")} className="bg-secondary/50" value={field("endorsementNotes")} onChange={set("endorsementNotes")} />
              </div>
            </div>
            {renderSectionButtons("transaction", t("txn.save"))}
@@ -2902,7 +2934,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             </div>
             {field("goodsDescription") && (
               <div>
-                <p className="text-xs text-muted-foreground">General Goods Description</p>
+                <p className="text-xs text-muted-foreground">{t("cargo.goodsDescription")}</p>
                 <p className="text-sm font-medium text-foreground">{field("goodsDescription")}</p>
               </div>
             )}
@@ -2928,7 +2960,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             </div>
             <div className="flex gap-2 mt-2">
               <Button variant="outline" size="sm" onClick={() => onUnlockSection?.("shipment")}>
-                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("lock.edit")}
               </Button>
             </div>
           </div>
@@ -2943,41 +2975,33 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
            <div className="space-y-4 max-w-lg">
              {/* General Goods Description at top */}
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">General Goods Description</label>
-               <Input placeholder="Brief description of goods being shipped" className="bg-secondary/50" value={field("goodsDescription")} onChange={set("goodsDescription")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cargo.goodsDescription")}</label>
+               <Input placeholder={t("cargo.goodsPlaceholder")} className="bg-secondary/50" value={field("goodsDescription")} onChange={set("goodsDescription")} />
              </div>
              <div className="grid grid-cols-2 gap-4">
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.incoterms")}</label>
                  <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={field("incoterms") || txnIncoterms} onChange={set("incoterms")}>
                    <option value="">{t("ship.selectIncoterm")}</option>
-                   <option value="EXW">EXW – Ex Works</option>
-                   <option value="FCA">FCA – Free Carrier</option>
-                   <option value="FAS">FAS – Free Alongside Ship</option>
-                   <option value="FOB">FOB – Free on Board</option>
-                   <option value="CFR">CFR – Cost and Freight</option>
-                   <option value="CIF">CIF – Cost, Insurance &amp; Freight</option>
-                   <option value="CPT">CPT – Carriage Paid To</option>
-                   <option value="CIP">CIP – Carriage &amp; Insurance Paid To</option>
-                   <option value="DAP">DAP – Delivered at Place</option>
-                   <option value="DPU">DPU – Delivered at Place Unloaded</option>
-                   <option value="DDP">DDP – Delivered Duty Paid</option>
+                   {INCOTERM_CODES.map((code) => (
+                     <option key={code} value={code}>{code} – {t(`incoterm.${code}` as MessageKey)}</option>
+                   ))}
                  </select>
                  {txnIncoterms && !field("incoterms") && (
-                   <p className="text-xs text-muted-foreground mt-1">Pre-selected from transaction</p>
+                   <p className="text-xs text-muted-foreground mt-1">{t("cargo.preselected")}</p>
                  )}
                </div>
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.transportMode")}</label>
-                 <Input placeholder="e.g. Sea, Air, Road" className="bg-secondary/50" value={field("transportMode")} onChange={set("transportMode")} />
+                 <Input placeholder={t("cargo.modePlaceholder")} className="bg-secondary/50" value={field("transportMode")} onChange={set("transportMode")} />
                </div>
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.portLoading")}</label>
-                 <Input placeholder="e.g. Portsmouth, UK" className="bg-secondary/50" value={field("portLoading")} onChange={set("portLoading")} />
+                 <Input placeholder={tf("common.eg", { example: "Portsmouth, UK" })} className="bg-secondary/50" value={field("portLoading")} onChange={set("portLoading")} />
                </div>
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.portDischarge")}</label>
-                 <Input placeholder="e.g. Saint Malo, France" className="bg-secondary/50" value={field("portDischarge")} onChange={set("portDischarge")} />
+                 <Input placeholder={tf("common.eg", { example: "Saint-Malo, France" })} className="bg-secondary/50" value={field("portDischarge")} onChange={set("portDischarge")} />
                </div>
              </div>
              {/* If Known collapsible */}
@@ -2985,7 +3009,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                <CollapsibleTrigger asChild>
                  <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
                    <ChevronRight className={`h-4 w-4 transition-transform ${ifKnownOpen ? "rotate-90" : ""}`} />
-                   If Known
+                   {t("cargo.ifKnown")}
                  </button>
                </CollapsibleTrigger>
                <CollapsibleContent>
@@ -3000,7 +3024,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                    </div>
                    <div className="col-span-2">
                      <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.vesselFlight")}</label>
-                     <Input placeholder="e.g. MSC Gulsun / BA117" className="bg-secondary/50" value={field("vesselFlight")} onChange={set("vesselFlight")} />
+                     <Input placeholder={tf("common.eg", { example: "MSC Gulsun / BA117" })} className="bg-secondary/50" value={field("vesselFlight")} onChange={set("vesselFlight")} />
                    </div>
                  </div>
                </CollapsibleContent>
@@ -3013,7 +3037,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         )
        ) : selectedDoc === "picking-list" ? (
          lockedSections.has("picking-list") ? (
-           <LockedSectionView title="Picking List" fields={[["Picked By", field("pickedBy")], ["Date Picked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} branding={docBranding} />
+           <LockedSectionView title="sidebar.pickingList" fields={[["pick.pickedBy", field("pickedBy")], ["pick.datePicked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} branding={docBranding} />
          ) :
          (() => {
            const productLines = (() => {
@@ -3032,21 +3056,22 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
            const allPicked = productLines.length > 0 && productLines.every((_, i) => pickedMap[i]);
            return (
              <div className="space-y-5">
-               <h2 className="text-base font-semibold text-foreground">Picking List</h2>
+               <h2 className="text-base font-semibold text-foreground">{t("sidebar.pickingList")}</h2>
                {productLines.length === 0 ? (
-                 <p className="text-sm text-muted-foreground">No products added yet. Add products in the Product Details section first.</p>
+                 <p className="text-sm text-muted-foreground">{t("pick.noProducts")}</p>
                ) : (
                  <>
                    <div className="rounded-md border border-border overflow-hidden">
                      <table className="w-full text-sm">
                        <thead>
                          <tr className="border-b border-border bg-secondary/30">
-                           <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Product</th>
-                           <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Units</th>
+                           <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">{t("product.colProduct")}</th>
+                           <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">{t("product.units")}</th>
                             <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">
                               <div className="flex items-center justify-center gap-2">
-                                <span>Picked</span>
+                                <span>{t("pick.picked")}</span>
                                 <Checkbox
+                                  aria-label={t("pick.selectAll")}
                                   checked={allPicked}
                                   onCheckedChange={(checked) => {
                                     const updated: Record<number, boolean> = {};
@@ -3071,6 +3096,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                                <td className="px-4 py-3 text-right text-foreground">{line.units}</td>
                                <td className="px-4 py-3 text-center">
                                  <Checkbox
+                                   aria-label={`${t("pick.picked")}: ${catalogueDisplayTitle(product)}`}
                                    checked={!!pickedMap[idx]}
                                    onCheckedChange={(checked) => {
                                      const updated = { ...pickedMap, [idx]: !!checked };
@@ -3086,16 +3112,16 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                    </div>
                     {allPicked && (
                       <div className="rounded-md bg-primary/10 border border-primary/20 px-4 py-3 text-sm text-primary font-medium animate-fade-in">
-                        ✓ All items picked
+                        ✓ {t("pick.allPicked")}
                       </div>
                     )}
                     <div className="flex gap-4 max-w-lg">
                       <div className="flex-1">
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">Picked by</label>
-                        <Input placeholder="Name of picker" className="bg-secondary/50" value={field("pickedBy")} onChange={set("pickedBy")} />
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("pick.pickedBy")}</label>
+                        <Input placeholder={t("pick.pickerPlaceholder")} className="bg-secondary/50" value={field("pickedBy")} onChange={set("pickedBy")} />
                       </div>
                       <div className="flex-1">
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">Date picked</label>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("pick.datePicked")}</label>
                         <Input type="date" className="bg-secondary/50" value={field("datePicked")} onChange={set("datePicked")} />
                       </div>
                     </div>
@@ -3108,71 +3134,71 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
        ) : selectedDoc === "certificate-of-origin" ? (
          lockedSections.has("certificate-of-origin") ? (
            <LockedSectionView
-             title="Certificate of Origin (CoO)"
+             title="cert.title"
              fields={[
-               ["Exporter / Consignor", field("exporter") || preFrom],
-               ["Consignee", field("consignee") || preCounterparty],
-               ["Country of Origin", field("countryOfOrigin") || cooData.countryOfOrigin || ""],
-               ["Certificate No.", field("referenceNo")],
-               ["Date", field("date")],
-               ["Place of Issue", field("placeOfIssue")],
-               ["Means of Transport", field("transport")],
-               ["Description of Goods", field("goodsDescription") || ship.goodsDescription || ""],
-               ["Declaration", field("declaration") || DEFAULT_COO_DECLARATION],
+               ["cert.exporter", field("exporter") || preFrom],
+               ["cert.consignee", field("consignee") || preCounterparty],
+               ["coo.country", field("countryOfOrigin") || cooData.countryOfOrigin || ""],
+               ["cert.number", field("referenceNo")],
+               ["doc.date", field("date")],
+               ["txn.placeOfIssue", field("placeOfIssue")],
+               ["cert.transport", field("transport")],
+               ["cert.goods", field("goodsDescription") || ship.goodsDescription || ""],
+               ["cert.declaration", field("declaration") || DEFAULT_COO_DECLARATION],
              ]}
              onEdit={() => onUnlockSection?.("certificate-of-origin")}
-             colSpanFields={["Means of Transport", "Description of Goods", "Declaration"]}
+             colSpanFields={["cert.transport", "cert.goods", "cert.declaration"]}
              branding={docBranding}
            />
          ) : (
            <div className="space-y-5">
              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                <Award className="h-5 w-5" />
-               Certificate of Origin (CoO)
+               {t("cert.title")}
              </h2>
              <p className="text-sm text-muted-foreground max-w-lg">
-               Certifies the country in which the goods were produced — often required at customs and under preferential trade agreements.
+               {t("cert.desc")}
              </p>
              <div className="grid grid-cols-2 gap-4 max-w-lg">
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Exporter / Consignor</label>
-                 <Input placeholder="Your company name &amp; address" className="bg-secondary/50" value={docField("exporter", preFrom)} onChange={set("exporter")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.exporter")}</label>
+                 <Input placeholder={t("cert.exporterPlaceholder")} className="bg-secondary/50" value={docField("exporter", preFrom)} onChange={set("exporter")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Consignee</label>
-                 <Input placeholder="Receiving party name &amp; address" className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.consignee")}</label>
+                 <Input placeholder={t("cert.consigneePlaceholder")} className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Country of Origin</label>
-                 <Input placeholder="e.g. United Kingdom" className="bg-secondary/50" value={docField("countryOfOrigin", cooData.countryOfOrigin || "")} onChange={set("countryOfOrigin")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("coo.country")}</label>
+                 <Input placeholder={t("party.countryPlaceholder")} className="bg-secondary/50" value={docField("countryOfOrigin", cooData.countryOfOrigin || "")} onChange={set("countryOfOrigin")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Certificate No.</label>
-                 <Input placeholder="e.g. CoO-2026-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.number")}</label>
+                 <Input placeholder={tf("common.eg", { example: "CoO-2026-001" })} className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Date</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.date")}</label>
                  <Input type="date" className="bg-secondary/50" value={field("date")} onChange={set("date")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Issue</label>
-                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("txn.placeOfIssue")}</label>
+                 <Input placeholder={tf("common.eg", { example: "London, UK" })} className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Means of Transport (optional)</label>
-                 <Input placeholder="e.g. Sea — MV Cotentin" className="bg-secondary/50" value={docField("transport", [ship.transportMode, ship.vesselFlight].filter(Boolean).join(" — "))} onChange={set("transport")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.transportOptional")}</label>
+                 <Input placeholder={t("cert.transportPlaceholder")} className="bg-secondary/50" value={docField("transport", [ship.transportMode, ship.vesselFlight].filter(Boolean).join(" — "))} onChange={set("transport")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Description of Goods</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
                  <textarea
-                   placeholder="Marks, numbers, quantity and description of goods..."
+                   placeholder={t("cert.goodsPlaceholder")}
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
                    onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
                  />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Declaration</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.declaration")}</label>
                  <textarea
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("declaration", DEFAULT_COO_DECLARATION)}
@@ -3180,9 +3206,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                  />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                  <textarea
-                   placeholder="Additional notes..."
+                   placeholder={t("common.notesPlaceholder")}
                    className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
                    onChange={(e) => onFieldChange("notes", e.target.value)}
@@ -3195,134 +3221,135 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
        ) : selectedDoc === "bill-of-lading" ? (
          lockedSections.has("bill-of-lading") ? (
            <LockedSectionView
-             title="Bill of Lading (BoL)"
+             title="bol.title"
              fields={[
-               ["Shipper", field("shipper") || preFrom],
-               ["Consignee", field("consignee") || preCounterparty],
-               ["Notify Party", field("notifyParty")],
-               ["Vessel", field("vessel") || ship.vesselFlight || ""],
-               ["Voyage No.", field("voyageNo")],
-               ["Port of Loading", field("portOfLoading") || ship.portLoading || ""],
-               ["Port of Discharge", field("portOfDischarge") || ship.portDischarge || ""],
-               ["Place of Receipt", field("placeOfReceipt")],
-               ["Place of Delivery", field("placeOfDelivery")],
-               ["No. of Packages", field("numberOfPackages")],
-               ["Gross Weight", field("grossWeight")],
-               ["Measurement", field("measurement")],
-               ["Freight Terms", field("freightTerms")],
-               ["B/L No.", field("referenceNo")],
-               ["Date", field("date")],
-               ["Place of Issue", field("placeOfIssue")],
-               ["No. of Originals", field("numberOfOriginals")],
-               ["Description of Goods", field("goodsDescription") || ship.goodsDescription || ""],
+               ["bol.shipper", field("shipper") || preFrom],
+               ["cert.consignee", field("consignee") || preCounterparty],
+               ["bol.notify", field("notifyParty")],
+               ["bol.vessel", field("vessel") || ship.vesselFlight || ""],
+               ["bol.voyage", field("voyageNo")],
+               ["ship.portLoading", field("portOfLoading") || ship.portLoading || ""],
+               ["ship.portDischarge", field("portOfDischarge") || ship.portDischarge || ""],
+               ["bol.placeReceipt", field("placeOfReceipt")],
+               ["bol.placeDelivery", field("placeOfDelivery")],
+               ["bol.packages", field("numberOfPackages")],
+               ["bol.grossWeight", field("grossWeight")],
+               ["bol.measurement", field("measurement")],
+               ["bol.freightTerms", field("freightTerms")],
+               ["bol.number", field("referenceNo")],
+               ["doc.date", field("date")],
+               ["txn.placeOfIssue", field("placeOfIssue")],
+               ["bol.originals", field("numberOfOriginals")],
+               ["cert.goods", field("goodsDescription") || ship.goodsDescription || ""],
              ]}
              onEdit={() => onUnlockSection?.("bill-of-lading")}
-             colSpanFields={["Description of Goods"]}
+             colSpanFields={["cert.goods"]}
              branding={docBranding}
            />
          ) : (
            <div className="space-y-5">
              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                <Anchor className="h-5 w-5" />
-               Bill of Lading (BoL)
+               {t("bol.title")}
              </h2>
              <p className="text-sm text-muted-foreground max-w-lg">
-               The carrier's receipt for the goods and the contract of carriage — also a document of title. Prefilled from your shipment details.
+               {t("bol.desc")}
              </p>
              <div className="grid grid-cols-2 gap-4 max-w-lg">
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Shipper</label>
-                 <Input placeholder="Shipper name &amp; address" className="bg-secondary/50" value={docField("shipper", preFrom)} onChange={set("shipper")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.shipper")}</label>
+                 <Input placeholder={t("bol.shipperPlaceholder")} className="bg-secondary/50" value={docField("shipper", preFrom)} onChange={set("shipper")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Consignee</label>
-                 <Input placeholder="Consignee name &amp; address" className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.consignee")}</label>
+                 <Input placeholder={t("bol.consigneePlaceholder")} className="bg-secondary/50" value={docField("consignee", preCounterparty)} onChange={set("consignee")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notify Party</label>
-                 <Input placeholder="Party to be notified on arrival (may be same as consignee)" className="bg-secondary/50" value={field("notifyParty")} onChange={set("notifyParty")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.notify")}</label>
+                 <Input placeholder={t("bol.notifyPlaceholder")} className="bg-secondary/50" value={field("notifyParty")} onChange={set("notifyParty")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Vessel</label>
-                 <Input placeholder="e.g. MV Cotentin" className="bg-secondary/50" value={docField("vessel", ship.vesselFlight || "")} onChange={set("vessel")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.vessel")}</label>
+                 <Input placeholder={tf("common.eg", { example: "MV Cotentin" })} className="bg-secondary/50" value={docField("vessel", ship.vesselFlight || "")} onChange={set("vessel")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Voyage No.</label>
-                 <Input placeholder="e.g. V.2604" className="bg-secondary/50" value={field("voyageNo")} onChange={set("voyageNo")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.voyage")}</label>
+                 <Input placeholder={tf("common.eg", { example: "V.2604" })} className="bg-secondary/50" value={field("voyageNo")} onChange={set("voyageNo")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Port of Loading</label>
-                 <Input placeholder="e.g. Portsmouth, UK" className="bg-secondary/50" value={docField("portOfLoading", ship.portLoading || "")} onChange={set("portOfLoading")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.portLoading")}</label>
+                 <Input placeholder={tf("common.eg", { example: "Portsmouth, UK" })} className="bg-secondary/50" value={docField("portOfLoading", ship.portLoading || "")} onChange={set("portOfLoading")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Port of Discharge</label>
-                 <Input placeholder="e.g. Saint-Malo, France" className="bg-secondary/50" value={docField("portOfDischarge", ship.portDischarge || "")} onChange={set("portOfDischarge")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.portDischarge")}</label>
+                 <Input placeholder={tf("common.eg", { example: "Saint-Malo, France" })} className="bg-secondary/50" value={docField("portOfDischarge", ship.portDischarge || "")} onChange={set("portOfDischarge")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Receipt</label>
-                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfReceipt")} onChange={set("placeOfReceipt")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.placeReceipt")}</label>
+                 <Input placeholder={tf("common.eg", { example: "London, UK" })} className="bg-secondary/50" value={field("placeOfReceipt")} onChange={set("placeOfReceipt")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Delivery</label>
-                 <Input placeholder="e.g. Rennes, France" className="bg-secondary/50" value={field("placeOfDelivery")} onChange={set("placeOfDelivery")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.placeDelivery")}</label>
+                 <Input placeholder={tf("common.eg", { example: "Rennes, France" })} className="bg-secondary/50" value={field("placeOfDelivery")} onChange={set("placeOfDelivery")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Marks &amp; Numbers</label>
-                 <Input placeholder="Container / seal / package marks" className="bg-secondary/50" value={field("marksNumbers")} onChange={set("marksNumbers")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.marks")}</label>
+                 <Input placeholder={t("bol.marksPlaceholder")} className="bg-secondary/50" value={field("marksNumbers")} onChange={set("marksNumbers")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">No. of Packages</label>
-                 <Input placeholder="e.g. 3 pallets" className="bg-secondary/50" value={field("numberOfPackages")} onChange={set("numberOfPackages")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.packages")}</label>
+                 <Input placeholder={t("bol.packagesPlaceholder")} className="bg-secondary/50" value={field("numberOfPackages")} onChange={set("numberOfPackages")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Gross Weight</label>
-                 <Input placeholder="e.g. 420 kg" className="bg-secondary/50" value={field("grossWeight")} onChange={set("grossWeight")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.grossWeight")}</label>
+                 <Input placeholder={tf("common.eg", { example: "420 kg" })} className="bg-secondary/50" value={field("grossWeight")} onChange={set("grossWeight")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Measurement</label>
-                 <Input placeholder="e.g. 1.2 m³" className="bg-secondary/50" value={field("measurement")} onChange={set("measurement")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.measurement")}</label>
+                 <Input placeholder={tf("common.eg", { example: "1.2 m³" })} className="bg-secondary/50" value={field("measurement")} onChange={set("measurement")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Freight Terms</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.freightTerms")}</label>
                  <select
                    className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                    value={field("freightTerms")}
                    onChange={(e) => onFieldChange("freightTerms", e.target.value)}
                  >
-                   <option value="">Select terms...</option>
-                   <option value="Freight Prepaid">Freight Prepaid</option>
-                   <option value="Freight Collect">Freight Collect</option>
+                   <option value="">{t("bol.selectTerms")}</option>
+                   {/* The stored value is the trade's English term (it prints on the PDF). */}
+                   <option value="Freight Prepaid">{t("bol.prepaid")}</option>
+                   <option value="Freight Collect">{t("bol.collect")}</option>
                  </select>
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Description of Goods</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
                  <textarea
-                   placeholder="Description of goods as it should appear on the bill of lading..."
+                   placeholder={t("bol.goodsPlaceholder")}
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
                    onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
                  />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">B/L No.</label>
-                 <Input placeholder="e.g. BL-2026-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.number")}</label>
+                 <Input placeholder={tf("common.eg", { example: "BL-2026-001" })} className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Date</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.date")}</label>
                  <Input type="date" className="bg-secondary/50" value={field("date")} onChange={set("date")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Issue</label>
-                 <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("txn.placeOfIssue")}</label>
+                 <Input placeholder={tf("common.eg", { example: "London, UK" })} className="bg-secondary/50" value={field("placeOfIssue")} onChange={set("placeOfIssue")} />
                </div>
                <div>
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">No. of Originals</label>
-                 <Input placeholder="e.g. 3" className="bg-secondary/50" value={field("numberOfOriginals")} onChange={set("numberOfOriginals")} />
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.originals")}</label>
+                 <Input placeholder={tf("common.eg", { example: "3" })} className="bg-secondary/50" value={field("numberOfOriginals")} onChange={set("numberOfOriginals")} />
                </div>
                <div className="col-span-2">
-                 <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                 <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                  <textarea
-                   placeholder="Additional clauses or notes..."
+                   placeholder={t("bol.notesPlaceholder")}
                    className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
                    onChange={(e) => onFieldChange("notes", e.target.value)}
@@ -3336,86 +3363,86 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
           <BankDetailsSection txnCurrency={txn.currency || "GBP"} locked={lockedSections.has("bank-details")} onLock={() => { onLockSection?.("bank-details"); }} onUnlock={() => onUnlockSection?.("bank-details")} isReEditing={editingSections.has("bank-details")} onCancelEdit={() => onCancelEdit?.("bank-details")} />
        ) : selectedDoc === "letter-of-credit" ? (
          lockedSections.has("letter-of-credit") ? (
-           <LockedSectionView title="Letter of Credit (LC)" fields={[["LC Number", field("lcNumber")], ["Date of Issue", field("lcDateOfIssue")], ["Expiry Date", field("lcExpiryDate")], ["Amount", field("lcAmount")], ["Currency", field("lcCurrency") || txn.currency || "GBP"], ["Issuing Bank", field("lcIssuingBank")], ["Advising Bank", field("lcAdvisingBank")], ["Type", field("lcType")]]} onEdit={() => onUnlockSection?.("letter-of-credit")} colSpanFields={["Terms & Conditions"]} branding={docBranding} />
+           <LockedSectionView title="sidebar.letterOfCredit" fields={[["lc.number", field("lcNumber")], ["lc.issueDate", field("lcDateOfIssue")], ["lc.expiry", field("lcExpiryDate")], ["doc.amount", field("lcAmount")], ["doc.currency", field("lcCurrency") || txn.currency || "GBP"], ["lc.issuingBank", field("lcIssuingBank")], ["lc.advisingBank", field("lcAdvisingBank")], ["lc.type", field("lcType")]]} onEdit={() => onUnlockSection?.("letter-of-credit")} colSpanFields={["lc.terms"]} branding={docBranding} />
           ) : (
           <div className="space-y-5">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
              <Landmark className="h-5 w-5" />
-             Letter of Credit (LC)
+             {t("sidebar.letterOfCredit")}
            </h2>
            <p className="text-sm text-muted-foreground max-w-lg">
-             Enter the details of the Letter of Credit issued by the buyer's bank.
+             {t("lc.desc")}
            </p>
            <div className="grid grid-cols-2 gap-4 max-w-lg">
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">LC Number</label>
-               <Input placeholder="e.g. LC-2026-001" className="bg-secondary/50" value={field("lcNumber")} onChange={set("lcNumber")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.number")}</label>
+               <Input placeholder={tf("common.eg", { example: "LC-2026-001" })} className="bg-secondary/50" value={field("lcNumber")} onChange={set("lcNumber")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Date of Issue</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.issueDate")}</label>
                <Input type="date" className="bg-secondary/50" value={field("lcDateOfIssue")} onChange={set("lcDateOfIssue")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Expiry Date</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.expiry")}</label>
                <Input type="date" className="bg-secondary/50" value={field("lcExpiryDate")} onChange={set("lcExpiryDate")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">LC Amount</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.amount")}</label>
                <Input type="number" placeholder="0.00" className="bg-secondary/50" value={field("lcAmount")} onChange={set("lcAmount")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Currency</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.currency")}</label>
                <CurrencySelect value={field("lcCurrency") || txn.currency || "GBP"} onChange={(v) => onFieldChange("lcCurrency", v)} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Issuing Bank</label>
-               <Input placeholder="e.g. HSBC" className="bg-secondary/50" value={field("lcIssuingBank")} onChange={set("lcIssuingBank")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.issuingBank")}</label>
+               <Input placeholder={tf("common.eg", { example: "HSBC" })} className="bg-secondary/50" value={field("lcIssuingBank")} onChange={set("lcIssuingBank")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Advising Bank</label>
-               <Input placeholder="e.g. Barclays" className="bg-secondary/50" value={field("lcAdvisingBank")} onChange={set("lcAdvisingBank")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.advisingBank")}</label>
+               <Input placeholder={tf("common.eg", { example: "Barclays" })} className="bg-secondary/50" value={field("lcAdvisingBank")} onChange={set("lcAdvisingBank")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Applicant (Buyer)</label>
-               <Input placeholder="Buyer name" className="bg-secondary/50" value={docField("lcApplicant", txn.drawee || "")} onChange={set("lcApplicant")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.applicant")}</label>
+               <Input placeholder={t("lc.buyerName")} className="bg-secondary/50" value={docField("lcApplicant", txn.drawee || "")} onChange={set("lcApplicant")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Beneficiary (Seller)</label>
-               <Input placeholder="Seller name" className="bg-secondary/50" value={docField("lcBeneficiary", txn.drawer || "")} onChange={set("lcBeneficiary")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.beneficiary")}</label>
+               <Input placeholder={t("lc.sellerName")} className="bg-secondary/50" value={docField("lcBeneficiary", txn.drawer || "")} onChange={set("lcBeneficiary")} />
              </div>
              <div>
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Type of LC</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.typeOf")}</label>
                <select
                  className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                  value={field("lcType")}
                  onChange={(e) => onFieldChange("lcType", e.target.value)}
                >
-                 <option value="">Select type...</option>
-                 <option value="irrevocable">Irrevocable</option>
-                 <option value="revocable">Revocable</option>
-                 <option value="confirmed">Confirmed</option>
-                 <option value="unconfirmed">Unconfirmed</option>
-                 <option value="transferable">Transferable</option>
-                 <option value="standby">Standby</option>
+                 <option value="">{t("lc.selectType")}</option>
+                 <option value="irrevocable">{t("lc.irrevocable")}</option>
+                 <option value="revocable">{t("lc.revocable")}</option>
+                 <option value="confirmed">{t("lc.confirmed")}</option>
+                 <option value="unconfirmed">{t("lc.unconfirmed")}</option>
+                 <option value="transferable">{t("lc.transferable")}</option>
+                 <option value="standby">{t("lc.standby")}</option>
                </select>
              </div>
              <div className="col-span-2">
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Place of Expiry</label>
-               <Input placeholder="e.g. London, UK" className="bg-secondary/50" value={field("lcPlaceOfExpiry")} onChange={set("lcPlaceOfExpiry")} />
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.placeExpiry")}</label>
+               <Input placeholder={tf("common.eg", { example: "London, UK" })} className="bg-secondary/50" value={field("lcPlaceOfExpiry")} onChange={set("lcPlaceOfExpiry")} />
              </div>
              <div className="col-span-2">
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Terms &amp; Conditions</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.terms")}</label>
                <textarea
-                 placeholder="LC terms, required documents, special conditions..."
+                 placeholder={t("lc.termsPlaceholder")}
                  className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("lcTerms")}
                  onChange={(e) => onFieldChange("lcTerms", e.target.value)}
                />
              </div>
              <div className="col-span-2">
-               <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+               <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                <textarea
-                 placeholder="Additional notes..."
+                 placeholder={t("common.notesPlaceholder")}
                  className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("notes")}
                  onChange={(e) => onFieldChange("notes", e.target.value)}
@@ -3427,17 +3454,17 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               <Button
                 variant="outline"
                 className="w-full justify-center"
-                onClick={() => toast.info(`Attach LC document — ${t("toast.comingSoon")}`)}
+                onClick={() => toast.info(t("lc.attachSoon"))}
               >
                 <Paperclip className="mr-2 h-4 w-4" />
-                Upload LC Document
+                {t("lc.upload")}
               </Button>
             </div>
           </div>
          )
        ) : isDocumentType ? (
           lockedSections.has(selectedDoc!) ? (
-            <LockedSectionView title={selectedDoc!.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())} fields={[["Reference No", field("referenceNo")], ["Date", field("date") || preDate], ["Issued By", field("issuedBy") || preFrom], [counterpartyLabel, field("counterparty") || preCounterparty], ["Amount", field("amount") || preAmount], ["Currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["Notes", field("notes")] as [string, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["Notes"]} branding={docBranding} />
+            <LockedSectionView title={DOC_TITLE_KEYS[selectedDoc!] ?? "sidebar.documents"} fields={[["doc.referenceNo", field("referenceNo")], ["doc.date", field("date") || preDate], ["gdoc.issuedBy", field("issuedBy") || preFrom], [counterpartyKey, field("counterparty") || preCounterparty], ["doc.amount", field("amount") || preAmount], ["doc.currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["common.notes", field("notes")] as [MessageKey, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["common.notes"]} branding={docBranding} />
           ) :
           (() => {
             // Determine if this doc is upload-only based on role
@@ -3445,11 +3472,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             const uploadOnlyBuyerDocs = ["estimate-quote", "invoice", "picking-list", "delivery-note"];
             const isUploadOnly = (role === "seller" && uploadOnlySellerDocs.includes(selectedDoc!)) ||
                                  (role === "buyer" && uploadOnlyBuyerDocs.includes(selectedDoc!));
+            const docTitle = t(DOC_TITLE_KEYS[selectedDoc!] ?? "sidebar.documents");
 
             return (
               <div className="space-y-5">
-                <h2 className="text-base font-semibold text-foreground capitalize">
-                  {selectedDoc!.replace("-", " ")}
+                <h2 className="text-base font-semibold text-foreground">
+                  {docTitle}
                 </h2>
 
                 {!isUploadOnly && (
@@ -3459,12 +3487,12 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     </p>
                     <div className="grid grid-cols-2 gap-4 max-w-lg">
                       <div className="col-span-2">
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">Issued By</label>
-                        <Input placeholder="Your company name" className="bg-secondary/50" value={docField("issuedBy", preFrom)} onChange={set("issuedBy")} />
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("gdoc.issuedBy")}</label>
+                        <Input placeholder={t("gdoc.issuedByPlaceholder")} className="bg-secondary/50" value={docField("issuedBy", preFrom)} onChange={set("issuedBy")} />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.referenceNo")}</label>
-                        <Input placeholder="e.g. INV-001" className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
+                        <Input placeholder={tf("common.eg", { example: "INV-001" })} className="bg-secondary/50" value={field("referenceNo")} onChange={set("referenceNo")} />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("doc.date")}</label>
@@ -3483,9 +3511,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                          <CurrencySelect value={docField("docCurrency", preCurrency) || "GBP"} onChange={(v) => onFieldChange("docCurrency", v)} />
                        </div>
                       <div className="col-span-2">
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                         <textarea
-                          placeholder="Add any notes for this document..."
+                          placeholder={t("gdoc.notesPlaceholder")}
                           className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
                           onChange={(e) => onFieldChange("notes", e.target.value)}
@@ -3493,7 +3521,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Button onClick={onSave}>{t("doc.save")} {selectedDoc!.replace("-", " ")}</Button>
+                      <Button onClick={onSave}>{tf("gdoc.saveDoc", { doc: docTitle })}</Button>
                     </div>
                   </div>
                 )}
@@ -3501,20 +3529,20 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 {isUploadOnly && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      This document is provided by the other party. Attach the received document below.
+                      {t("gdoc.uploadOnly")}
                     </p>
                     <div className="max-w-lg space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">Notes</label>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                         <textarea
-                          placeholder="Add any notes for this document..."
+                          placeholder={t("gdoc.notesPlaceholder")}
                           className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
                           onChange={(e) => onFieldChange("notes", e.target.value)}
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={onSave}>{t("doc.save")} {selectedDoc!.replace("-", " ")}</Button>
+                        <Button onClick={onSave}>{tf("gdoc.saveDoc", { doc: docTitle })}</Button>
                       </div>
                     </div>
                   </div>
@@ -3524,10 +3552,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <Button
                     variant="outline"
                     className="flex-1 justify-center"
-                    onClick={() => toast.info(`Attach document — ${t("toast.comingSoon")}`)}
+                    onClick={() => toast.info(t("gdoc.attachSoon"))}
                   >
                     <Paperclip className="mr-2 h-4 w-4" />
-                    Attach Document
+                    {t("gdoc.attach")}
                   </Button>
                   {!isUploadOnly && (
                     <Button

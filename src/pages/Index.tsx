@@ -121,8 +121,8 @@ const Index = () => {
       eboxyGenerated,
     };
     saveProject(project).then(refreshSavedProjects);
-    toast.success("Saved successfully");
-  }, [selectedDoc, forms, savedForms, projectId, projectName, role, lockedSections, savedSections, eboxyGenerated, refreshSavedProjects]);
+    toast.success(t("toast.saved"));
+  }, [selectedDoc, forms, savedForms, projectId, projectName, role, lockedSections, savedSections, eboxyGenerated, refreshSavedProjects, t]);
 
   const tryNavigate = useCallback((action: () => void) => {
     if (hasUnsavedChanges()) {
@@ -139,7 +139,7 @@ const Index = () => {
 
   const handleSelectDoc = useCallback((id: string) => {
     if (importNotDone && id !== "ai-import") {
-      toast.info("Confirm the total deal price and upload the documents to continue.");
+      toast.info(t("index.confirmFirst"));
       return;
     }
     // Address book items are always accessible
@@ -154,11 +154,11 @@ const Index = () => {
       setShowSavedList(false);
       closeMenuOnMobile();
     });
-  }, [tryNavigate, closeMenuOnMobile, importNotDone]);
+  }, [tryNavigate, closeMenuOnMobile, importNotDone, t]);
 
   const handleNewProject = useCallback(() => {
     if (importNotDone) {
-      toast.info("Confirm the total deal price and upload the documents to continue.");
+      toast.info(t("index.confirmFirst"));
       return;
     }
     tryNavigate(() => {
@@ -166,7 +166,7 @@ const Index = () => {
       setShowSavedList(false);
       closeMenuOnMobile();
     });
-  }, [tryNavigate, closeMenuOnMobile, importNotDone]);
+  }, [tryNavigate, closeMenuOnMobile, importNotDone, t]);
 
   const handleConfirmNewProject = useCallback(() => {
     setProjectId("");
@@ -284,8 +284,8 @@ const Index = () => {
     setDemoExpand(false);
     setDemoImported(false);
     setLoadCounter((c) => c + 1);
-    toast.success("Example project ready — upload the PDFs to import");
-  }, []);
+    toast.success(t("index.exampleReady"));
+  }, [t]);
 
   // Step 2 — simulated AI extraction: fill every section from the demo documents.
   const handleRunDemoImport = useCallback(() => {
@@ -298,8 +298,8 @@ const Index = () => {
     setDemoExpand(true);
     setDemoImported(true);
     setLoadCounter((c) => c + 1);
-    toast.success("5 documents imported — explore away!");
-  }, []);
+    toast.success(t("index.imported"));
+  }, [t]);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
     if (!selectedDoc) return;

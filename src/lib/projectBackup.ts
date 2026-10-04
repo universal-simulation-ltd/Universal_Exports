@@ -10,6 +10,17 @@ import { type ProjectData, createProjectId } from "./projectStore";
 // finished PDF can always be re-made from this, but not the other way round.
 // It deliberately carries no signature (that lives only on the signed PDF).
 
+/** Why a file could not be restored. `key` is the message to show (the
+ *  caller translates it); `message` stays English for logs. */
+export class BackupError extends Error {
+  readonly key: "backup.notJson" | "backup.notBackup" | "backup.newer";
+  constructor(key: BackupError["key"], message: string) {
+    super(message);
+    this.name = "BackupError";
+    this.key = key;
+  }
+}
+
 const MAGIC = "universal-exports-backup";
 const VERSION = 1;
 
@@ -54,7 +65,7 @@ export function downloadBackup(project: ProjectData): void {
 }
 
 /** Parse a previously-downloaded backup into a ready-to-load ProjectData.
- *  Throws a user-facing message if the file isn't a valid Universal Exports
+ *  Throws a `BackupError` (its `key` is the message to show) if the file isn't a valid Universal Exports
  *  backup. A fresh id + createdAt are assigned so restoring never overwrites a
  *  different existing project when it's next saved. */
 export async function readBackupFile(file: File): Promise<ProjectData> {
@@ -62,16 +73,16 @@ export async function readBackupFile(file: File): Promise<ProjectData> {
   try {
     json = JSON.parse(await file.text());
   } catch {
-    throw new Error("That file isn't a Universal Exports backup (it isn't valid JSON).");
+    throw new BackupError("backup.notJson", "That file isn't a Universal Exports backup (it isn't valid JSON).");
   }
 
   const data = json as Partial<BackupFile>;
   const p = data?.project as Partial<ProjectData> | undefined;
   if (!data || data.app !== MAGIC || !p || typeof p !== "object" || typeof p.forms !== "object") {
-    throw new Error("That file isn't a Universal Exports backup.");
+    throw new BackupError("backup.notBackup", "That file isn't a Universal Exports backup.");
   }
   if (typeof data.version === "number" && data.version > VERSION) {
-    throw new Error("This backup was made by a newer version of Universal Exports — update the app to open it.");
+    throw new BackupError("backup.newer", "This backup was made by a newer version of Universal Exports — update the app to open it.");
   }
 
   return {

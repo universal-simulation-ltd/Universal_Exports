@@ -1,7 +1,8 @@
 import { CheckCircle2, Download, Pencil } from "lucide-react";
 import { ValueChip } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/lib/i18n";
+import { translate, type MessageKey } from "@/lib/i18n";
+import { useDrafterI18n } from "@/lib/i18n/drafter/useDrafterI18n";
 import type { DocPdfParty } from "@/lib/documentPdf";
 
 export interface DocBranding {
@@ -12,25 +13,32 @@ export interface DocBranding {
 }
 
 interface LockedSectionViewProps {
-  title: string;
-  fields: [string, string][];
+  /** The section's name, as a message key. */
+  title: MessageKey;
+  /** [label key, value] rows. */
+  fields: [MessageKey, string][];
   onEdit: () => void;
-  colSpanFields?: string[]; // labels that should span 2 columns
+  colSpanFields?: MessageKey[]; // labels that should span 2 columns
   /** When provided, shows a "Download PDF" button that exports this document,
    *  stamped with the issuer's logo + company details. */
   branding?: DocBranding;
 }
 
+// Titles and labels are message keys so the screen can show them in the app's
+// language while the downloaded PDF keeps printing them in English — the
+// generated documents stay in English on purpose (see documentPdf.ts).
+const english = (key: MessageKey) => translate("en", key);
+
 const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding }: LockedSectionViewProps) => {
-  const { t } = useI18n();
+  const { t, date } = useDrafterI18n();
 
   // jsPDF loads on the first download, not with the editor.
   const handleDownload = async () => {
     const { downloadDocumentPdf } = await import("@/lib/documentPdf");
     downloadDocumentPdf({
-      title,
-      fields,
-      colSpanFields,
+      title: english(title),
+      fields: fields.map(([label, value]) => [english(label), value]),
+      colSpanFields: colSpanFields.map(english),
       from: branding?.from,
       to: branding?.to,
       logoDataUrl: branding?.logoDataUrl,
@@ -41,14 +49,14 @@ const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        <h2 className="text-base font-semibold text-foreground">{t(title)}</h2>
         <ValueChip tone="good" label={<CheckCircle2 aria-hidden="true" />}>{t("lock.sectionAccepted")}</ValueChip>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-lg">
         {fields.map(([label, value]) => (
           <div key={label} className={colSpanFields.includes(label) ? "col-span-2" : ""}>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-sm font-medium text-foreground">{value || "—"}</p>
+            <p className="text-xs text-muted-foreground">{t(label)}</p>
+            <p className="text-sm font-medium text-foreground">{value ? date(value) : "—"}</p>
           </div>
         ))}
       </div>

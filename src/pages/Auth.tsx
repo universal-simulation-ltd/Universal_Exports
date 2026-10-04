@@ -16,8 +16,11 @@ import {
 import logo from '@/assets/universal-exports-logo.svg'
 import iconWhite from '@/assets/universal-exports-icon-white.svg'
 import BrandFooter from '@/components/BrandFooter'
+import { fillNodes } from '@/lib/i18n/format'
+import { useDrafterI18n } from '@/lib/i18n/drafter/useDrafterI18n'
 
 export default function Auth() {
+  const { t, tf, date } = useDrafterI18n()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -53,7 +56,7 @@ export default function Auth() {
 
   const handleLookup = async () => {
     if (!isValidCompanyNumber(companyNumber)) {
-      toast.error('Enter a valid Companies House number — 8 characters, e.g. 01234567 or SC123456.')
+      toast.error(t('auth.invalidNumber'))
       return
     }
     setLookingUp(true)
@@ -64,9 +67,9 @@ export default function Auth() {
     if (result.ok) {
       setCompany(result.company)
     } else if (result.reason === 'not_found') {
-      toast.error('No company found with that number. Check it on find-and-update.company-information.service.gov.uk.')
+      toast.error(t('auth.notFound'))
     } else if (result.reason === 'invalid_number') {
-      toast.error('That doesn’t look like a valid company number.')
+      toast.error(t('auth.badNumber'))
     } else {
       // Lookup service down (or API key not configured yet) — don't block
       // sign-up on it, fall back to taking the number on trust.
@@ -78,7 +81,7 @@ export default function Auth() {
     e.preventDefault()
 
     if (mode === 'signup' && !companyConfirmed) {
-      toast.error('Please confirm your company details first.')
+      toast.error(t('auth.confirmFirst'))
       return
     }
 
@@ -103,7 +106,7 @@ export default function Auth() {
       if (error) {
         toast.error(error.message)
       } else {
-        toast.success(`Universal ID created! Check ${email} for a confirmation link (it can take a minute — check spam too), then sign in.`, { duration: 8000 })
+        toast.success(tf('auth.created', { email }), { duration: 8000 })
         setMode('signin')
         setShowResend(true)
       }
@@ -113,7 +116,7 @@ export default function Auth() {
 
   const handleResend = async () => {
     if (!email.trim()) {
-      toast.error('Enter your email above first, then resend.')
+      toast.error(t('auth.enterEmailFirst'))
       return
     }
     setResending(true)
@@ -122,7 +125,7 @@ export default function Auth() {
     if (error) {
       toast.error(error.message)
     } else {
-      toast.success(`Confirmation email re-sent to ${email}. Check your inbox (and spam).`, { duration: 8000 })
+      toast.success(tf('auth.resent', { email }), { duration: 8000 })
     }
   }
 
@@ -138,7 +141,7 @@ export default function Auth() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
-            <img src={iconWhite} alt="Universal Exports icon" className="h-9 w-9 object-contain" />
+            <img src={iconWhite} alt={t('auth.iconAlt')} className="h-9 w-9 object-contain" />
           </div>
           <img src={logo} alt="Universal Exports" className="h-10 object-contain" />
         </div>
@@ -146,19 +149,17 @@ export default function Auth() {
         {/* Free-for-UK-businesses badge — shown in both modes so it's the
             first thing anyone sees on the sign-in page. */}
         <div className="flex justify-center">
-          <Chip icon={<span>🇬🇧</span>}>100% free for UK businesses</Chip>
+          <Chip icon={<span>🇬🇧</span>}>{t('auth.freeBadge')}</Chip>
         </div>
 
         {/* Card */}
         <div className="rounded-lg border border-border bg-card shadow-sm p-6 space-y-5">
           <div>
             <h1 className="text-xl font-semibold text-foreground">
-              {mode === 'signin' ? 'Sign in' : 'Create your Universal ID'}
+              {mode === 'signin' ? t('auth.signIn') : t('auth.createTitle')}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {mode === 'signin'
-                ? 'Free for UK businesses — sign in, or create your Universal ID free.'
-                : 'Free for UK businesses — just confirm your Companies House number.'}
+              {mode === 'signin' ? t('auth.signInIntro') : t('auth.signUpIntro')}
             </p>
           </div>
 
@@ -166,12 +167,13 @@ export default function Auth() {
             {mode === 'signup' && (
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Companies House number
+                  <label htmlFor="auth-company-number" className="text-sm font-medium text-foreground block mb-1">
+                    {t('auth.companyNumber')}
                   </label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="e.g. 01234567"
+                      id="auth-company-number"
+                      placeholder={tf('common.eg', { example: '01234567' })}
                       value={companyNumber}
                       onChange={(e) => {
                         setCompanyNumber(e.target.value)
@@ -194,7 +196,7 @@ export default function Auth() {
                       className="shrink-0"
                     >
                       <Search className="h-4 w-4 mr-1.5" />
-                      {lookingUp ? 'Looking up…' : 'Look up'}
+                      {lookingUp ? t('auth.lookingUp') : t('auth.lookUp')}
                     </Button>
                   </div>
                 </div>
@@ -206,9 +208,9 @@ export default function Auth() {
                       <div className="min-w-0 text-sm">
                         <p className="font-semibold text-foreground">{company.company_name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          No. {company.company_number}
+                          {tf('auth.companyNo', { number: company.company_number })}
                           {company.company_status ? ` · ${company.company_status}` : ''}
-                          {company.date_of_creation ? ` · incorporated ${company.date_of_creation}` : ''}
+                          {company.date_of_creation ? ` · ${tf('auth.incorporated', { date: date(company.date_of_creation) })}` : ''}
                         </p>
                         {formatCompanyAddress(company) && (
                           <p className="text-xs text-muted-foreground mt-0.5">
@@ -217,10 +219,10 @@ export default function Auth() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-foreground">Is this your company?</p>
+                    <p className="text-sm text-foreground">{t('auth.isThisYou')}</p>
                     <div className="flex gap-2">
                       <Button type="button" size="sm" onClick={() => setCompanyConfirmed(true)}>
-                        Yes, that's us
+                        {t('auth.yes')}
                       </Button>
                       <Button
                         type="button"
@@ -231,7 +233,7 @@ export default function Auth() {
                           resetCompanyStep()
                         }}
                       >
-                        No, try again
+                        {t('auth.no')}
                       </Button>
                     </div>
                   </div>
@@ -242,10 +244,10 @@ export default function Auth() {
                     <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium text-foreground">
-                        {company ? company.company_name : `Company No. ${normalizeCompanyNumber(companyNumber)}`}
+                        {company ? company.company_name : tf('auth.companyNoFull', { number: normalizeCompanyNumber(companyNumber) })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {company ? `No. ${company.company_number} — confirmed` : 'Taken on trust — lookup unavailable'}
+                        {company ? tf('auth.confirmed', { number: company.company_number }) : t('auth.onTrust')}
                       </p>
                     </div>
                   </div>
@@ -254,11 +256,10 @@ export default function Auth() {
                 {lookupUnavailable && !companyConfirmed && (
                   <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 space-y-2 text-sm">
                     <p className="text-foreground">
-                      We couldn't reach the Companies House lookup right now. Double-check your
-                      number and continue — we'll verify it later.
+                      {t('auth.lookupDown')}
                     </p>
                     <Button type="button" size="sm" variant="outline" onClick={() => setCompanyConfirmed(true)}>
-                      Continue with No. {normalizeCompanyNumber(companyNumber)}
+                      {tf('auth.continueWith', { number: normalizeCompanyNumber(companyNumber) })}
                     </Button>
                   </div>
                 )}
@@ -266,8 +267,9 @@ export default function Auth() {
             )}
 
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1">Email</label>
+              <label htmlFor="auth-email" className="text-sm font-medium text-foreground block mb-1">{t('field.email')}</label>
               <Input
+                id="auth-email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -277,8 +279,9 @@ export default function Auth() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1">Password</label>
+              <label htmlFor="auth-password" className="text-sm font-medium text-foreground block mb-1">{t('auth.password')}</label>
               <Input
+                id="auth-password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -294,24 +297,22 @@ export default function Auth() {
               disabled={loading || (mode === 'signup' && !companyConfirmed)}
             >
               {loading
-                ? mode === 'signin' ? 'Signing in…' : 'Creating your Universal ID…'
-                : mode === 'signin' ? 'Sign in' : 'Create Universal ID'}
+                ? mode === 'signin' ? t('auth.signingIn') : t('auth.creating')
+                : mode === 'signin' ? t('auth.signIn') : t('auth.createId')}
             </Button>
           </form>
 
           {mode === 'signin' && (
             <div className={showResend ? 'rounded-md border border-border bg-secondary/40 p-3' : ''}>
               <p className="text-xs text-muted-foreground">
-                {showResend
-                  ? 'Not confirmed yet? We can send the confirmation link again.'
-                  : "Didn't get the confirmation email? "}
+                {showResend ? t('auth.notConfirmed') : t('auth.didntGet')}{' '}
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={resending}
                   className="text-primary underline-offset-4 hover:underline font-medium disabled:opacity-60"
                 >
-                  {resending ? 'Sending…' : 'Resend confirmation email'}
+                  {resending ? t('auth.sending') : t('auth.resend')}
                 </button>
               </p>
             </div>
@@ -319,28 +320,29 @@ export default function Auth() {
 
           {mode === 'signup' && (
             <p className="text-xs text-muted-foreground">
-              Universal Exports is free for UK businesses. Your Universal ID works across the whole
-              Universal Apps suite. Not registered yet?{' '}
-              <a
-                href="https://www.gov.uk/limited-company-formation/register-your-company"
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Register at Companies House
-              </a>
-              .
+              {fillNodes(t('auth.signUpNote'), {
+                link: (
+                  <a
+                    href="https://www.gov.uk/limited-company-formation/register-your-company"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    {t('auth.register')}
+                  </a>
+                ),
+              })}
             </p>
           )}
 
           <p className="text-sm text-center text-muted-foreground">
-            {mode === 'signin' ? "Don't have a Universal ID? " : 'Already have a Universal ID? '}
+            {mode === 'signin' ? t('auth.noId') : t('auth.haveId')}{' '}
             <button
               type="button"
               className="text-primary underline-offset-4 hover:underline font-medium"
               onClick={switchMode}
             >
-              {mode === 'signin' ? 'Create one free' : 'Sign in'}
+              {mode === 'signin' ? t('auth.createFree') : t('auth.signIn')}
             </button>
           </p>
         </div>

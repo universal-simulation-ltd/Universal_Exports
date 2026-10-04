@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { loadCatalogue, updateCatalogueProduct, CatalogueProduct } from "@/lib/productCatalogueStore";
 import { Search, ExternalLink, Loader2, AlertCircle, ShieldCheck, ChevronDown, ChevronUp, Check, X, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { fillNodes } from "@/lib/i18n/format";
+import { useDrafterI18n } from "@/lib/i18n/drafter/useDrafterI18n";
 
 interface TariffMeasure {
   type: string;
@@ -36,6 +38,19 @@ interface AppliedRule {
 }
 
 const TARIFF_API = "https://www.trade-tariff.service.gov.uk/api/v2";
+
+/** A failed lookup. `key` + `vars` are the message to show (translated by the
+ *  component); `message` stays English for logs. */
+class TariffLookupError extends Error {
+  constructor(
+    readonly key: "customs.notFound" | "customs.apiError",
+    readonly vars: Record<string, string>,
+    message: string,
+  ) {
+    super(message);
+    this.name = "TariffLookupError";
+  }
+}
 
 // Accepted spellings/codes for a UK-based party. The tariff data comes from the
 // UK Trade Tariff Service, so the checker is only meaningful when one of the
@@ -81,8 +96,8 @@ async function lookupCommodity(hsCode: string): Promise<TariffResult> {
   const code = digits.length >= 10 ? digits.slice(0, 10) : digits.padEnd(10, "0");
   const res = await fetch(`${TARIFF_API}/commodities/${code}`);
   if (!res.ok) {
-    if (res.status === 404) throw new Error(`HS Code ${hsCode} not found. Try a more specific code.`);
-    throw new Error(`API error: ${res.status}`);
+    if (res.status === 404) throw new TariffLookupError("customs.notFound", { code: hsCode }, `HS Code ${hsCode} not found.`);
+    throw new TariffLookupError("customs.apiError", { status: String(res.status) }, `API error: ${res.status}`);
   }
 
   const json = await res.json();
@@ -161,6 +176,7 @@ interface Props {
 }
 
 const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, originCountry, destCountry }: Props) => {
+  const { t, tf, tp } = useDrafterI18n();
   const [catalogue, setCatalogue] = useState<CatalogueProduct[]>([]);
   const [manualCode, setManualCode] = useState("");
   const [results, setResults] = useState<Record<string, TariffResult>>({});
@@ -259,19 +275,21 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
 
   const handleLookup = useCallback(async (code: string) => {
     const key = code.replace(/\D/g, "");
-    if (!key) { toast.error("Please enter a valid HS code"); return; }
+    if (!key) { toast.error(t("customs.invalidCode")); return; }
     setLoading((prev) => ({ ...prev, [key]: true }));
     setErrors((prev) => ({ ...prev, [key]: "" }));
     try {
       const result = await lookupCommodity(key);
       setResults((prev) => ({ ...prev, [key]: result }));
     } catch (err) {
-      const msg = (err instanceof Error && err.message) || "Failed to look up tariff";
+      const msg = err instanceof TariffLookupError
+        ? tf(err.key, err.vars)
+        : t("customs.lookupFailed");
       setErrors((prev) => ({ ...prev, [key]: msg }));
     } finally {
       setLoading((prev) => ({ ...prev, [key]: false }));
     }
-  }, []);
+  }, [t, tf]);
 
   // Auto-lookup all product HS codes when products change
   const lookedUpRef = useRef<Set<string>>(new Set());
@@ -288,7 +306,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
 
   const handleApply = useCallback((result: TariffResult, productName: string) => {
     const exists = appliedRules.some((r) => r.hsCode === result.hsCode && r.productName === productName);
-    if (exists) { toast.info("Already applied"); return; }
+    if (exists) { toast.info(t("customs.alreadyApplied")); return; }
     const rule: AppliedRule = {
       hsCode: result.hsCode,
       productName,
@@ -303,8 +321,8 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
     const key = result.hsCode.replace(/\D/g, "");
     setExpandedResults((prev) => ({ ...prev, [key]: false }));
     setAppliedOpen(true);
-    toast.success(`Applied tariff rules for ${productName}`);
-  }, [appliedRules, setAppliedRules]);
+    toast.success(tf("customs.appliedFor", { name: productName }));
+  }, [appliedRules, setAppliedRules, t, tf]);
 
   const handleRemoveApplied = useCallback((index: number) => {
     setAppliedRules(appliedRules.filter((_, i) => i !== index));
@@ -316,18 +334,16 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
         <div>
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <ShieldCheck className="h-5 w-5" />
-            Customs & Tariff Lookup
+            {t("customs.title")}
           </h2>
         </div>
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-4 space-y-1.5">
           <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            Tariff lookup is UK-only for now
+            {t("customs.ukOnlyTitle")}
           </p>
           <p className="text-sm text-muted-foreground">
-            Automated tariff &amp; duty checking is currently only available when the
-            importer is based in the United Kingdom. Support for other countries is
-            coming soon.
+            {t("customs.ukOnlyBody")}
           </p>
         </div>
       </div>
@@ -339,29 +355,32 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
       <div>
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <ShieldCheck className="h-5 w-5" />
-          Customs & Tariff Lookup
+          {t("customs.title")}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Check import/export duties using the{" "}
-          <a href="https://www.trade-tariff.service.gov.uk/find_commodity" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
-            UK Trade Tariff
-          </a>
-          . Look up codes, then apply the rules you need.
+          {fillNodes(t("customs.intro"), {
+            link: (
+              <a href="https://www.trade-tariff.service.gov.uk/find_commodity" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
+                UK Trade Tariff
+              </a>
+            ),
+          })}
         </p>
       </div>
 
       {/* Manual lookup */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground block">Look up HS Code</label>
+        <label className="text-sm font-medium text-foreground block" htmlFor={`${foldId}-hs-input`}>{t("customs.lookupLabel")}</label>
         <div className="flex gap-2 max-w-md">
           <Input
-            placeholder="e.g. 8471.30 or 8471300000"
+            id={`${foldId}-hs-input`}
+            placeholder={t("customs.lookupPlaceholder")}
             className="bg-secondary/50"
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleLookup(manualCode); }}
           />
-          <Button onClick={() => handleLookup(manualCode)} disabled={!manualCode.trim() || loading[manualCode.replace(/\D/g, "")]}>
+          <Button aria-label={t("customs.lookupButton")} title={t("customs.lookupButton")} onClick={() => handleLookup(manualCode)} disabled={!manualCode.trim() || loading[manualCode.replace(/\D/g, "")]}>
             {loading[manualCode.replace(/\D/g, "")] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </div>
@@ -383,7 +402,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
             {result && (
               <CollapsibleResult
                 result={result}
-                label={`Manual Lookup: ${manualCode}`}
+                label={tf("customs.manualLabel", { code: manualCode })}
                 expanded={expandedResults[key] ?? false}
                 onToggle={() => setExpandedResults((prev) => ({ ...prev, [key]: !prev[key] }))}
                 onApply={() => handleApply(result, `Manual: ${manualCode}`)}
@@ -406,7 +425,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
               aria-controls={`${foldId}-products`}
             >
               {productsOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-              Your Products ({groupedByHsCode.size} HS {groupedByHsCode.size === 1 ? "code" : "codes"})
+              {tp("customs.yourProducts", groupedByHsCode.size)}
             </button>
           </div>
           {productsOpen && <div id={`${foldId}-products`} className="space-y-2">
@@ -427,9 +446,9 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
               const taxChips: string[] = [];
               const additionalChips: string[] = [];
               if (result) {
-                if (result.vat && !isZero(result.vat)) taxChips.push(`${result.vat} VAT`);
-                if (result.thirdCountryDuty && !isZero(result.thirdCountryDuty)) taxChips.push(`${result.thirdCountryDuty} Duty`);
-                if (result.preferentialDuty && !isZero(result.preferentialDuty)) taxChips.push(`${result.preferentialDuty} Pref.`);
+                if (result.vat && !isZero(result.vat)) taxChips.push(tf("customs.chipVat", { rate: result.vat }));
+                if (result.thirdCountryDuty && !isZero(result.thirdCountryDuty)) taxChips.push(tf("customs.chipDuty", { rate: result.thirdCountryDuty }));
+                if (result.preferentialDuty && !isZero(result.preferentialDuty)) taxChips.push(tf("customs.chipPref", { rate: result.preferentialDuty }));
                 result.additionalDuties.filter(isRelevantDuty).forEach((m) => {
                   if (m.duty && !isZero(m.duty)) additionalChips.push(m.duty);
                 });
@@ -462,7 +481,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                         <span className="text-xs text-muted-foreground">
                           HS: {firstProduct.hsCode}
                           {products.length === 1 && firstProduct.code && ` · SKU: ${firstProduct.code}`}
-                          {products.length > 1 && ` · ${products.length} products`}
+                          {products.length > 1 && ` · ${tf("customs.productCount", { count: products.length })}`}
                         </span>
                         {(taxChips.length > 0 || additionalChips.length > 0) && (
                           <div className="flex items-center gap-1 flex-wrap">
@@ -473,7 +492,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                             ))}
                             {additionalChips.map((duty, i) => (
                               <span key={`add-${i}`} className="inline-flex items-center text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded px-1.5 py-0.5">
-                                {duty} Additional
+                                {tf("customs.chipAdditional", { rate: duty })}
                               </span>
                             ))}
                           </div>
@@ -506,9 +525,9 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                           disabled={isApplied}
                         >
                           {isApplied ? (
-                            <><Check className="mr-1 h-3.5 w-3.5" /> Applied</>
+                            <><Check className="mr-1 h-3.5 w-3.5" /> {t("customs.applied")}</>
                           ) : (
-                            <><Plus className="mr-1 h-3.5 w-3.5" /> Apply Rules</>
+                            <><Plus className="mr-1 h-3.5 w-3.5" /> {t("customs.apply")}</>
                           )}
                         </Button>
                       </div>
@@ -551,18 +570,18 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                       });
                     });
                     if (newRules.length === 0) {
-                      toast.info("All tariffs already applied");
+                      toast.info(t("customs.allAlreadyApplied"));
                     } else {
                       setAppliedRules([...appliedRules, ...newRules]);
                       setExpandedResults({});
                       setProductsOpen(false);
                       setAppliedOpen(true);
-                      toast.success(`Applied tariff rules for ${newRules.length} ${newRules.length === 1 ? "product" : "products"}`);
+                      toast.success(tp("customs.appliedForCount", newRules.length));
                     }
                   }}
                 >
                   <Plus className="mr-1.5 h-3 w-3" />
-                  {allAlreadyApplied ? "All applied" : "Apply all"}
+                  {allAlreadyApplied ? t("customs.allApplied") : t("customs.applyAll")}
                 </Button>
               );
             })()}
@@ -573,7 +592,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
       {productsWithHsCodes.length === 0 && (
         <div className="rounded-md border border-border bg-secondary/10 px-4 py-3">
           <p className="text-sm text-muted-foreground">
-            No products with HS codes found. Add HS codes to your products in the Products section, then return here to check tariff rates.
+            {t("customs.noProducts")}
           </p>
         </div>
       )}
@@ -588,7 +607,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
             aria-controls={`${foldId}-applied`}
           >
             <Check className="h-4 w-4 text-primary" />
-            Applied Tariff Rules ({appliedRules.length})
+            {tf("tariff.appliedCount", { count: appliedRules.length })}
             {appliedOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground ml-auto" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />}
           </button>
           {appliedOpen && <div id={`${foldId}-applied`} className="space-y-2">
@@ -599,19 +618,19 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                     <p className="text-sm font-medium text-foreground">{rule.productName}</p>
                     <p className="text-xs text-muted-foreground">{rule.description} · HS: {rule.hsCode}</p>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5 text-xs">
-                      <span><span className="text-muted-foreground">Duty:</span> <span className="font-medium text-foreground">{rule.thirdCountryDuty}</span></span>
+                      <span><span className="text-muted-foreground">{t("tariff.duty")}:</span> <span className="font-medium text-foreground">{rule.thirdCountryDuty}</span></span>
                       {rule.preferentialDuty && (
-                        <span><span className="text-muted-foreground">Pref:</span> <span className="font-medium text-foreground">{rule.preferentialDuty}</span></span>
+                        <span><span className="text-muted-foreground">{t("tariff.pref")}:</span> <span className="font-medium text-foreground">{rule.preferentialDuty}</span></span>
                       )}
-                      <span><span className="text-muted-foreground">VAT:</span> <span className="font-medium text-foreground">{rule.vat}</span></span>
+                      <span><span className="text-muted-foreground">{t("overview.vat")}:</span> <span className="font-medium text-foreground">{rule.vat}</span></span>
                       {rule.additionalDuties.filter((m) => isRelevantDuty(m) && m.duty && !/^0(\.0+)?%?$/.test(m.duty.trim())).map((m, i) => (
                         <span key={i} className="inline-flex items-center text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded px-1.5 py-0.5">
-                          {m.duty} Additional
+                          {tf("customs.chipAdditional", { rate: m.duty })}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => handleRemoveApplied(i)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={t("customs.removeRule")} title={t("customs.removeRule")} onClick={() => handleRemoveApplied(i)}>
                     <X className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                 </div>
@@ -622,9 +641,9 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
       )}
 
       <p className="text-[10px] text-muted-foreground">
-        Data from{" "}
-        <a href="https://www.trade-tariff.service.gov.uk" target="_blank" rel="noopener noreferrer" className="underline">UK Trade Tariff Service</a>
-        . For official guidance, always verify on GOV.UK.
+        {fillNodes(t("customs.dataFrom"), {
+          link: <a href="https://www.trade-tariff.service.gov.uk" target="_blank" rel="noopener noreferrer" className="underline">UK Trade Tariff Service</a>,
+        })}
       </p>
     </div>
   );
@@ -635,6 +654,7 @@ const CollapsibleResult = ({ result, label, expanded, onToggle, onApply, isAppli
   filterMeasure?: (m: TariffMeasure) => boolean;
 }) => {
   const panelId = useId();
+  const { t } = useDrafterI18n();
   return (
   <div className="rounded-md border border-border overflow-hidden">
     <button className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/20 hover:bg-secondary/30 transition-colors" onClick={onToggle} aria-expanded={expanded} aria-controls={panelId}>
@@ -646,7 +666,7 @@ const CollapsibleResult = ({ result, label, expanded, onToggle, onApply, isAppli
         <TariffResultCard result={result} filterMeasure={filterMeasure} />
         <div className="px-4 pb-3">
           <Button size="sm" variant={isApplied ? "secondary" : "default"} onClick={onApply} disabled={isApplied}>
-            {isApplied ? <><Check className="mr-1 h-3.5 w-3.5" /> Applied</> : <><Plus className="mr-1 h-3.5 w-3.5" /> Apply Rules</>}
+            {isApplied ? <><Check className="mr-1 h-3.5 w-3.5" /> {t("customs.applied")}</> : <><Plus className="mr-1 h-3.5 w-3.5" /> {t("customs.apply")}</>}
           </Button>
         </div>
       </div>
@@ -657,22 +677,23 @@ const CollapsibleResult = ({ result, label, expanded, onToggle, onApply, isAppli
 
 const TariffResultCard = ({ result, filterMeasure }: { result: TariffResult; filterMeasure?: (m: TariffMeasure) => boolean }) => {
   const visibleMeasures = filterMeasure ? result.measures.filter(filterMeasure) : result.measures;
+  const { t } = useDrafterI18n();
   return (
   <div className="px-4 py-3 space-y-3 text-sm">
     <div>
-      <p className="text-xs text-muted-foreground">Commodity</p>
+      <p className="text-xs text-muted-foreground">{t("customs.commodity")}</p>
       <p className="text-foreground font-medium">{result.description}</p>
-      {!result.declarable && <p className="text-xs text-amber-600 font-medium mt-0.5">⚠ Not declarable — use a more specific code</p>}
+      {!result.declarable && <p className="text-xs text-amber-600 font-medium mt-0.5">⚠ {t("customs.notDeclarable")}</p>}
     </div>
     {visibleMeasures.length > 0 && (
       <div>
-        <p className="text-xs text-muted-foreground mb-1.5">Import Measures</p>
+        <p className="text-xs text-muted-foreground mb-1.5">{t("customs.importMeasures")}</p>
         <div className="rounded-md border border-border overflow-hidden">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border bg-secondary/20">
-                <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">Measure</th>
-                <th className="text-right px-3 py-1.5 font-medium text-muted-foreground">Duty</th>
+                <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">{t("customs.measure")}</th>
+                <th className="text-right px-3 py-1.5 font-medium text-muted-foreground">{t("tariff.duty")}</th>
               </tr>
             </thead>
             <tbody>
@@ -688,7 +709,7 @@ const TariffResultCard = ({ result, filterMeasure }: { result: TariffResult; fil
       </div>
     )}
     <a href={`https://www.trade-tariff.service.gov.uk/commodities/${result.hsCode}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-      View full details on GOV.UK <ExternalLink className="h-3 w-3" />
+      {t("customs.viewOnGovUk")} <ExternalLink className="h-3 w-3" />
     </a>
   </div>
   );

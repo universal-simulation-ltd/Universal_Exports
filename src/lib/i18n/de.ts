@@ -1,8 +1,10 @@
 // German.
 import { agreementDe } from "./agreement/de";
 import type { Messages } from "./en";
+import { drafterDe } from "./drafter/de";
 
 export const de: Messages = {
+  ...drafterDe, // the drafter screens' strings: ./drafter/de.ts
   // Sidebar
   "sidebar.projects": "Projekte",
   "sidebar.new": "Neu",

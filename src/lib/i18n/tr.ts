@@ -2,8 +2,10 @@
 // SDK's language — worth a native speaker's pass.
 import { agreementTr } from "./agreement/tr";
 import type { Messages } from "./en";
+import { drafterTr } from "./drafter/tr";
 
 export const tr: Messages = {
+  ...drafterTr, // the drafter screens' strings: ./drafter/tr.ts
   // Sidebar
   "sidebar.projects": "Projeler",
   "sidebar.new": "Yeni",

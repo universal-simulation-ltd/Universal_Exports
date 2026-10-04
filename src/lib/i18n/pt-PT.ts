@@ -2,8 +2,10 @@
 // SDK's language — worth a native speaker's pass.
 import { agreementPtPT } from "./agreement/pt-PT";
 import type { Messages } from "./en";
+import { drafterPtPT } from "./drafter/pt-PT";
 
 export const ptPT: Messages = {
+  ...drafterPtPT, // the drafter screens' strings: ./drafter/pt-PT.ts
   // Sidebar
   "sidebar.projects": "Projetos",
   "sidebar.new": "Novo",

@@ -115,10 +115,22 @@ follows the browser, and English of any region is **English (GB)**.
   `languageFallbacks` chain, ending in English. `pt-BR`, `pt-PT` and `tr` (and
   the five Certificate of Origin / Bill of Lading / Download PDF keys in the
   older four) were machine-translated — worth a native speaker's pass.
-* **Coverage is partial, as it always was:** the sidebar, setup, the section
-  forms' labels and buttons, toasts and dialogs are translated; the landing
-  page, the AI import panel, CustomsLookup, the signing pages and much of
-  `MainContent.tsx` are still hard-coded English.
+* **The drafter screens** (2026-10-04) — the landing page, sign-in, the whole
+  editor (`MainContent.tsx`, products, the tariff lookup, the back-up dialog,
+  the AI import panel) — keep their strings in `src/lib/i18n/drafter/<code>.ts`,
+  spread into each main dictionary with one line, so `MessageKey` still covers
+  every key. `useDrafterI18n()` (same folder) adds `tf` (fill `{slots}`), `tp`
+  (`.one` / `.other` plural pairs via `Intl.PluralRules`), and on-screen
+  amounts and dates in the app's language via `Intl`.
+* **Deliberately English:** the generated PDFs (agreement, documents, QR
+  sheet), so the labels handed to them stay English — `LockedSectionView`
+  takes message keys and prints `translate("en", key)` into the PDF while the
+  screen shows `t(key)`. Also left as they come: the default Certificate of
+  Origin declaration (it is the document's own text), stored values such as
+  "Freight Prepaid" (only the dropdown label is translated), names of official
+  bodies and services (HMRC, UK Export Finance, Customs Declaration Service,
+  UK Trade Tariff), and data from outside — the UK Trade Tariff's commodity and
+  measure descriptions, Companies House statuses, Supabase/server error text.
 * **What went:** the Language rows Exports put in the profile pill
   (`FileMenu.tsx`, deleted — they were the only `actions` left) and
   `showLanguageSelector={false}`, which had hidden Language from the SDK's

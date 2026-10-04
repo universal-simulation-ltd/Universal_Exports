@@ -58,7 +58,9 @@ export async function storeExportPdf(
     contentType: "application/pdf",
   });
   if (!stored.ok || !stored.upload_id) {
-    return { ok: false, error: stored.error ?? "Could not save right now." };
+    // No English fallback here: the dialog shows its own translated message
+    // when the server gives no reason.
+    return { ok: false, error: stored.error };
   }
 
   return { ok: true, creditsRemaining: stored.credits };
@@ -74,7 +76,7 @@ export async function deleteHostedExport(supabase: Supabase, upload: HostedUploa
   // An R2 row is removed and refunded in one call to the hosted-files
   // function; the candidates only matter on Supabase.
   const res = await deleteHostedUpload(supabase, upload, hostedExportPathCandidates(upload));
-  if (!res.ok) return { ok: false, error: res.error ?? "Could not delete right now." };
+  if (!res.ok) return { ok: false, error: res.error };
   return { ok: true, creditsRemaining: res.credits };
 }
 

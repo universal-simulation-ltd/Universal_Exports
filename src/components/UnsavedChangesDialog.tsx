@@ -29,7 +29,7 @@ const UnsavedChangesDialog = ({ open, onDiscard, onSave, onCancel }: UnsavedChan
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Close</AlertDialogCancel>
+          <AlertDialogCancel onClick={onCancel}>{t("common.close")}</AlertDialogCancel>
           <AlertDialogCancel onClick={onDiscard}>{t("unsaved.discard")}</AlertDialogCancel>
           <AlertDialogAction onClick={onSave}>{t("unsaved.save")}</AlertDialogAction>
         </AlertDialogFooter>

@@ -9,34 +9,18 @@ import WorkflowAnimation from "@/components/WorkflowAnimation";
 import { grantDemoAccess } from "@/lib/demoAccess";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import { CONTAINER } from "@/lib/layout";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 
-const features = [
-  {
-    icon: Sparkles,
-    title: "AI document import",
-    desc: "Drop in PDFs or scans of your supplier or customer paperwork — AI extracts parties, products and totals into the right fields.",
-  },
-  {
-    icon: Globe2,
-    title: "Live tariff lookup",
-    flag: "🇬🇧",
-    badge: "More coming soon",
-    desc: "Pull HS codes, duty rates and country-of-origin rules straight into your invoice. UK imports & exports for now — more countries on the way.",
-  },
-  {
-    icon: PenTool,
-    title: "Sign your Export Agreement",
-    desc: "Draw legally-recognised signatures in-browser and lock each section once buyer and seller accept it.",
-  },
-  {
-    icon: FileSignature,
-    title: "Live delivery-note signatures",
-    desc: "Capture courier and recipient signatures on arrival — perfect for inbound deliveries and outbound shipments alike.",
-  },
+const features: { icon: typeof Sparkles; title: MessageKey; desc: MessageKey; flag?: string; badge?: MessageKey }[] = [
+  { icon: Sparkles, title: "landing.f1Title", desc: "landing.f1Desc" },
+  { icon: Globe2, title: "landing.f2Title", desc: "landing.f2Desc", flag: "🇬🇧", badge: "landing.moreSoon" },
+  { icon: PenTool, title: "landing.f3Title", desc: "landing.f3Desc" },
+  { icon: FileSignature, title: "landing.f4Title", desc: "landing.f4Desc" },
 ];
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [projectName, setProjectName] = useState("");
 
   // Focus the Project Name input so visitors can type straight away — but with
@@ -68,12 +52,11 @@ export default function Landing() {
         <div className={`${CONTAINER} py-8 md:py-12`}>
           {/* Hero title — spans both columns */}
           <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-semibold tracking-tight text-foreground leading-[1.15] text-center mb-3 md:mb-4">
-            Export, Import, <span className="text-primary">With Peace of Mind.</span>
+            {t("landing.heroA")} <span className="text-primary">{t("landing.heroB")}</span>
           </h1>
           {/* Subheader — straddles both columns */}
           <p className="text-sm md:text-base text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-10">
-            Whether you're buying or selling across borders, generate, sign and share Export Agreements,
-            invoices and delivery notes — with live tariff data and AI-assisted document import.
+            {t("landing.sub")}
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-12 items-start lg:items-center">
           {/* LEFT — pitch + animation + features */}
@@ -95,15 +78,15 @@ export default function Landing() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-sm font-semibold text-foreground leading-tight">{f.title}</p>
+                      <p className="text-sm font-semibold text-foreground leading-tight">{t(f.title)}</p>
                       {f.flag && (
-                        <span className="text-sm leading-none" aria-label="United Kingdom">{f.flag}</span>
+                        <span className="text-sm leading-none" role="img" aria-label={t("landing.uk")}>{f.flag}</span>
                       )}
                       {f.badge && (
-                        <Chip size="sm">{f.badge}</Chip>
+                        <Chip size="sm">{t(f.badge)}</Chip>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 leading-snug">{f.desc}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-snug">{t(f.desc)}</p>
                   </div>
                 </div>
               ))}
@@ -111,12 +94,12 @@ export default function Landing() {
 
             <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <Languages className="h-3.5 w-3.5" /> 7 languages
+                <Languages className="h-3.5 w-3.5" /> {t("landing.languages")}
               </span>
               <span aria-hidden>·</span>
-              <span>Multi-currency</span>
+              <span>{t("landing.multiCurrency")}</span>
               <span aria-hidden>·</span>
-              <span>Free for UK businesses</span>
+              <span>{t("landing.freeUk")}</span>
             </div>
           </div>
 
@@ -126,23 +109,24 @@ export default function Landing() {
               {/* "100% Free for UK businesses" corner ribbon — z-0 so the navbar changelog
                   dropdown (which floats down over this card) stays on top. */}
               <div className="pointer-events-none absolute top-[26px] -right-[58px] z-0 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[9px] font-bold uppercase tracking-[0.06em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none whitespace-nowrap">
-                100% Free for UK businesses
+                {t("landing.ribbon")}
               </div>
               <div className="flex flex-col items-center justify-center p-8 md:p-10">
                 <FileCheck className="h-12 w-12 text-primary mb-4" />
                 <h2 className="text-2xl font-semibold text-foreground mb-1 text-center">
-                  Create your sales folder
+                  {t("landing.createFolder")}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-8 text-center max-w-sm">
-                  A binding Export Agreement
+                  {t("landing.binding")}
                 </p>
                 <div className="w-full max-w-xs space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      Project Name
+                    <label htmlFor="landing-project-name" className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("setup.projectName")}
                     </label>
                     <Input
-                      placeholder="e.g. Q2 Export Shipment"
+                      id="landing-project-name"
+                      placeholder={t("main.projectNamePlaceholder")}
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       onKeyDown={(e) => {
@@ -157,11 +141,10 @@ export default function Landing() {
                     disabled={!projectName.trim()}
                     className="w-full"
                   >
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
+                    {t("setup.continue")} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Free for UK businesses — sign in with your Universal ID, or create one
-                    with your Companies House number.
+                    {t("landing.signInNote")}
                   </p>
                 </div>
 
@@ -169,7 +152,7 @@ export default function Landing() {
                   <div className="relative flex items-center mb-4">
                     <div className="flex-1 border-t border-border" />
                     <span className="mx-3 text-xs text-muted-foreground uppercase tracking-wider">
-                      or
+                      {t("common.or")}
                     </span>
                     <div className="flex-1 border-t border-border" />
                   </div>
@@ -186,13 +169,13 @@ export default function Landing() {
                       />
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          Explore with an example project
+                          {t("example.title")}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          A pre-filled UK export sale — see every section in action
+                          {t("example.desc")}
                         </p>
                         <p className="text-xs text-primary mt-1 font-medium">
-                          New here? Start here ↑
+                          {t("example.new")}
                         </p>
                       </div>
                     </button>

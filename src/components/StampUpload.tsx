@@ -3,6 +3,7 @@ import { useFileDrop } from "@unisim/sdk";
 import { Button } from "@/components/ui/button";
 import { Stamp, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface StampUploadProps {
   /** base64 data URL of the uploaded company stamp / seal (empty when none). */
@@ -20,14 +21,15 @@ const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
  * that format is recommended, but any raster image is accepted.
  */
 const StampUpload = ({ value, onChange }: StampUploadProps) => {
+  const { t } = useI18n();
   const handleUpload = useCallback((file: File | undefined) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file (PNG with a transparent background works best).");
+      toast.error(t("stamp.notImage"));
       return;
     }
     if (file.size > MAX_BYTES) {
-      toast.error("Stamp image is too large — please use one under 2 MB.");
+      toast.error(t("stamp.tooLarge"));
       return;
     }
     const reader = new FileReader();
@@ -36,9 +38,9 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
         onChange(reader.result);
       }
     };
-    reader.onerror = () => toast.error("Couldn't read that image — please try another file.");
+    reader.onerror = () => toast.error(t("stamp.readFailed"));
     reader.readAsDataURL(file);
-  }, [onChange]);
+  }, [onChange, t]);
 
   // Buttons, not a drop zone — the SDK owns the input so a stamp rejected for
   // its size or type can be re-picked once fixed, same filename and all.
@@ -59,21 +61,21 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
           onClick={picker.open}
         >
           {value ? <Upload className="mr-1 h-3.5 w-3.5" /> : <Stamp className="mr-1 h-3.5 w-3.5" />}
-          {value ? "Replace stamp" : "Upload stamp"}
+          {value ? t("stamp.replace") : t("stamp.upload")}
         </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={() => onChange("")}>
             <Trash2 className="mr-1 h-3.5 w-3.5" />
-            Clear
+            {t("stamp.clear")}
           </Button>
         )}
       </div>
 
-      <input {...picker.inputProps} aria-label="Upload company stamp" className="hidden" />
+      <input {...picker.inputProps} aria-label={t("stamp.inputLabel")} className="hidden" />
 
       {value && value.startsWith("data:") && (
         <div className="rounded-md border border-input bg-background p-2 inline-block">
-          <img src={value} alt="Company stamp" className="max-h-[80px] object-contain" />
+          <img src={value} alt={t("stamp.alt")} className="max-h-[80px] object-contain" />
         </div>
       )}
     </div>

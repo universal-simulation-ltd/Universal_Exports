@@ -3,7 +3,10 @@
 // what both English (GB) and English (US) read (the suite files its English
 // under `en`; `en-gb` has no strings of its own anywhere).
 import { agreementEn } from "./agreement/en";
+import { drafterEn } from "./drafter/en";
+
 export const en = {
+  ...drafterEn, // the drafter screens' strings: ./drafter/en.ts
   // Sidebar
   "sidebar.projects": "Projects",
   "sidebar.new": "New",

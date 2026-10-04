@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { I18nRoot } from "@/lib/i18n";
+import { I18nRoot, useI18n } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
 import { BASE_PATH } from "@/lib/basePath";
@@ -77,6 +77,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppShell() {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const inDemoBypass = !loading && !user && hasDemoAccess() && pathname === "/app";
   // Language is the SDK's (2026-09-29): App preferences / Global preferences in
   // the profile menu set it, and `useI18n()` translates this app from the same
@@ -98,7 +99,7 @@ function AppShell() {
       />
       {inDemoBypass && (
         <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/30 text-center text-xs text-foreground py-1 px-4">
-          Demo access — you're not signed in, so changes won't be saved.
+          {t("app.demoBanner")}
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-auto">

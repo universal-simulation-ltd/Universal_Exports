@@ -1,8 +1,10 @@
 // Spanish.
 import { agreementEs } from "./agreement/es";
 import type { Messages } from "./en";
+import { drafterEs } from "./drafter/es";
 
 export const es: Messages = {
+  ...drafterEs, // the drafter screens' strings: ./drafter/es.ts
   // Sidebar
   "sidebar.projects": "Proyectos",
   "sidebar.new": "Nuevo",

@@ -17,7 +17,7 @@ import {
   catalogueDisplayTitle,
 } from "@/lib/productCatalogueStore";
 import { toast } from "sonner";
-import { useI18n } from "@/lib/i18n";
+import { useDrafterI18n } from "@/lib/i18n/drafter/useDrafterI18n";
 
 interface LineItem {
   catalogueId: string;
@@ -44,7 +44,7 @@ function parseLines(formData: Record<string, string>): LineItem[] {
 }
 
 const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: ProductDetailsProps) => {
-  const { t } = useI18n();
+  const { t, tf, money } = useDrafterI18n();
   const [catalogueBase, setCatalogueBase] = useState<CatalogueProduct[]>([]);
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
 
   const handleAddToCatalogue = useCallback(async () => {
     if (!newProduct.name.trim()) {
-      toast.error("Enter a product name");
+      toast.error(t("product.enterName"));
       return;
     }
     try {
@@ -98,11 +98,11 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
       // Also add as a line item
       const updated = [...lines, { catalogueId: product.id, units: "1", discount: "", discountAmount: "" }];
       updateLines(updated);
-      toast.success(`${product.name} added to catalogue and order`);
+      toast.success(tf("product.added", { name: product.name }));
     } catch (err) {
-      toast.error((err instanceof Error && err.message) || "Failed to save to catalogue");
+      toast.error((err instanceof Error && err.message) || t("product.saveFailed"));
     }
-  }, [newProduct, lines, updateLines]);
+  }, [newProduct, lines, updateLines, refreshCatalogue, t, tf]);
 
   const handleRemoveFromCatalogue = useCallback(async (id: string) => {
     await removeFromCatalogue(id);
@@ -110,8 +110,8 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
     // Also remove any line items using this product
     const updated = lines.filter((l) => l.catalogueId !== id);
     updateLines(updated);
-    toast.success("Product removed from catalogue");
-  }, [lines, updateLines]);
+    toast.success(t("product.removed"));
+  }, [lines, updateLines, refreshCatalogue, t]);
 
   const handleAddLine = useCallback((productId: string) => {
     const updated = [...lines, { catalogueId: productId, units: "1", discount: "", discountAmount: "" }];
@@ -161,7 +161,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
   const totalTax = lines.reduce((s, l) => s + lineVat(l), 0) * (totalBeforeTax > 0 ? totalAfterDiscount / totalBeforeTax : 1);
   const globalShipping = parseFloat(formData["globalShipping"] || "") || 0;
   const totalIncTax = totalAfterDiscount + totalTax + globalShipping;
-  const fmt = (n: number) => n.toFixed(2);
+  const fmt = money;
 
   return (
     <div className="space-y-6">
@@ -175,7 +175,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" disabled={catalogue.length === 0}>
                 <ShoppingCart className="mr-1 h-3.5 w-3.5" />
-                Choose from Catalogue
+                {t("product.choose")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-96 p-0" align="start">
@@ -183,7 +183,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                 <div className="flex items-center gap-2">
                   <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Input
-                    placeholder="Search products..."
+                    placeholder={t("product.search")}
                     className="h-8 text-sm border-0 bg-transparent p-0 focus-visible:ring-0"
                     value={catalogueSearch}
                     onChange={(e) => setCatalogueSearch(e.target.value)}
@@ -202,33 +202,33 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                         <div className="p-3 space-y-3 bg-secondary/20 rounded-sm">
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">Code / SKU</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("product.code")}</label>
                               <Input className="bg-secondary/50 h-7 text-xs" value={editProduct.code} onChange={(e) => setEditProduct({ ...editProduct, code: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">HS Code</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("product.hsCode")}</label>
                               <Input className="bg-secondary/50 h-7 text-xs" value={editProduct.hsCode} onChange={(e) => setEditProduct({ ...editProduct, hsCode: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">Name *</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("product.nameLabel")}</label>
                               <Input className="bg-secondary/50 h-7 text-xs" value={editProduct.name} onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">Description</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("product.description")}</label>
                               <Input className="bg-secondary/50 h-7 text-xs" value={editProduct.description} onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">Unit Price</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("product.unitPrice")}</label>
                               <Input type="number" className="bg-secondary/50 h-7 text-xs" value={editProduct.unitPrice} onChange={(e) => setEditProduct({ ...editProduct, unitPrice: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground mb-0.5 block">VAT %</label>
+                              <label className="text-[10px] text-muted-foreground mb-0.5 block">{t("txn.vatPercent")}</label>
                               <Input type="number" className="bg-secondary/50 h-7 text-xs" value={editProduct.vatPercent} onChange={(e) => setEditProduct({ ...editProduct, vatPercent: e.target.value })} />
                             </div>
                           </div>
                           <div className="flex gap-1">
                             <Button size="sm" className="h-7 text-xs" onClick={async () => {
-                              if (!editProduct.name.trim()) { toast.error("Name is required"); return; }
+                              if (!editProduct.name.trim()) { toast.error(t("product.nameRequired")); return; }
                               await updateCatalogueProduct({
                                 id: p.id, code: editProduct.code, hsCode: editProduct.hsCode,
                                 name: editProduct.name, description: editProduct.description,
@@ -237,11 +237,11 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                               });
                               refreshCatalogue();
                               setEditingId(null);
-                              toast.success("Product updated");
+                              toast.success(t("product.updated"));
                             }}>
-                              <Check className="mr-1 h-3 w-3" /> Save
+                              <Check className="mr-1 h-3 w-3" /> {t("doc.save")}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditingId(null)}>Cancel</Button>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditingId(null)}>{t("setup.cancel")}</Button>
                           </div>
                         </div>
                       ) : (
@@ -262,7 +262,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                             </p>
                           </button>
                           <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {
+                            <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("product.edit")} title={t("product.edit")} onClick={(e) => {
                               e.stopPropagation();
                               setEditingId(p.id);
                               setEditProduct({
@@ -273,7 +273,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                             }}>
                               <Pencil className="h-3 w-3 text-muted-foreground" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {
+                            <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("product.delete")} title={t("product.delete")} onClick={(e) => {
                               e.stopPropagation();
                               handleRemoveFromCatalogue(p.id);
                             }}>
@@ -288,7 +288,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                   const q = catalogueSearch.toLowerCase();
                   return !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
                 }).length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No matching products</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("product.noMatch")}</p>
                 )}
               </div>
             </PopoverContent>
@@ -296,55 +296,55 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
 
           <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm} aria-controls={addFormId}>
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add New
+            {t("product.addNew")}
           </Button>
         </div>
 
         {showAddForm && (
           <div id={addFormId} className="rounded-md border border-border p-4 space-y-3 bg-secondary/20">
-            <p className="text-xs font-medium text-muted-foreground">New catalogue product</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("product.newTitle")}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Code / SKU</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("product.code")}</label>
                 <Input placeholder="SKU-001" className="bg-secondary/50 h-8 text-sm" value={newProduct.code} onChange={(e) => setNewProduct({ ...newProduct, code: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">HS Code</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("product.hsCode")}</label>
                 <Input placeholder="8471.30" className="bg-secondary/50 h-8 text-sm" value={newProduct.hsCode} onChange={(e) => setNewProduct({ ...newProduct, hsCode: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Name *</label>
-                <Input placeholder="Product name" className="bg-secondary/50 h-8 text-sm" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
+                <label className="text-xs text-muted-foreground mb-1 block">{t("product.nameLabel")}</label>
+                <Input placeholder={t("product.namePlaceholder")} className="bg-secondary/50 h-8 text-sm" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
               </div>
               <div className="col-span-2">
-                <label className="text-xs text-muted-foreground mb-1 block">Description</label>
-                <Input placeholder="Brief description" className="bg-secondary/50 h-8 text-sm" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
+                <label className="text-xs text-muted-foreground mb-1 block">{t("product.description")}</label>
+                <Input placeholder={t("product.descPlaceholder")} className="bg-secondary/50 h-8 text-sm" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Unit Price</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("product.unitPrice")}</label>
                 <Input type="number" placeholder="0.00" className="bg-secondary/50 h-8 text-sm" value={newProduct.unitPrice} onChange={(e) => setNewProduct({ ...newProduct, unitPrice: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">VAT %</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("txn.vatPercent")}</label>
                 <Input type="number" placeholder="0" className="bg-secondary/50 h-8 text-sm" value={newProduct.vatPercent} onChange={(e) => setNewProduct({ ...newProduct, vatPercent: e.target.value })} />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleAddToCatalogue}>Save to Catalogue</Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleAddToCatalogue}>{t("product.saveToCatalogue")}</Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>{t("setup.cancel")}</Button>
             </div>
           </div>
         )}
 
         {catalogue.length === 0 && !showAddForm && (
-          <p className="text-sm text-muted-foreground">No products in catalogue yet. Add one above.</p>
+          <p className="text-sm text-muted-foreground">{t("product.emptyCatalogue")}</p>
         )}
       </div>
 
       {/* Line Items */}
       {lines.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground">Order Lines</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t("product.orderLines")}</h3>
           <div className="space-y-2">
             {lines.map((line, idx) => {
               const product = getProduct(line.catalogueId);
@@ -353,13 +353,13 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                 <div key={idx} className="rounded-md border border-border p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-foreground">{catalogueDisplayTitle(product)}</p>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveLine(idx)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("product.removeLine")} title={t("product.removeLine")} onClick={() => handleRemoveLine(idx)}>
                       <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                   </div>
                   <div className="flex gap-3">
                     <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">Units</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("product.units")}</label>
                       <Input
                         type="number"
                         placeholder="1"
@@ -369,7 +369,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">Discount %</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("product.discountPct")}</label>
                       <Input
                         type="number"
                         placeholder="0"
@@ -379,7 +379,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">Discount £€$</label>
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("product.discountAmt")}</label>
                       <Input
                         type="number"
                         placeholder="0.00"
@@ -389,11 +389,11 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                       />
                     </div>
                     <div className="text-right pt-4">
-                      <p className="text-xs text-muted-foreground">Discount</p>
+                      <p className="text-xs text-muted-foreground">{t("product.discount")}</p>
                       <p className="text-sm font-medium text-foreground">-{fmt(lineDiscountAmount(line))}</p>
                     </div>
                     <div className="text-right pt-4">
-                      <p className="text-xs text-muted-foreground">Subtotal</p>
+                      <p className="text-xs text-muted-foreground">{t("product.subtotal")}</p>
                       <p className="text-sm font-medium text-foreground">{fmt(lineSubtotal(line))}</p>
                     </div>
                   </div>
@@ -406,7 +406,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
           <div className="flex justify-end">
             <div className="w-72 space-y-1 text-sm border-t border-border pt-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground whitespace-nowrap">Discount £€$</span>
+                <span className="text-muted-foreground whitespace-nowrap">{t("product.discountAmt")}</span>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -416,7 +416,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                 />
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground whitespace-nowrap">Shipping £€$</span>
+                <span className="text-muted-foreground whitespace-nowrap">{t("product.shipping")}</span>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -426,15 +426,15 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                 />
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total before tax</span>
+                <span className="text-muted-foreground">{t("product.totalBeforeTax")}</span>
                 <span className="font-medium text-foreground">{fmt(totalAfterDiscount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Tax</span>
+                <span className="text-muted-foreground">{t("product.totalTax")}</span>
                 <span className="font-medium text-foreground">{fmt(totalTax)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-1">
-                <span className="font-semibold text-foreground">Total inc. tax</span>
+                <span className="font-semibold text-foreground">{t("product.totalIncTax")}</span>
                 <span className="font-semibold text-foreground">{fmt(totalIncTax)}</span>
               </div>
             </div>
@@ -442,7 +442,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
         </div>
       )}
 
-      <Button className="mt-2" onClick={onSave}>Save Product Details</Button>
+      <Button className="mt-2" onClick={onSave}>{t("product.save")}</Button>
     </div>
   );
 };

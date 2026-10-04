@@ -308,7 +308,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-          title="Open menu"
+          title={t("nav.openMenu")}
+          aria-label={t("nav.openMenu")}
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -330,13 +331,14 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         <button
           onClick={onToggleCollapse}
           className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-          title="Collapse menu"
+          title={t("nav.collapseMenu")}
+          aria-label={t("nav.collapseMenu")}
         >
           <PanelLeftClose className="h-4 w-4" />
         </button>
       </div>
       <div className="px-4 pt-0 pb-2">
-        <img src={userLogo || ueLogo} alt="Universal Exports logo" className="w-full max-h-24 object-contain" />
+        <img src={userLogo || ueLogo} alt={t("nav.logoAlt")} className="w-full max-h-24 object-contain" />
       </div>
       <div className="px-4 pb-4 space-y-5">
         {/* eboxy AI - always visible */}
