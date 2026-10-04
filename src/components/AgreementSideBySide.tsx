@@ -101,8 +101,10 @@ const AgreementSideBySide = ({ snapshot, supplied }: Props) => {
           <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
             {suppliedFits ? t("translate.fromSender") : t("translate.fromDevice")}
           </p>
-          <div className="overflow-x-auto -mx-1 px-1">
-            <table className="w-full min-w-[480px] text-sm table-fixed">
+          {/* Two equal columns at every width — on a phone they wrap rather than
+              scroll, so the translation is never cut off beside the original. */}
+          <div>
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b border-border">
                   <th className="py-1.5 pr-3 font-medium w-1/2" lang={supplied?.binding ?? "en"}>
@@ -116,11 +118,11 @@ const AgreementSideBySide = ({ snapshot, supplied }: Props) => {
                   const tr = byKey.get(r.key);
                   return (
                     <tr key={r.key} className="border-b border-border/50 last:border-0 align-top">
-                      <td className="py-1.5 pr-3 wrap-break-word" lang={supplied?.binding ?? "en"}>
+                      <td className="py-1.5 pr-3 wrap-break-word hyphens-auto" lang={supplied?.binding ?? "en"}>
                         <span className="block text-xs text-muted-foreground">{r.label}</span>
                         {r.value || "—"}
                       </td>
-                      <td className="py-1.5 wrap-break-word" lang={target}>
+                      <td className="py-1.5 wrap-break-word hyphens-auto" lang={target}>
                         <span className="block text-xs text-muted-foreground">{tr?.label || r.label}</span>
                         {tr?.value || "—"}
                       </td>
