@@ -1064,3 +1064,72 @@ as $$
 $$;
 revoke all on function public.exports_verify_pdf_hash(text) from public;
 grant execute on function public.exports_verify_pdf_hash(text) to anon, authenticated;
+
+-- ── AGREEMENT TRANSLATION (platform migration 0245) ─────────────────────────
+alter table public.exports_agreement_signatures
+  add column if not exists translation jsonb;
+
+alter table public.exports_agreement_signatures
+  drop constraint if exists exports_agreement_signatures_translation_ok;
+alter table public.exports_agreement_signatures
+  add constraint exports_agreement_signatures_translation_ok check (
+    translation is null
+    or (
+      jsonb_typeof(translation) = 'object'
+      and octet_length(translation::text) <= 200000
+      and translation ->> 'lang' ~ '^[a-z]{2}(-[A-Za-z]{2})?$'
+      and coalesce(translation ->> 'binding', 'en') ~ '^[a-z]{2}(-[A-Za-z]{2})?$'
+      and jsonb_typeof(translation -> 'rows') = 'array'
+      and jsonb_array_length(translation -> 'rows') <= 500
+    )
+  );
+
+create or replace function public.exports_set_agreement_translation(sig_token uuid, p_translation jsonb)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n int;
+begin
+  update public.exports_agreement_signatures
+     set translation = case
+           when p_translation is null or p_translation = 'null'::jsonb then null
+           else jsonb_build_object(
+             'lang',    p_translation ->> 'lang',
+             'binding', coalesce(p_translation ->> 'binding', 'en'),
+             'source',  case when p_translation ->> 'source' = 'device' then 'device' else 'drafter' end,
+             'rows',    coalesce((
+               select jsonb_agg(jsonb_build_object(
+                        'key',   left(r ->> 'key', 40),
+                        'label', left(coalesce(r ->> 'label', ''), 300),
+                        'value', left(coalesce(r ->> 'value', ''), 2000)))
+                 from jsonb_array_elements(case when jsonb_typeof(p_translation -> 'rows') = 'array'
+                                                then p_translation -> 'rows' else '[]'::jsonb end) r
+                where jsonb_typeof(r) = 'object'
+             ), '[]'::jsonb),
+             'updated_at', now())
+         end
+   where id = sig_token
+     and user_id = auth.uid()
+     and status = 'pending';
+  get diagnostics n = row_count;
+  return n = 1;
+end;
+$$;
+revoke all on function public.exports_set_agreement_translation(uuid, jsonb) from public;
+revoke all on function public.exports_set_agreement_translation(uuid, jsonb) from anon;
+grant execute on function public.exports_set_agreement_translation(uuid, jsonb) to authenticated;
+
+create or replace function public.exports_get_agreement_translation(sig_token uuid)
+returns jsonb
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select s.translation from public.exports_agreement_signatures s where s.id = sig_token;
+$$;
+revoke all on function public.exports_get_agreement_translation(uuid) from public;
+grant execute on function public.exports_get_agreement_translation(uuid) to anon, authenticated;

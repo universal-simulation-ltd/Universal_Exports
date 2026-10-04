@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2, RotateCcw, CheckCircle2, Mail, Send, Download, Fingerprint, Radio } from "lucide-react";
 import SignTogetherPanel from "@/components/SignTogetherPanel";
+import TranslationEditor from "@/components/TranslationEditor";
 import { toast } from "sonner";
 import { UnisimQr } from "@unisim/sdk";
 import {
@@ -424,6 +425,9 @@ ${t("cs.mailThanks")}`;
               </Button>
             </div>
           </div>
+
+          {/* A translation for the other party, shown beside the binding text. */}
+          {!isDemo && <TranslationEditor token={active.id} />}
 
           {/* Sign together, live — both on one Realtime channel (src/lib/together.ts). */}
           {!isDemo && (liveOn ? (

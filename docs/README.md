@@ -197,6 +197,25 @@ type while the sender is present, and can stop sharing. The channel name is a
 SHA-256 of the signing token, and everything received is validated before it is
 shown. The submitted signature, with its audit trail, is still the only record.
 
+## The agreement side by side, in the other party's language
+
+The sign page shows the agreement's text (overview fields, product and document
+names) beside a translation, with the agreement's own language labelled as the
+binding one and the translation as for reference only. Two free sources, and
+neither sends the agreement anywhere (`src/lib/translation.ts`):
+
+- **The sender's translation.** In the They Sign panel the drafter attaches one
+  translation to the link (platform migration 0245), typed by hand or
+  pre-filled by their own browser's on-device translator and then checked.
+- **The signer's device.** Where the browser has an on-device translator
+  (Chrome's built-in Translator API), the signer can translate it there.
+  Labelled as a machine translation.
+
+Universal AI's in-browser models were considered and not used: a translation
+model is a 100 MB+ download per language pair before the first word, too much
+for someone opening a signing link on a phone, and a machine translation of a
+contract still cannot be the binding text.
+
 ## Suite context
 
 This repo is one part of the **Universal Simulation suite** (the open-source

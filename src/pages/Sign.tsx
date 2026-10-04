@@ -23,6 +23,8 @@ import {
 import { isImageDataUrl, pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
 import { useI18n } from "@/lib/i18n";
 import { useSignTogether, type TogetherField } from "@/lib/together";
+import { getTranslation, type AgreementTranslation } from "@/lib/translation";
+import AgreementSideBySide from "@/components/AgreementSideBySide";
 import { cn } from "@/lib/utils";
 import { fill, fillNodes, formatLongDate } from "@/lib/i18n/format";
 
@@ -95,6 +97,7 @@ const Sign = () => {
   const { t, lang } = useI18n();
   const [record, setRecord] = useState<AgreementSignature | null>(null);
   const [doc, setDoc] = useState<SignerDocument | null>(null);
+  const [supplied, setSupplied] = useState<AgreementTranslation | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [name, setName] = useState("");
   const [signature, setSignature] = useState("");
@@ -123,11 +126,16 @@ const Sign = () => {
   const load = useCallback(() => {
     let active = true;
     setStatus("loading");
-    Promise.all([getSignatureToken(token), getSignerDocument(token).catch(() => null)]).then(
-      ([r, d]) => {
+    Promise.all([
+      getSignatureToken(token),
+      getSignerDocument(token).catch(() => null),
+      getTranslation(token).catch(() => null),
+    ]).then(
+      ([r, d, tr]) => {
         if (!active) return;
         setRecord(r);
         setDoc(d);
+        setSupplied(tr);
         setStatus("ready");
       },
       () => { if (active) setStatus("error"); },
@@ -415,6 +423,9 @@ const Sign = () => {
               )}
             </div>
           </section>
+
+          {/* The agreement beside a translation in the signer's language. */}
+          <AgreementSideBySide snapshot={doc?.snapshot ?? null} supplied={supplied} />
 
           {/* Sign panel — blocker until viewed. The fieldset disables every
               control behind the overlay, so the keyboard can't reach them

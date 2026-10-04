@@ -9,10 +9,16 @@ vi.mock("@/lib/signatureStore", () => ({
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
+vi.mock("@/lib/translation", async (orig) => ({
+  ...(await orig<typeof import("@/lib/translation")>()),
+  getTranslation: vi.fn(async () => null),
+  deviceTranslation: vi.fn(async () => "unavailable"),
+}));
 vi.mock("@/lib/auditStore", () => ({
   finaliseSignature: vi.fn(),
   getFinalPdf: vi.fn(),
   markSent: vi.fn(),
+  getSignerDocument: vi.fn(async () => null),
   shortHash: (s: string) => `${s.slice(0, 8)}…${s.slice(-8)}`,
 }));
 vi.mock("@unisim/sdk", () => ({
