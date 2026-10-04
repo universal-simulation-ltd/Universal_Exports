@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { embedPdfFont } from "./pdfFont";
 
 /**
  * Self-contained Export Agreement PDF builder.
@@ -128,8 +129,10 @@ export interface BuiltPdf {
 const MARGIN = 48;
 const LINE = 16;
 
-export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
+export async function buildAgreementPdf(input: AgreementPdfInput): Promise<BuiltPdf> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+  // Noto Sans, so every name prints as written (see pdfFont.ts).
+  const FONT = await embedPdfFont(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const contentWidth = pageWidth - MARGIN * 2;
@@ -154,7 +157,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     try {
       doc.addImage(input.qr.dataUrl, "PNG", qrX, qrTop, QR_SIZE, QR_SIZE);
       doc.link(qrX, qrTop, QR_SIZE, QR_SIZE, { url: input.qr.url });
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
       doc.text("Scan to view this project online", qrX + QR_SIZE / 2, qrTop + QR_SIZE + 11, { align: "center" });
@@ -163,13 +166,13 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     }
   }
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont(FONT, "bold");
   doc.setFontSize(20);
   doc.setTextColor(15, 23, 42);
   doc.text("Export Agreement", MARGIN, y);
   y += LINE + 6;
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont(FONT, "normal");
   doc.setFontSize(11);
   doc.setTextColor(100, 116, 139);
   const subtitleParts = [input.projectName || "Untitled project"];
@@ -196,7 +199,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   // intentionally NOT here — they're listed with their taxes in the Tariffs
   // section below. The transaction "Amount" already serves as the total deal
   // price, so we don't repeat it.
-  doc.setFont("helvetica", "bold");
+  doc.setFont(FONT, "bold");
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
   doc.text("Overview", MARGIN, y);
@@ -222,10 +225,10 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     const value = f.value || "—";
     const wrapped = doc.splitTextToSize(value, contentWidth - labelWidth);
     ensureSpace(LINE * wrapped.length);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setTextColor(71, 85, 105);
     doc.text(f.label, MARGIN, y);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(FONT, "normal");
     doc.setTextColor(15, 23, 42);
     doc.text(wrapped, MARGIN + labelWidth, y);
     y += LINE * wrapped.length;
@@ -235,7 +238,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   // ── Products ────────────────────────────────────────────────────────────
   if (input.products.length > 0) {
     ensureSpace(LINE * 3);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setFontSize(13);
     doc.setTextColor(15, 23, 42);
     doc.text("Products", MARGIN, y);
@@ -260,7 +263,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     for (const p of input.products) {
       ensureSpace(LINE);
       const name = doc.splitTextToSize(p.name || "—", unitsX - MARGIN - 8)[0];
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.text(name, MARGIN, y);
       doc.text(p.units || "—", unitsX, y);
       doc.text(p.unitPrice || "—", priceX, y);
@@ -271,7 +274,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     y += 4;
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
     y += LINE;
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     // Totals row: total units under the Units column, total value under Total.
     doc.text("Total", MARGIN, y);
     if (totalUnits > 0) doc.text(String(totalUnits), unitsX, y);
@@ -288,7 +291,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   // their own lines, each with its computed cost where derivable.
   if (input.tariffs && input.tariffs.length > 0) {
     ensureSpace(LINE * 4);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setFontSize(13);
     doc.setTextColor(15, 23, 42);
     doc.text("Tariffs", MARGIN, y);
@@ -301,7 +304,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     for (const tr of input.tariffs) {
       ensureSpace(LINE * 3);
       // Product + HS code header line.
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setTextColor(15, 23, 42);
       const head = tr.hsCode ? `${tr.product || "—"}  ·  HS ${tr.hsCode}` : (tr.product || "—");
       doc.text(doc.splitTextToSize(head, contentWidth)[0], MARGIN, y);
@@ -311,7 +314,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
       const costLabel = (cost?: string) => (cost ? `${cur} ${cost}`.trim() : "");
 
       // Duty line.
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.setTextColor(71, 85, 105);
       doc.text(`Duty  ${tr.duty || "—"}`, subIndent, y);
       const dutyCost = costLabel(tr.dutyCost);
@@ -343,7 +346,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont(FONT, "bold");
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
   doc.text("Signatures", MARGIN, y);
@@ -365,7 +368,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     let sigTop = cy;
     let dateBaseline = cy;
     // Role label (e.g. EXPORTER (SELLER)).
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
     doc.text(party.label.toUpperCase(), x, cy);
@@ -393,7 +396,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     doc.line(x, cy, x + lineW, cy);
     cy += 13;
     // Printed name.
-    doc.setFont("helvetica", "normal");
+    doc.setFont(FONT, "normal");
     doc.setFontSize(10);
     doc.setTextColor(15, 23, 42);
     doc.text(party.name || "—", x, cy);

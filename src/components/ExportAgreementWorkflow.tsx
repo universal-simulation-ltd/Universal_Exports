@@ -146,7 +146,7 @@ const ExportAgreementWorkflow = ({
 
     if (dataUrl) {
       input.qr = { dataUrl, url: viewUrl };
-      const built = buildAgreementPdf(input);
+      const built = await buildAgreementPdf(input);
       let reserved = false;
       try {
         reserved = await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: built.blob, counterpartyBox: built.counterpartyBox });
@@ -163,7 +163,7 @@ const ExportAgreementWorkflow = ({
 
     input.qr = null;
     const labelQr = dataUrl ? { dataUrl, url: viewUrl, reserved: false } : null;
-    return { ...buildAgreementPdf(input), input, labelQr };
+    return { ...(await buildAgreementPdf(input)), input, labelQr };
   }, [buildPdfInput, projectId, projectName]);
 
   // ── Generate the unsigned overview ────────────────────────────────────────
@@ -188,7 +188,7 @@ const ExportAgreementWorkflow = ({
   const handlePrintQrSheet = useCallback(async () => {
     if (!qrInfo) return;
     const { buildQrSheetPdf } = await loadQrSheetPdf();
-    const { blob } = buildQrSheetPdf({
+    const { blob } = await buildQrSheetPdf({
       dataUrl: qrInfo.dataUrl,
       url: qrInfo.url,
       projectName,

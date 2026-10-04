@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { embedPdfFont } from "./pdfFont";
 
 /**
  * Print-ready sheet of 8 box QR labels (2 columns × 4 rows on A4), numbered
@@ -32,19 +33,21 @@ export interface BuiltQrSheet {
   url: string;
 }
 
-export function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrSheetInput): BuiltQrSheet {
+export async function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrSheetInput): Promise<BuiltQrSheet> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+  // Noto Sans, so every name prints as written (see pdfFont.ts).
+  const FONT = await embedPdfFont(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const MARGIN = 40;
   const name = projectName || "Export pack";
 
   // Title + instructions.
-  doc.setFont("helvetica", "bold");
+  doc.setFont(FONT, "bold");
   doc.setFontSize(14);
   doc.setTextColor(15, 23, 42);
   doc.text(`${name} — box QR labels`, MARGIN, MARGIN);
-  doc.setFont("helvetica", "normal");
+  doc.setFont(FONT, "normal");
   doc.setFontSize(9);
   doc.setTextColor(100, 116, 139);
   doc.text(
@@ -55,7 +58,7 @@ export function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrShee
 
   // Unreserved-link caption (amber), shown above the grid when watermarked.
   if (watermark) {
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setFontSize(9);
     doc.setTextColor(180, 83, 9); // amber-700
     doc.text(`⚠ ${watermark}`, MARGIN, MARGIN + 30);
@@ -91,7 +94,7 @@ export function buildQrSheetPdf({ dataUrl, url, projectName, watermark }: QrShee
   if (watermark) {
     const GState = (doc as unknown as { GState?: new (o: { opacity: number }) => unknown }).GState;
     if (GState) doc.setGState(new GState({ opacity: 0.12 }));
-    doc.setFont("helvetica", "bold");
+    doc.setFont(FONT, "bold");
     doc.setFontSize(60);
     doc.setTextColor(180, 83, 9);
     doc.text("ACCOUNT REQUIRED", pageWidth / 2, pageHeight / 2, { align: "center", angle: 32 });

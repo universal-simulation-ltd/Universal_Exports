@@ -35,7 +35,7 @@ const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding
   // jsPDF loads on the first download, not with the editor.
   const handleDownload = async () => {
     const { downloadDocumentPdf } = await import("@/lib/documentPdf");
-    downloadDocumentPdf({
+    await downloadDocumentPdf({
       title: english(title),
       fields: fields.map(([label, value]) => [english(label), value]),
       colSpanFields: colSpanFields.map(english),

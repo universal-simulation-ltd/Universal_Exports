@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { embedPdfFont } from "./pdfFont";
 
 /**
  * Generic, branded single-document PDF builder.
@@ -68,8 +69,10 @@ function partyLines(p: DocPdfParty): string[] {
   return out;
 }
 
-export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
+export async function buildDocumentPdf(input: DocPdfInput): Promise<BuiltDocPdf> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+  // Noto Sans, so every name prints as written (see pdfFont.ts).
+  const FONT = await embedPdfFont(doc);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const contentWidth = pageWidth - MARGIN * 2;
@@ -111,12 +114,12 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
   if (from) {
     const lines = partyLines(from);
     if (lines.length) {
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(11);
       doc.setTextColor(...INK);
       doc.text(lines[0], leftX, y + 2);
       y += 13;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.setFontSize(8);
       doc.setTextColor(...MUTED);
       for (const l of lines.slice(1)) {
@@ -131,11 +134,11 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
 
   // Right-aligned document title + project + date.
   const rightX = pageWidth - MARGIN;
-  doc.setFont("helvetica", "bold");
+  doc.setFont(FONT, "bold");
   doc.setFontSize(18);
   doc.setTextColor(...INK);
   doc.text(input.title, rightX, headerTop + 14, { align: "right" });
-  doc.setFont("helvetica", "normal");
+  doc.setFont(FONT, "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   let metaY = headerTop + 30;
@@ -158,17 +161,17 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
   if (input.to) {
     const toLines = partyLines(input.to);
     if (toLines.length) {
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.setTextColor(...MUTED);
       doc.text("TO", MARGIN, y);
       y += 12;
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(10);
       doc.setTextColor(...INK);
       doc.text(toLines[0], MARGIN, y);
       y += 12;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.setFontSize(8);
       doc.setTextColor(...MUTED);
       for (const l of toLines.slice(1)) {
@@ -193,12 +196,12 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
 
     if (colSpan.has(label)) {
       ensureSpace(LINE * 2);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(FONT, "bold");
       doc.setFontSize(8);
       doc.setTextColor(...MUTED);
       doc.text(label.toUpperCase(), MARGIN, y);
       y += 13;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.setFontSize(9.5);
       doc.setTextColor(...INK);
       const wrapped = doc.splitTextToSize(value, contentWidth) as string[];
@@ -213,7 +216,7 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
 
     const wrapped = doc.splitTextToSize(value, valueW) as string[];
     ensureSpace(Math.max(LINE, wrapped.length * 13));
-    doc.setFont("helvetica", "normal");
+    doc.setFont(FONT, "normal");
     doc.setFontSize(9);
     doc.setTextColor(...MUTED);
     doc.text(label, MARGIN, y);
@@ -236,7 +239,7 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
   const pageCount = doc.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
     doc.setPage(p);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(FONT, "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text("Generated with Universal Exports · opensource.unisim.co.uk/exports", MARGIN, pageHeight - 28);
@@ -250,8 +253,8 @@ export function buildDocumentPdf(input: DocPdfInput): BuiltDocPdf {
 }
 
 /** Build the document PDF and trigger a browser download. */
-export function downloadDocumentPdf(input: DocPdfInput): void {
-  const { url, fileName } = buildDocumentPdf(input);
+export async function downloadDocumentPdf(input: DocPdfInput): Promise<void> {
+  const { url, fileName } = await buildDocumentPdf(input);
   const a = document.createElement("a");
   a.href = url;
   a.download = fileName;
