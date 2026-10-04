@@ -324,3 +324,228 @@ comment on function public.exports_get_agreement_signature_pdf(uuid) is
   'stored agreement PDF of that token''s project (same owner). Empty when none '
   'has been generated. SECURITY DEFINER: exports_agreement_views has no public '
   'select.';
+
+-- ── LINK-HOLDER HARDENING (platform migration 0241) ─────────────────────────
+-- Applied on top of everything above. Replaces the two select-* read RPCs, the
+-- owner FOR ALL policies, and the submit RPC.
+-- ── 3. What counts as a stored PDF ──────────────────────────────────────────
+create or replace function public.exports_pdf_data_ok(p text)
+returns boolean
+language plpgsql
+immutable
+set search_path = public
+as $$
+declare
+  b bytea;
+begin
+  if p is null or octet_length(p) > 20000000 then
+    return false;
+  end if;
+  if left(p, 28) <> 'data:application/pdf;base64,' then
+    return false;
+  end if;
+  begin
+    b := decode(substr(p, 29), 'base64');
+  exception when others then
+    return false;
+  end;
+  -- '%PDF-' at the start, '%%EOF' somewhere in the last KB (writers add a
+  -- trailing newline or incremental-update padding after it).
+  if octet_length(b) < 32 or substring(b from 1 for 5) <> '\x255044462d'::bytea then
+    return false;
+  end if;
+  if position('\x2525454f46'::bytea in substring(b from greatest(1, octet_length(b) - 1023))) = 0 then
+    return false;
+  end if;
+  return true;
+end;
+$$;
+
+comment on function public.exports_pdf_data_ok(text) is
+  'Universal Exports: true for a data:application/pdf;base64 URL of a real PDF '
+  '(%PDF- header, %%EOF trailer) under 20 MB of text. Used by a CHECK on '
+  'exports_agreement_views.pdf_data.';
+
+alter table public.exports_agreement_views
+  drop constraint if exists exports_agreement_views_pdf_ok,
+  drop constraint if exists exports_agreement_views_snapshot_size,
+  drop constraint if exists exports_agreement_views_name_len;
+alter table public.exports_agreement_views
+  add constraint exports_agreement_views_pdf_ok check (public.exports_pdf_data_ok(pdf_data)),
+  add constraint exports_agreement_views_snapshot_size check (octet_length(snapshot::text) <= 1000000),
+  add constraint exports_agreement_views_name_len check (char_length(project_name) <= 500);
+
+alter table public.exports_agreement_signatures
+  drop constraint if exists exports_agreement_signatures_name_len,
+  drop constraint if exists exports_agreement_signatures_signer_len,
+  drop constraint if exists exports_agreement_signatures_signature_ok;
+alter table public.exports_agreement_signatures
+  add constraint exports_agreement_signatures_name_len check (char_length(project_name) <= 500),
+  add constraint exports_agreement_signatures_signer_len check (char_length(coalesce(counter_signer_name, '')) <= 200),
+  add constraint exports_agreement_signatures_signature_ok check (
+    coalesce(counter_signer_signature, '') = ''
+    or (octet_length(counter_signer_signature) <= 2000000
+        and counter_signer_signature ~ '^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$')
+  );
+
+-- ── 4. Owners read, create and delete; nobody updates directly ──────────────
+drop policy if exists "Drafter manages own exports agreement signatures" on public.exports_agreement_signatures;
+drop policy if exists "Drafter reads own exports agreement signatures" on public.exports_agreement_signatures;
+drop policy if exists "Drafter creates pending exports agreement signatures" on public.exports_agreement_signatures;
+drop policy if exists "Drafter deletes own exports agreement signatures" on public.exports_agreement_signatures;
+
+create policy "Drafter reads own exports agreement signatures"
+  on public.exports_agreement_signatures for select
+  using (auth.uid() = user_id);
+create policy "Drafter creates pending exports agreement signatures"
+  on public.exports_agreement_signatures for insert
+  with check (
+    auth.uid() = user_id
+    and status = 'pending'
+    and coalesce(counter_signer_name, '') = ''
+    and coalesce(counter_signer_signature, '') = ''
+    and counter_signed_at is null
+    and viewed_pdf_at is null
+  );
+create policy "Drafter deletes own exports agreement signatures"
+  on public.exports_agreement_signatures for delete
+  using (auth.uid() = user_id);
+
+drop policy if exists "Drafter manages own exports agreement views" on public.exports_agreement_views;
+drop policy if exists "Drafter reads own exports agreement views" on public.exports_agreement_views;
+drop policy if exists "Drafter creates own exports agreement views" on public.exports_agreement_views;
+drop policy if exists "Drafter deletes own exports agreement views" on public.exports_agreement_views;
+
+create policy "Drafter reads own exports agreement views"
+  on public.exports_agreement_views for select
+  using (auth.uid() = user_id);
+create policy "Drafter creates own exports agreement views"
+  on public.exports_agreement_views for insert
+  with check (auth.uid() = user_id);
+create policy "Drafter deletes own exports agreement views"
+  on public.exports_agreement_views for delete
+  using (auth.uid() = user_id);
+
+revoke update, truncate, references, trigger on public.exports_agreement_signatures from anon, authenticated;
+revoke update, truncate, references, trigger on public.exports_agreement_views from anon, authenticated;
+
+-- ── 1. Explicit columns for link holders ────────────────────────────────────
+drop function if exists public.exports_get_agreement_signature(uuid);
+create function public.exports_get_agreement_signature(sig_token uuid)
+returns table (
+  id                       uuid,
+  project_name             text,
+  status                   text,
+  counter_signer_name      text,
+  counter_signer_signature text,
+  counter_signed_at        timestamptz,
+  viewed_pdf_at            timestamptz,
+  created_at               timestamptz
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select s.id, s.project_name, s.status, s.counter_signer_name,
+         s.counter_signer_signature, s.counter_signed_at, s.viewed_pdf_at,
+         s.created_at
+    from public.exports_agreement_signatures s
+   where s.id = sig_token;
+$$;
+revoke all on function public.exports_get_agreement_signature(uuid) from public;
+grant execute on function public.exports_get_agreement_signature(uuid) to anon, authenticated;
+
+drop function if exists public.exports_get_agreement_view(uuid);
+create function public.exports_get_agreement_view(view_token uuid)
+returns table (
+  id           uuid,
+  project_name text,
+  snapshot     jsonb,
+  pdf_data     text,
+  created_at   timestamptz
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select v.id, v.project_name, v.snapshot, v.pdf_data, v.created_at
+    from public.exports_agreement_views v
+   where v.id = view_token;
+$$;
+revoke all on function public.exports_get_agreement_view(uuid) from public;
+grant execute on function public.exports_get_agreement_view(uuid) to anon, authenticated;
+
+-- ── 2. Viewed means a PDF was there to view; signing needs it ───────────────
+create or replace function public.exports_mark_agreement_pdf_viewed(sig_token uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.exports_agreement_signatures s
+     set viewed_pdf_at = now()
+   where s.id = sig_token
+     and s.status = 'pending'
+     and exists (
+       select 1 from public.exports_agreement_views v
+        where v.project_id = s.project_id
+          and v.user_id    = s.user_id
+     );
+$$;
+revoke all on function public.exports_mark_agreement_pdf_viewed(uuid) from public;
+grant execute on function public.exports_mark_agreement_pdf_viewed(uuid) to anon, authenticated;
+
+create or replace function public.exports_submit_agreement_counter_signature(
+  sig_token        uuid,
+  signer_name      text,
+  signer_signature text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_name   text := btrim(coalesce(signer_name, ''));
+  v_status text;
+  v_viewed timestamptz;
+begin
+  if v_name = '' or char_length(v_name) > 200 then
+    raise exception 'exports: the signer''s name must be 1 to 200 characters'
+      using errcode = '22023';
+  end if;
+  if signer_signature is null
+     or octet_length(signer_signature) > 2000000
+     or signer_signature !~ '^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$' then
+    raise exception 'exports: the signature must be a PNG, JPEG or WebP image under 2 MB'
+      using errcode = '22023';
+  end if;
+
+  select s.status, s.viewed_pdf_at into v_status, v_viewed
+    from public.exports_agreement_signatures s
+   where s.id = sig_token
+   for update;
+
+  if not found or v_status <> 'pending' then
+    -- Unknown, revoked or already used: nothing to do (the page reads the row
+    -- back and shows what is on record, as it always has).
+    return;
+  end if;
+  if v_viewed is null then
+    raise exception 'exports: open the agreement before signing it'
+      using errcode = '42501';
+  end if;
+
+  update public.exports_agreement_signatures
+     set counter_signer_name      = v_name,
+         counter_signer_signature = signer_signature,
+         counter_signed_at        = now(),
+         status                   = 'signed'
+   where id = sig_token
+     and status = 'pending';
+end;
+$$;
+revoke all on function public.exports_submit_agreement_counter_signature(uuid, text, text) from public;
+grant execute on function public.exports_submit_agreement_counter_signature(uuid, text, text) to anon, authenticated;
