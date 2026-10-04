@@ -98,7 +98,7 @@ const AgreementView = () => {
           <Eye className="h-3.5 w-3.5" aria-hidden="true" />
           {t("view.kicker")}
         </div>
-        <h1 className="text-2xl font-semibold text-foreground break-words">
+        <h1 className="text-2xl font-semibold text-foreground wrap-break-word">
           {view.project_name || t("public.agreement")}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -137,7 +137,7 @@ const AgreementView = () => {
             {snap.fields.map((f) => (
               <div key={f.label} className="contents">
                 <dt className="text-muted-foreground">{f.label}</dt>
-                <dd className="text-foreground break-words">{f.value || "—"}</dd>
+                <dd className="text-foreground wrap-break-word">{f.value || "—"}</dd>
               </div>
             ))}
           </dl>

@@ -128,7 +128,7 @@ const SignTogetherPanel = ({ token, drafterName, drafterSignature, onSigned, onC
         <div className="space-y-3">
           <div className={cn("rounded-md bg-background p-2 border border-border transition-shadow", ring("name"))}>
             <p className="text-xs text-muted-foreground">{t("together.theirName")}</p>
-            <p className="text-sm font-medium min-h-[1.25rem] break-words">{peer.draftName || "—"}</p>
+            <p className="text-sm font-medium min-h-5 wrap-break-word">{peer.draftName || "—"}</p>
           </div>
           <div className={cn("rounded-md bg-background p-2 border border-border transition-shadow", ring("signature"))}>
             <p className="text-xs text-muted-foreground">{t("together.theirSignature")}</p>

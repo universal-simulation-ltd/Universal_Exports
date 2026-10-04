@@ -320,7 +320,7 @@ const Sign = () => {
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           {t("sign.kicker")}
         </div>
-        <h1 className="text-2xl font-semibold text-foreground break-words">
+        <h1 className="text-2xl font-semibold text-foreground wrap-break-word">
           {record.project_name || t("public.agreement")}
         </h1>
         {!alreadySigned && <p className="text-sm text-muted-foreground">{t("sign.intro")}</p>}
@@ -432,7 +432,7 @@ const Sign = () => {
               either (the overlay only stops the mouse). */}
           <section className="relative rounded-xl border border-border bg-card p-5">
             {!hasViewed && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/85 backdrop-blur-sm p-4 text-center">
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/85 backdrop-blur-xs p-4 text-center">
                 <p className="text-sm font-medium text-foreground max-w-xs">{t("sign.gate")}</p>
               </div>
             )}

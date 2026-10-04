@@ -153,7 +153,7 @@ export default function Auth() {
         </div>
 
         {/* Card */}
-        <div className="rounded-lg border border-border bg-card shadow-sm p-6 space-y-5">
+        <div className="rounded-lg border border-border bg-card shadow-xs p-6 space-y-5">
           <div>
             <h1 className="text-xl font-semibold text-foreground">
               {mode === 'signin' ? t('auth.signIn') : t('auth.createTitle')}

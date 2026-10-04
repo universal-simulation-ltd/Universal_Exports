@@ -31,7 +31,7 @@ const WorkflowAnimation = () => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[5/3] bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.06]"
+      className="relative w-full aspect-5/3 bg-linear-to-br from-primary/4 via-background to-primary/6"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

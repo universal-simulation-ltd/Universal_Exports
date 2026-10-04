@@ -397,7 +397,7 @@ const Index = () => {
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center bg-background p-3 md:p-6">
-      <div className="flex w-full max-w-3xl h-[700px] rounded-lg border border-border bg-card shadow-sm overflow-hidden relative">
+      <div className="flex w-full max-w-3xl h-[700px] rounded-lg border border-border bg-card shadow-xs overflow-hidden relative">
         <DocumentSidebar
           key={`${projectId}-${loadCounter}`}
           selected={showSavedList ? "saved-projects" : selectedDoc}

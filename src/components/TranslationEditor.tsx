@@ -133,7 +133,7 @@ const TranslationEditor = ({ token }: { token: string }) => {
               <div key={r.key} className="grid gap-2 sm:grid-cols-2 items-start border-b border-border/50 pb-2">
                 <div className="text-xs">
                   <span className="block text-muted-foreground">{r.label}</span>
-                  <span className="break-words">{r.value || "—"}</span>
+                  <span className="wrap-break-word">{r.value || "—"}</span>
                 </div>
                 <div className="space-y-1">
                   <input

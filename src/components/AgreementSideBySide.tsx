@@ -116,11 +116,11 @@ const AgreementSideBySide = ({ snapshot, supplied }: Props) => {
                   const tr = byKey.get(r.key);
                   return (
                     <tr key={r.key} className="border-b border-border/50 last:border-0 align-top">
-                      <td className="py-1.5 pr-3 break-words" lang={supplied?.binding ?? "en"}>
+                      <td className="py-1.5 pr-3 wrap-break-word" lang={supplied?.binding ?? "en"}>
                         <span className="block text-xs text-muted-foreground">{r.label}</span>
                         {r.value || "—"}
                       </td>
-                      <td className="py-1.5 break-words" lang={target}>
+                      <td className="py-1.5 wrap-break-word" lang={target}>
                         <span className="block text-xs text-muted-foreground">{tr?.label || r.label}</span>
                         {tr?.value || "—"}
                       </td>

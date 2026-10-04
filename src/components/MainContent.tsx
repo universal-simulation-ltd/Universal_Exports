@@ -335,7 +335,7 @@ const SavedProjectsList = ({
               type="text"
               placeholder={t("main.searchProjects")}
               aria-label={t("main.searchProjects")}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setSavedPage(0); }}
             />
@@ -935,7 +935,7 @@ const MainContent = ({
               </div>
               <div className="relative rounded-lg">
                 {savedProjects.length === 0 && (
-                  <div className="absolute -inset-[2px] rounded-lg bg-gradient-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
+                  <div className="absolute inset-[-2px] rounded-lg bg-linear-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
                 )}
                 <button
                   onClick={onLoadDemo}
@@ -1470,7 +1470,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   onClick={() => setYourCurrency(cur)}
                   className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     yourCurrency === cur
-                      ? "bg-background text-foreground shadow-sm"
+                      ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1531,7 +1531,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   onClick={() => setPartyCurrency(cur)}
                   className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     partyCurrency === cur
-                      ? "bg-background text-foreground shadow-sm"
+                      ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1998,7 +1998,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   {t("ai.uploadBody")}
                 </p>
               </div>
-              <div className="w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/[0.03] px-4 py-4 text-left space-y-2">
+              <div className="w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/3 px-4 py-4 text-left space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("ai.ready")}</p>
                 {DEMO_IMPORT_DOCS.map((doc) => (
                   <div key={doc.key} className="flex items-center gap-2 text-sm text-foreground">
@@ -2904,7 +2904,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              </div>
              <div>
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.incoterms")}</label>
-               <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={field("incoterms")} onChange={set("incoterms")}>
+               <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-hidden focus:ring-2 focus:ring-ring" value={field("incoterms")} onChange={set("incoterms")}>
                  <option value="">{t("ship.selectIncoterm")}</option>
                  {INCOTERM_CODES.map((code) => (
                    <option key={code} value={code}>{code} – {t(`incoterm.${code}` as MessageKey)}</option>
@@ -2981,7 +2981,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              <div className="grid grid-cols-2 gap-4">
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("ship.incoterms")}</label>
-                 <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={field("incoterms") || txnIncoterms} onChange={set("incoterms")}>
+                 <select className="w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus:outline-hidden focus:ring-2 focus:ring-ring" value={field("incoterms") || txnIncoterms} onChange={set("incoterms")}>
                    <option value="">{t("ship.selectIncoterm")}</option>
                    {INCOTERM_CODES.map((code) => (
                      <option key={code} value={code}>{code} – {t(`incoterm.${code}` as MessageKey)}</option>
@@ -3192,7 +3192,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
                  <textarea
                    placeholder={t("cert.goodsPlaceholder")}
-                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
                    onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
                  />
@@ -3200,7 +3200,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.declaration")}</label>
                  <textarea
-                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("declaration", DEFAULT_COO_DECLARATION)}
                    onChange={(e) => onFieldChange("declaration", e.target.value)}
                  />
@@ -3209,7 +3209,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                  <textarea
                    placeholder={t("common.notesPlaceholder")}
-                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
                    onChange={(e) => onFieldChange("notes", e.target.value)}
                  />
@@ -3311,7 +3311,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                <div>
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("bol.freightTerms")}</label>
                  <select
-                   className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                   className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                    value={field("freightTerms")}
                    onChange={(e) => onFieldChange("freightTerms", e.target.value)}
                  >
@@ -3325,7 +3325,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
                  <textarea
                    placeholder={t("bol.goodsPlaceholder")}
-                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
                    onChange={(e) => onFieldChange("goodsDescription", e.target.value)}
                  />
@@ -3350,7 +3350,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                  <textarea
                    placeholder={t("bol.notesPlaceholder")}
-                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                   className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
                    onChange={(e) => onFieldChange("notes", e.target.value)}
                  />
@@ -3413,7 +3413,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              <div>
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.typeOf")}</label>
                <select
-                 className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                 className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                  value={field("lcType")}
                  onChange={(e) => onFieldChange("lcType", e.target.value)}
                >
@@ -3434,7 +3434,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.terms")}</label>
                <textarea
                  placeholder={t("lc.termsPlaceholder")}
-                 className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                 className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("lcTerms")}
                  onChange={(e) => onFieldChange("lcTerms", e.target.value)}
                />
@@ -3443,7 +3443,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                <textarea
                  placeholder={t("common.notesPlaceholder")}
-                 className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                 className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("notes")}
                  onChange={(e) => onFieldChange("notes", e.target.value)}
                />
@@ -3514,7 +3514,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                         <textarea
                           placeholder={t("gdoc.notesPlaceholder")}
-                          className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
                           onChange={(e) => onFieldChange("notes", e.target.value)}
                         />
@@ -3536,7 +3536,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
                         <textarea
                           placeholder={t("gdoc.notesPlaceholder")}
-                          className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
                           onChange={(e) => onFieldChange("notes", e.target.value)}
                         />

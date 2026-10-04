@@ -62,7 +62,7 @@ export default function Landing() {
           {/* LEFT — pitch + animation + features */}
           <div className="flex flex-col">
             {/* Workflow animation */}
-            <div className="mt-6 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="mt-6 rounded-xl border border-border bg-card shadow-xs overflow-hidden">
               <WorkflowAnimation />
             </div>
 
@@ -105,10 +105,10 @@ export default function Landing() {
 
           {/* RIGHT — start project card */}
           <div>
-            <div className="relative rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+            <div className="relative rounded-lg border border-border bg-card shadow-xs overflow-hidden">
               {/* "100% Free for UK businesses" corner ribbon — z-0 so the navbar changelog
                   dropdown (which floats down over this card) stays on top. */}
-              <div className="pointer-events-none absolute top-[26px] -right-[58px] z-0 w-48 rotate-45 origin-center bg-gradient-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[9px] font-bold uppercase tracking-[0.06em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none whitespace-nowrap">
+              <div className="pointer-events-none absolute top-[26px] right-[-58px] z-0 w-48 rotate-45 origin-center bg-linear-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[9px] font-bold uppercase tracking-[0.06em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none whitespace-nowrap">
                 {t("landing.ribbon")}
               </div>
               <div className="flex flex-col items-center justify-center p-8 md:p-10">
@@ -157,7 +157,7 @@ export default function Landing() {
                     <div className="flex-1 border-t border-border" />
                   </div>
                   <div className="relative rounded-lg">
-                    <div className="absolute -inset-[2px] rounded-lg bg-gradient-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
+                    <div className="absolute inset-[-2px] rounded-lg bg-linear-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
                     <button
                       onClick={handleDemo}
                       className="relative w-full flex items-center gap-3 rounded-lg px-4 py-3.5 bg-card border border-primary/20 hover:bg-primary/5 transition-colors text-left group"

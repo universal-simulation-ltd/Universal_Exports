@@ -313,7 +313,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shadow-sm">
+        <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shadow-xs">
           <img src={ueIconWhite} alt="Universal Exports" className="w-5 h-5 object-contain" />
         </div>
       </aside>
@@ -324,8 +324,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     <aside className="w-full md:w-56 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col min-h-0 relative">
       <div className="flex-1 min-h-0 relative">
       {/* Scroll fade overlays */}
-      <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-card to-transparent transition-opacity duration-300 z-10 rounded-tl-lg ${fadeTop ? "opacity-100" : "opacity-0"}`} />
-      <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card to-transparent transition-opacity duration-300 z-10 ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
+      <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-card to-transparent transition-opacity duration-300 z-10 rounded-tl-lg ${fadeTop ? "opacity-100" : "opacity-0"}`} />
+      <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-card to-transparent transition-opacity duration-300 z-10 ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
       <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden">
       <div className="px-4 pt-2 pb-0 flex justify-end">
         <button

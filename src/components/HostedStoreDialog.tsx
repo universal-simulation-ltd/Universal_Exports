@@ -183,7 +183,7 @@ export default function HostedStoreDialog({
   // own Close button.
   return createPortal(
     <div
-      className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
+      className="fixed inset-0 z-1100 flex items-center justify-center bg-slate-900/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}
     >
       {/* One box that scrolls would take the title and the Close button with

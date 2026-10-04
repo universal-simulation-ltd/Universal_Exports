@@ -134,7 +134,7 @@ const Verify = () => {
           <Fingerprint className="h-3.5 w-3.5" aria-hidden="true" />
           {t("verify.kicker")}
         </div>
-        <h1 className="text-2xl font-semibold text-foreground break-words">
+        <h1 className="text-2xl font-semibold text-foreground wrap-break-word">
           {record ? record.project_name || t("public.agreement") : t("verify.title")}
         </h1>
         <p className="text-sm text-muted-foreground">{t("verify.intro")}</p>
@@ -154,7 +154,7 @@ const Verify = () => {
             {events.map((e) => (
               <li key={e.label} className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-x-4">
                 <span className="text-muted-foreground">{e.label}</span>
-                <span className="text-foreground break-words">
+                <span className="text-foreground wrap-break-word">
                   {e.at ? formatDateTime(lang, e.at) : t("verify.notRecorded")}
                   {e.who && e.at ? ` — ${e.who}` : ""}
                 </span>
