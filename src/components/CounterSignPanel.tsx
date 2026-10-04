@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2, RotateCcw, CheckCircle2, Mail, Send, Download, Fingerprint } from "lucide-react";
+import { Copy, Loader2, RotateCcw, CheckCircle2, Mail, Send, Download, Fingerprint, Radio } from "lucide-react";
+import SignTogetherPanel from "@/components/SignTogetherPanel";
 import { toast } from "sonner";
 import { UnisimQr } from "@unisim/sdk";
 import {
@@ -31,6 +32,9 @@ interface Props {
   projectName: string;
   /** The other party's details, defaulted into the "email this request" form. */
   counterparty?: CounterpartyHint;
+  /** The drafter's own name and signature, sent to the other party in a live session. */
+  drafterName?: string;
+  drafterSignature?: string;
 }
 
 function formatDateTime(lang: string, iso: string | null | undefined): string {
@@ -53,13 +57,17 @@ function formatDateTime(lang: string, iso: string | null | undefined): string {
  * - Polls every 8 s while a token is pending so the panel auto-updates when
  *   the other party signs without a manual refresh.
  */
-const CounterSignPanel = ({ projectId, projectName, counterparty }: Props) => {
+const CounterSignPanel = ({ projectId, projectName, counterparty, drafterName = "", drafterSignature = "" }: Props) => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const [tokens,      setTokens]      = useState<AgreementSignature[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [generating,  setGenerating]  = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [liveOn,      setLiveOn]      = useState(false);
+  // Bumped to re-read the links at once (the live session saw them sign).
+  const [reload,      setReload]      = useState(0);
+  const onLiveSigned = useCallback(() => setReload((n) => n + 1), []);
 
   // "Email this request" form — pre-filled from the counterparty captured in the
   // agreement, but editable (a different person may actually sign, e.g. their
@@ -136,7 +144,7 @@ const CounterSignPanel = ({ projectId, projectName, counterparty }: Props) => {
       if (timer) clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [projectId, isDemo]);
+  }, [projectId, isDemo, reload]);
 
   const noteSent = (via: "email" | "link" | "mailto") => {
     if (!active || isDemo || active.sent_at) return;
@@ -416,6 +424,27 @@ ${t("cs.mailThanks")}`;
               </Button>
             </div>
           </div>
+
+          {/* Sign together, live — both on one Realtime channel (src/lib/together.ts). */}
+          {!isDemo && (liveOn ? (
+            <SignTogetherPanel
+              token={active.id}
+              drafterName={drafterName}
+              drafterSignature={drafterSignature}
+              onSigned={onLiveSigned}
+              onClose={() => setLiveOn(false)}
+            />
+          ) : (
+            <div className="rounded-lg border border-border p-4 space-y-2">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Radio className="h-4 w-4 text-muted-foreground" aria-hidden="true" /> {t("together.title")}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-md">{t("together.intro")}</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => setLiveOn(true)}>
+                {t("together.start")}
+              </Button>
+            </div>
+          ))}
 
           {/* Email the request directly to the other party. Defaults from the
               counterparty captured in the agreement; editable in case someone

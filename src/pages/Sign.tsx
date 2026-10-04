@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { FileText, ShieldCheck, ExternalLink, CheckCircle2, RotateCcw, Download, Fingerprint, Loader2 } from "lucide-react";
+import { FileText, ShieldCheck, ExternalLink, CheckCircle2, RotateCcw, Download, Fingerprint, Loader2, Radio, Hand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SignaturePad from "@/components/SignaturePad";
@@ -22,7 +22,9 @@ import {
 } from "@/lib/auditStore";
 import { isImageDataUrl, pdfBlobFromDataUrl } from "@/lib/safeDataUrl";
 import { useI18n } from "@/lib/i18n";
-import { fillNodes, formatLongDate } from "@/lib/i18n/format";
+import { useSignTogether, type TogetherField } from "@/lib/together";
+import { cn } from "@/lib/utils";
+import { fill, fillNodes, formatLongDate } from "@/lib/i18n/format";
 
 /**
  * Counter-sign landing page — the QR / link the drafter sends opens here.
@@ -77,6 +79,15 @@ function downloadPdf(dataUrl: string, fileName: string): boolean {
   return true;
 }
 
+/** The small "the sender is pointing here" tag over a highlighted part. */
+function PointedHere({ label }: { label: string }) {
+  return (
+    <p className="mb-1 flex items-center gap-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+      <Hand className="h-3.5 w-3.5" aria-hidden="true" /> {label}
+    </p>
+  );
+}
+
 const Sign = () => {
   const { token = "" } = useParams<{ token: string }>();
   // The signer is usually the OTHER side of the trade, often abroad: every
@@ -94,6 +105,19 @@ const Sign = () => {
   // Set when the Edge Function could not be reached and the older RPCs were used.
   const [legacyPath, setLegacyPath] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  // Live with the sender ("Sign together"): on for a pending link unless the
+  // signer switches it off. What they type and draw is only sent while the
+  // sender is actually here, and the banner says so.
+  const [shareLive, setShareLive] = useState(true);
+  const live = useSignTogether({
+    token,
+    role: "signer",
+    // The signer's name travels only as they type it, while the sender is here.
+    name: "",
+    enabled: shareLive && record?.status === "pending",
+  });
+  const senderHere = live.peer.present;
+  const pointedAt = (field: TogetherField) => senderHere && live.peer.focus === field;
   const today = formatLongDate(lang, new Date());
 
   const load = useCallback(() => {
@@ -148,9 +172,11 @@ const Sign = () => {
     // Long enough for the viewer to have read the blob; it holds no secret.
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
 
+    live.focus("document");
     const res = await recordDocumentViewed(token, current.viewId);
     if (res.ok) {
       setOpenedViewId(current.viewId);
+      live.opened();
       setLegacyPath(false);
       setRecord((r) => (r ? { ...r, viewed_pdf_at: new Date().toISOString() } : r));
     } else if (res.code === "document_changed") {
@@ -162,6 +188,7 @@ const Sign = () => {
       if (ok) {
         setOpenedViewId(current.viewId);
         setLegacyPath(true);
+        live.opened();
         setRecord((r) => (r ? { ...r, viewed_pdf_at: new Date().toISOString() } : r));
       } else {
         toast.error(t("sign.toastViewFailed"));
@@ -182,6 +209,7 @@ const Sign = () => {
       return;
     }
     setSubmitting(true);
+    live.focus("submit");
     let signedOk = false;
     if (legacyPath) {
       signedOk = await submitCounterSignature({ token, name: signer, signature });
@@ -211,6 +239,7 @@ const Sign = () => {
     setSubmitting(false);
     if (stored?.status === "signed" && stored.counter_signer_name === signer) {
       setRecord(stored);
+      live.signed();
       toast.success(t("sign.toastSigned"));
     } else if (stored) {
       setRecord(stored);
@@ -289,6 +318,33 @@ const Sign = () => {
         {!alreadySigned && <p className="text-sm text-muted-foreground">{t("sign.intro")}</p>}
       </header>
 
+      {!alreadySigned && senderHere && (
+        <section className="rounded-xl border border-sky-200 bg-sky-50 p-4 space-y-2 dark:border-sky-900 dark:bg-sky-950/40" role="status" aria-live="polite">
+          <div className="flex items-center gap-2 text-sm font-semibold text-sky-800 dark:text-sky-300">
+            <Radio className="h-4 w-4 animate-pulse" aria-hidden="true" />
+            {live.peer.name ? fill(t("together.senderHereNamed"), { name: live.peer.name }) : t("together.senderHere")}
+          </div>
+          <p className="text-xs text-sky-800/90 dark:text-sky-300/90">{t("together.signerNote")}</p>
+          {live.peer.ink && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-sky-800/90 dark:text-sky-300/90">{t("together.senderSignature")}</span>
+              <span className="rounded-md border border-sky-200 bg-white p-1 inline-block">
+                <img src={live.peer.ink} alt={t("together.senderSignature")} className="max-h-[48px] object-contain" />
+              </span>
+            </div>
+          )}
+          <Button type="button" variant="ghost" size="sm" onClick={() => setShareLive(false)}>
+            {t("together.leave")}
+          </Button>
+        </section>
+      )}
+      {!alreadySigned && !shareLive && (
+        <p className="text-xs text-muted-foreground">
+          {t("together.left")}{" "}
+          <button type="button" className="underline" onClick={() => setShareLive(true)}>{t("together.rejoin")}</button>
+        </p>
+      )}
+
       {alreadySigned ? (
         <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 space-y-3 dark:border-emerald-900 dark:bg-emerald-950/40" role="status">
           <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
@@ -331,7 +387,8 @@ const Sign = () => {
       ) : (
         <>
           {/* Open-document gate */}
-          <section className="space-y-2">
+          <section className={cn("space-y-2 rounded-xl transition-shadow", pointedAt("document") && "ring-2 ring-sky-400 ring-offset-4 ring-offset-background")}>
+            {pointedAt("document") && <PointedHere label={t("together.pointedHere")} />}
             <Button
               variant={hasViewed ? "outline" : "default"}
               onClick={handleOpenDocument}
@@ -370,7 +427,8 @@ const Sign = () => {
             )}
 
             <fieldset disabled={!hasViewed} aria-hidden={!hasViewed || undefined} className="space-y-4 min-w-0">
-              <div>
+              <div className={cn("rounded-md transition-shadow", pointedAt("name") && "ring-2 ring-sky-400 ring-offset-4 ring-offset-card")}>
+                {pointedAt("name") && <PointedHere label={t("together.pointedHere")} />}
                 <label htmlFor="sign-name" className="text-xs text-muted-foreground mb-1 block">{t("sign.fullName")}</label>
                 <Input
                   id="sign-name"
@@ -378,16 +436,32 @@ const Sign = () => {
                   maxLength={200}
                   placeholder={t("sign.fullNamePlaceholder")}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onFocus={() => live.focus("name")}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (senderHere) live.draft(e.target.value);
+                  }}
                 />
               </div>
               <div>
                 <label htmlFor="sign-date" className="text-xs text-muted-foreground mb-1 block">{t("sign.date")}</label>
                 <Input id="sign-date" value={today} readOnly className="bg-secondary/50" />
               </div>
-              <div role="group" aria-labelledby="sign-signature-label">
+              <div
+                role="group"
+                aria-labelledby="sign-signature-label"
+                className={cn("rounded-md transition-shadow", pointedAt("signature") && "ring-2 ring-sky-400 ring-offset-4 ring-offset-card")}
+                onPointerDown={() => live.focus("signature")}
+              >
+                {pointedAt("signature") && <PointedHere label={t("together.pointedHere")} />}
                 <span id="sign-signature-label" className="text-xs text-muted-foreground mb-1 block">{t("sign.signature")}</span>
-                <SignaturePad value={signature} onChange={setSignature} />
+                <SignaturePad
+                  value={signature}
+                  onChange={(v) => {
+                    setSignature(v);
+                    if (senderHere) live.ink(v);
+                  }}
+                />
               </div>
 
               {/* Said BEFORE the button that records it (UK GDPR Art 13). */}

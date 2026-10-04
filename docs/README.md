@@ -184,6 +184,19 @@ The other party signs at `/sign/<token>` (the token is the credential). Since
   hashed in the browser (it is never uploaded) and matched against the signed
   copy, the agreement as signed, or any copy the sender generated.
 
+## Sign together, live
+
+In the They Sign panel, **Start a live session** puts the drafter and the other
+party on one Supabase Realtime channel (`src/lib/together.ts`; broadcast and
+presence only, nothing is stored). The drafter sees the same document, which
+part of the page the other party is on, their name as they type it and their
+signature stroke by stroke, and can point them at the document, their name or
+their signature; the other party sees the sender's signature arrive and the
+part they are pointed at. The other party is told the sender can see what they
+type while the sender is present, and can stop sharing. The channel name is a
+SHA-256 of the signing token, and everything received is validated before it is
+shown. The submitted signature, with its audit trail, is still the only record.
+
 ## Suite context
 
 This repo is one part of the **Universal Simulation suite** (the open-source

@@ -454,7 +454,13 @@ const ExportAgreementWorkflow = ({
             {/* ── They Sign — only reachable once the drafter has signed ──── */}
             <TabsContent value="them" className="space-y-5 pt-4">
               {projectId ? (
-                <CounterSignPanel projectId={projectId} projectName={projectName} counterparty={counterparty} />
+                <CounterSignPanel
+                  projectId={projectId}
+                  projectName={projectName}
+                  counterparty={counterparty}
+                  drafterName={signerName}
+                  drafterSignature={signature}
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   {t("cs.saveFirst")}
