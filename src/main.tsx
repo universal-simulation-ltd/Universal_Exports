@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
 import { migrateLegacyLanguage } from "./lib/i18n/migrate";
+import SuiteClientBridge from "./components/SuiteClientBridge";
 
 // Before the provider mounts, so its first read of the language already sees an
 // old `eboxy-lang` choice carried across as this app's override.
@@ -20,6 +21,8 @@ const universalConfig = {
 
 createRoot(document.getElementById("root")!).render(
   <UniversalProvider config={universalConfig}>
+    {/* First child, always: binds the one Supabase client (src/lib/supabase.ts). */}
+    <SuiteClientBridge />
     <UsageTracker />
     <App />
   </UniversalProvider>,

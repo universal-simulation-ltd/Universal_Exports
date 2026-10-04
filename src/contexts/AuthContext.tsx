@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { useUniversal } from '@unisim/sdk'
+import { adoptLegacySession } from '@/lib/supabase'
 import { BASE_PATH } from '@/lib/basePath'
 
 interface AuthContextType {
@@ -23,25 +24,27 @@ function appConfirmRedirect() {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+/**
+ * The signed-in account, as the SUITE sees it. Since 2026-10-04 this reads the
+ * provider's session instead of keeping one of its own, so /auth, the /app gate
+ * and the navbar always agree (see src/lib/supabase.ts for the bug it fixes).
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { supabase, session, loading: providerLoading } = useUniversal()
+  // 'pending' → 'done' once an old app-only session has been carried across
+  // (or found absent). Until then the /app gate waits, rather than bouncing a
+  // signed-in drafter to /auth for the instant before the session lands.
+  const [adoption, setAdoption] = useState<'pending' | 'done'>('pending')
+  const started = useRef(false)
+  const loading = providerLoading || adoption !== 'done'
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
+    if (providerLoading || started.current) return
+    started.current = true
+    adoptLegacySession(supabase, !!session)
+      .catch(() => false)
+      .finally(() => setAdoption('done'))
+  }, [providerLoading, supabase, session])
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -79,7 +82,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, resendConfirmation, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user: session?.user ?? null,
+        session,
+        loading,
+        signIn,
+        signUp,
+        resendConfirmation,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
