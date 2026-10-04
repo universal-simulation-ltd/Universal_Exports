@@ -1,5 +1,6 @@
 // Portuguese (Brazil). Machine-translated 2026-09-29 when Exports moved onto the
 // SDK's language — worth a native speaker's pass.
+import { agreementPtBR } from "./agreement/pt-BR";
 import type { Messages } from "./en";
 
 export const ptBR: Messages = {
@@ -253,4 +254,6 @@ export const ptBR: Messages = {
   "mobileSign.toastNoSig": "Primeiro desenhe ou envie uma assinatura.",
   "mobileSign.toastPin": "Digite o PIN de 6 dígitos exibido no computador.",
   "mobileSign.toastFailed": "Não foi possível enviar a assinatura — verifique sua conexão e tente novamente.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementPtBR,
 };

@@ -146,6 +146,32 @@ People who never picked (no `eboxy-lang`) used to get English whatever their
 browser said; they now get their browser's language, or the global choice made
 in another Universal App on the same origin — the suite behaviour.
 
+## Counter-signing: audit trail and verify page
+
+The other party signs at `/sign/<token>` (the token is the credential). Since
+2026-10-04 every signing link keeps an audit trail (platform migration 0244):
+
+- **What is recorded:** when the link was made and sent (emailed, copied or a
+  mail draft opened), which stored PDF the other party opened and its SHA-256,
+  when they opened and signed it, and the IP address, browser and country at
+  those two moments only. Signing is refused if the sender generated a newer
+  copy after the signer opened theirs: you sign what you were shown.
+- **Why IP/browser, and who sees them:** they are the evidence an electronic
+  signature's weight rests on (legitimate interests of both parties, UK GDPR
+  Art 6(1)(f)). The sign page says so above the Submit button. They appear only
+  to the two parties (the drafter's panel and the audit page of the signed copy)
+  and never on the public verify page; they go when the project or account is
+  deleted.
+- **The signed copy:** the `exports-sign` Edge Function (universal-platform)
+  builds it with pdf-lib: the original pages, the signature stamped into the
+  other party's signing block (the agreement stores where that block is, as
+  `counterpartyBox` in the view snapshot), and an appended audit page with a QR
+  to `/verify/<audit id>`. The database computes and keeps its SHA-256. Both
+  parties can download it.
+- **Verify:** `/verify` and `/verify/<audit id>` are public. A dropped PDF is
+  hashed in the browser (it is never uploaded) and matched against the signed
+  copy, the agreement as signed, or any copy the sender generated.
+
 ## Suite context
 
 This repo is one part of the **Universal Simulation suite** (the open-source

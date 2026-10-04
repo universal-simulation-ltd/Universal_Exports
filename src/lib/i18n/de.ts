@@ -1,4 +1,5 @@
 // German.
+import { agreementDe } from "./agreement/de";
 import type { Messages } from "./en";
 
 export const de: Messages = {
@@ -252,4 +253,6 @@ export const de: Messages = {
   "mobileSign.toastNoSig": "Zeichnen oder laden Sie zuerst eine Unterschrift hoch.",
   "mobileSign.toastPin": "Geben Sie die 6-stellige PIN von Ihrem Computer ein.",
   "mobileSign.toastFailed": "Unterschrift konnte nicht gesendet werden – prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementDe,
 };

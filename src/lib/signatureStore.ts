@@ -22,6 +22,21 @@ export interface AgreementSignature {
   counter_signed_at: string | null
   viewed_pdf_at: string | null
   created_at: string
+  // The audit trail (platform migration 0244). Absent on a row read by an
+  // older server; IPs and browsers are not here — see auditStore.getAudit.
+  audit_id?: string
+  sent_at?: string | null
+  sent_via?: 'email' | 'link' | 'mailto' | null
+  document_view_id?: string | null
+  document_sha256?: string | null
+  final_sha256?: string | null
+  finalised_at?: string | null
+  // Owner-only columns (the drafter's own select):
+  viewed_ip?: string | null
+  viewed_user_agent?: string | null
+  signer_ip?: string | null
+  signer_user_agent?: string | null
+  final_view_id?: string | null
 }
 
 /**

@@ -27,6 +27,7 @@ const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Sign = lazy(() => import("./pages/Sign.tsx"));
 const SignMobile = lazy(() => import("./pages/SignMobile.tsx"));
 const AgreementView = lazy(() => import("./pages/AgreementView.tsx"));
+const Verify = lazy(() => import("./pages/Verify.tsx"));
 import { KNOWLEDGE_BASE } from './knowledge'
 
 // "About this app". Since SDK 0.161 the SDK draws the row at the foot of "Tune
@@ -120,6 +121,10 @@ function AppShell() {
             {/* Public read-only agreement view — the QR stamped on every
                 generated PDF opens here. Token-gated like /sign. */}
             <Route path="/view/:token" element={<AgreementView />} />
+            {/* Public check of a signed copy — the address and QR on every
+                audit page. The file is hashed in the browser, never sent. */}
+            <Route path="/verify" element={<Verify />} />
+            <Route path="/verify/:auditId" element={<Verify />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

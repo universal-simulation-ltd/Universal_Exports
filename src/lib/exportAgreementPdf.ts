@@ -100,10 +100,29 @@ export interface AgreementPdfInput {
   qr?: { dataUrl: string; url: string } | null;
 }
 
+/**
+ * Where the other party's signing block was drawn, in jsPDF points from the
+ * TOP-left of the page. Stored with the agreement (the view snapshot) so the
+ * server can stamp their signature into it when they counter-sign — see the
+ * exports-sign Edge Function's finalPdf.ts, which reads the same field names.
+ */
+export interface CounterpartyBox {
+  /** 1-based page number. */
+  page: number;
+  x: number;
+  /** Top of the 150 × 46 signature image area. */
+  sigTop: number;
+  /** Baseline of the "Date: ______" line ("Awaiting signature" sits 12 pt below). */
+  dateBaseline: number;
+  width: number;
+}
+
 export interface BuiltPdf {
   blob: Blob;
   /** Object URL for embedding / download. Caller owns revocation. */
   url: string;
+  /** The other party's signing block, when the agreement has one. */
+  counterpartyBox: CounterpartyBox | null;
 }
 
 const MARGIN = 48;
@@ -341,14 +360,17 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
     x: number,
     party: { label: string; name: string; role?: string },
     sig: AgreementSignatureBlock | null,
-  ) => {
+  ): { bottom: number; sigTop: number; dateBaseline: number } => {
     let cy = y;
+    let sigTop = cy;
+    let dateBaseline = cy;
     // Role label (e.g. EXPORTER (SELLER)).
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
     doc.text(party.label.toUpperCase(), x, cy);
     cy += 8;
+    sigTop = cy;
     // Signature image sits just above the ruled line, when we have one; an
     // optional company stamp/seal sits to its right.
     if (sig) {
@@ -388,6 +410,7 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
       cy += 13;
     }
     // Date (filled for the drafter's signed copy, blank prompt otherwise).
+    dateBaseline = cy;
     doc.text(sig ? `Date: ${sig.date}` : "Date: ______________", x, cy);
     if (!sig) {
       cy += 12;
@@ -395,16 +418,18 @@ export function buildAgreementPdf(input: AgreementPdfInput): BuiltPdf {
       doc.setFontSize(8);
       doc.text("Awaiting signature", x, cy);
     }
-    return cy;
+    return { bottom: cy, sigTop, dateBaseline };
   };
 
-  const leftBottom = signColumn(MARGIN, drafter, drafterSig);
-  const rightBottom = counterparty
-    ? signColumn(MARGIN + colW + gap, counterparty, null)
-    : y;
-  y = Math.max(leftBottom, rightBottom) + LINE;
+  const left = signColumn(MARGIN, drafter, drafterSig);
+  const cpX = MARGIN + colW + gap;
+  const right = counterparty ? signColumn(cpX, counterparty, null) : null;
+  y = Math.max(left.bottom, right?.bottom ?? y) + LINE;
+  const counterpartyBox: CounterpartyBox | null = right
+    ? { page: doc.getNumberOfPages(), x: cpX, sigTop: right.sigTop, dateBaseline: right.dateBaseline, width: lineW }
+    : null;
 
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  return { blob, url };
+  return { blob, url, counterpartyBox };
 }

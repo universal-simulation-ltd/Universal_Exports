@@ -1,5 +1,6 @@
 // Portuguese (Portugal). Machine-translated 2026-09-29 when Exports moved onto the
 // SDK's language — worth a native speaker's pass.
+import { agreementPtPT } from "./agreement/pt-PT";
 import type { Messages } from "./en";
 
 export const ptPT: Messages = {
@@ -253,4 +254,6 @@ export const ptPT: Messages = {
   "mobileSign.toastNoSig": "Primeiro desenhe ou carregue uma assinatura.",
   "mobileSign.toastPin": "Introduza o PIN de 6 dígitos apresentado no computador.",
   "mobileSign.toastFailed": "Não foi possível enviar a assinatura — verifique a ligação e tente novamente.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementPtPT,
 };

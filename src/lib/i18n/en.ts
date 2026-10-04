@@ -2,6 +2,7 @@
 // keys, so `tsc` fails on a missing or misspelt one. British spelling: it is
 // what both English (GB) and English (US) read (the suite files its English
 // under `en`; `en-gb` has no strings of its own anywhere).
+import { agreementEn } from "./agreement/en";
 export const en = {
   // Sidebar
   "sidebar.projects": "Projects",
@@ -253,6 +254,8 @@ export const en = {
   "mobileSign.toastNoSig": "Draw or upload a signature first.",
   "mobileSign.toastPin": "Enter the 6-digit PIN shown on your desktop.",
   "mobileSign.toastFailed": "Could not send signature — check your connection and try again.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementEn,
 } as const;
 
 export type MessageKey = keyof typeof en;

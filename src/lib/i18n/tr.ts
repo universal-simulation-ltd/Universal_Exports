@@ -1,5 +1,6 @@
 // Turkish. Machine-translated 2026-09-29 when Exports moved onto the
 // SDK's language — worth a native speaker's pass.
+import { agreementTr } from "./agreement/tr";
 import type { Messages } from "./en";
 
 export const tr: Messages = {
@@ -253,4 +254,6 @@ export const tr: Messages = {
   "mobileSign.toastNoSig": "Önce bir imza çizin ya da yükleyin.",
   "mobileSign.toastPin": "Bilgisayarınızda gösterilen 6 haneli PIN'i girin.",
   "mobileSign.toastFailed": "İmza gönderilemedi — bağlantınızı kontrol edip yeniden deneyin.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementTr,
 };

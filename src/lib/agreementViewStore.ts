@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { isUuid } from './signatureStore'
-import type { AgreementPdfInput } from './exportAgreementPdf'
+import type { AgreementPdfInput, CounterpartyBox } from './exportAgreementPdf'
 
 // Read-only agreement views — back the QR code stamped on every generated
 // Export Agreement PDF. See supabase/schema.sql → public.agreement_views.
@@ -13,6 +13,8 @@ import type { AgreementPdfInput } from './exportAgreementPdf'
 /** AgreementPdfInput minus the bulky signature image and the QR itself. */
 export type AgreementViewSnapshot = Omit<AgreementPdfInput, 'signature' | 'qr'> & {
   signedBy?: { name: string; date: string } | null
+  /** Where the other party signs — the server stamps their signature there (0244). */
+  counterpartyBox?: CounterpartyBox | null
 }
 
 export interface AgreementViewRow {
@@ -44,6 +46,7 @@ export async function saveAgreementView(args: {
   projectName: string
   input: AgreementPdfInput
   pdfBlob: Blob
+  counterpartyBox?: CounterpartyBox | null
 }): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser()
   // Inserts are owner-only (RLS: user_id = auth.uid()), so signed out — the
@@ -55,6 +58,7 @@ export async function saveAgreementView(args: {
   const snapshot: AgreementViewSnapshot = {
     ...rest,
     signedBy: signature ? { name: signature.name, date: signature.date } : null,
+    counterpartyBox: args.counterpartyBox ?? null,
   }
 
   const pdf_data = await blobToDataUrl(args.pdfBlob)

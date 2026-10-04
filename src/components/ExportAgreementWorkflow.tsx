@@ -38,6 +38,7 @@ import { type ProjectData } from "@/lib/projectStore";
 import { unisimQrPngDataUrl } from "@unisim/sdk";
 import { saveAgreementView } from "@/lib/agreementViewStore";
 import { downloadDealXml } from "@/lib/dealXml";
+import { useI18n } from "@/lib/i18n";
 import type { AgreementPdfInput, AgreementSignatureBlock } from "@/lib/exportAgreementPdf";
 
 // The PDF builders (and jsPDF behind them, ~300 kB) load on first use, not
@@ -85,6 +86,7 @@ const ExportAgreementWorkflow = ({
   onGenerated,
   counterparty,
 }: Props) => {
+  const { t } = useI18n();
   // Unsigned overview, signed-by-drafter copy, and the uploaded finalised copy.
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [generatedBlob, setGeneratedBlob] = useState<Blob | null>(null);
@@ -147,7 +149,7 @@ const ExportAgreementWorkflow = ({
       const built = buildAgreementPdf(input);
       let reserved = false;
       try {
-        reserved = await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: built.blob });
+        reserved = await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: built.blob, counterpartyBox: built.counterpartyBox });
       } catch (e) {
         console.error("[exports] online view link couldn't be reserved — labels will be watermarked:", e);
       }
@@ -179,8 +181,8 @@ const ExportAgreementWorkflow = ({
     setQrInfo(labelQr);
     snapshotRef.current = snapshotOf(input);
     onGenerated?.();
-    toast.success("Export Agreement generated — review it before signing.");
-  }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl, onGenerated]);
+    toast.success(t("wf.generated"));
+  }, [buildPdfWithViewLink, generatedUrl, signedUrl, finalUrl, onGenerated, t]);
 
   // ── Sheet of 8 printable QR scan-labels (for sticking on products) ─────────
   const handlePrintQrSheet = useCallback(async () => {
@@ -190,6 +192,7 @@ const ExportAgreementWorkflow = ({
       dataUrl: qrInfo.dataUrl,
       url: qrInfo.url,
       projectName,
+      // The label sheet is a printed document like the agreement: English.
       watermark: qrInfo.reserved ? undefined : "Requires a UNI·SIM account to reserve this link",
     });
     const url = URL.createObjectURL(blob);
@@ -202,16 +205,16 @@ const ExportAgreementWorkflow = ({
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast.success(
       qrInfo.reserved
-        ? "QR label sheet downloaded — 8 labels ready to print."
-        : "QR labels downloaded (watermarked) — sign in with a UNI·SIM account to reserve the link.",
+        ? t("wf.labelsDownloaded")
+        : t("wf.labelsWatermarked"),
     );
-  }, [qrInfo, projectName]);
+  }, [qrInfo, projectName, t]);
 
   // ── XML export of the deal (for re-import into other trade software) ───────
   const handleDownloadXml = useCallback(() => {
     downloadDealXml(buildPdfInput(null), `${(projectName || "export").replace(/\s+/g, "-")}.xml`);
-    toast.success("Deal exported as XML.");
-  }, [buildPdfInput, projectName]);
+    toast.success(t("wf.xmlExported"));
+  }, [buildPdfInput, projectName, t]);
 
   const handleGenerateClick = useCallback(() => {
     if (!generatedUrl) {
@@ -232,11 +235,11 @@ const ExportAgreementWorkflow = ({
   const handleConfirmSignature = useCallback(async () => {
     if (!generatedUrl) return;
     if (!signature.startsWith("data:")) {
-      toast.error("Add your signature before confirming.");
+      toast.error(t("wf.needSignature"));
       return;
     }
     if (!signerName.trim()) {
-      toast.error("Enter your full name before confirming.");
+      toast.error(t("wf.needName"));
       return;
     }
     const today = new Date();
@@ -253,21 +256,21 @@ const ExportAgreementWorkflow = ({
     setSignedBlob(blob);
     setFinalUrl(null);
     setQrInfo(labelQr);
-    toast.success("Signature applied — the preview now shows the signed copy.");
-  }, [generatedUrl, signature, signerName, stamp, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl]);
+    toast.success(t("wf.signatureApplied"));
+  }, [generatedUrl, signature, signerName, stamp, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl, t]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
   const handleUploadSignedPdf = useCallback((file: File | undefined) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      toast.error("Please upload a PDF file.");
+      toast.error(t("wf.notPdf"));
       return;
     }
     const url = URL.createObjectURL(file);
     revoke(finalUrl);
     setFinalUrl(trackUrl(url));
-    toast.success("Finalised PDF uploaded — it now replaces the preview.");
-  }, [finalUrl]);
+    toast.success(t("wf.finalUploaded"));
+  }, [finalUrl, t]);
 
   const downloadName = `${(projectName || "export-agreement").replace(/\s+/g, "-")}.pdf`;
   const userHasSigned = !!signedUrl;
@@ -275,10 +278,10 @@ const ExportAgreementWorkflow = ({
   // else the drafter-signed copy, else the unsigned overview.
   const previewUrl = finalUrl ?? signedUrl ?? generatedUrl;
   const previewLabel = finalUrl
-    ? "Finalised (counter-signed)"
+    ? t("wf.previewFinal")
     : signedUrl
-      ? "Signed copy"
-      : "Overview (unsigned)";
+      ? t("wf.previewSigned")
+      : t("wf.previewUnsigned");
   const previewDownloadName = (finalUrl || signedUrl) ? `signed-${downloadName}` : downloadName;
 
   return (
@@ -292,11 +295,11 @@ const ExportAgreementWorkflow = ({
           onClick={handleGenerateClick}
         >
           <Wand2 className="mr-2 h-4 w-4" />
-          {generatedUrl ? "Regenerate Export Agreement" : "Generate Export Agreement"}
+          {generatedUrl ? t("wf.regenerate") : t("wf.generate")}
         </Button>
         {!canGenerate && (
           <p className="text-xs text-muted-foreground">
-            Resolve the missing checklist items above to generate the agreement.
+            {t("wf.resolveChecklist")}
           </p>
         )}
       </div>
@@ -310,17 +313,17 @@ const ExportAgreementWorkflow = ({
             <div className="flex items-center gap-2 flex-wrap justify-end">
               <Button type="button" variant="outline" size="sm" onClick={handleDownloadXml}>
                 <FileCode className="mr-1.5 h-3.5 w-3.5" />
-                Download XML
+                {t("wf.downloadXml")}
               </Button>
               <a href={previewUrl} download={previewDownloadName}>
                 <Button type="button" variant="outline" size="sm">
                   <Download className="mr-1.5 h-3.5 w-3.5" />
-                  Download PDF
+                  {t("wf.downloadPdf")}
                 </Button>
               </a>
               <Button type="button" variant="outline" size="sm" onClick={() => setStoreOpen(true)}>
                 <Save className="mr-1.5 h-3.5 w-3.5" />
-                Back up…
+                {t("wf.backUp")}
               </Button>
               {qrInfo && (
                 <Button
@@ -330,18 +333,18 @@ const ExportAgreementWorkflow = ({
                   onClick={handlePrintQrSheet}
                   title={
                     qrInfo.reserved
-                      ? "Download an A4 sheet of 8 box QR labels"
-                      : "Preview labels — sign in with a UNI·SIM account to reserve the link (labels are watermarked until then)"
+                      ? t("wf.labelsTitle")
+                      : t("wf.labelsTitlePreview")
                   }
                 >
                   <QrCode className="mr-1.5 h-3.5 w-3.5" />
-                  {qrInfo.reserved ? "Download box QR Codes" : "Download box QR Codes (preview)"}
+                  {qrInfo.reserved ? t("wf.labels") : t("wf.labelsPreview")}
                 </Button>
               )}
             </div>
           </div>
           <iframe
-            title="Export Agreement"
+            title={t("public.agreement")}
             src={previewUrl}
             className="w-full h-[560px] rounded-md border border-input bg-muted"
           />
@@ -355,16 +358,16 @@ const ExportAgreementWorkflow = ({
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-[1px]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Lock className="h-4 w-4" />
-              Generate the agreement before signing.
+              {t("wf.generateFirst")}
             </div>
           </div>
         )}
         <div className={cn(!generatedUrl && "pointer-events-none select-none opacity-50")}>
           <Tabs defaultValue="you" className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-xs">
-              <TabsTrigger value="you">You Sign</TabsTrigger>
+              <TabsTrigger value="you">{t("wf.youSign")}</TabsTrigger>
               <TabsTrigger value="them" disabled={!userHasSigned}>
-                They Sign
+                {t("wf.theySign")}
               </TabsTrigger>
             </TabsList>
 
@@ -372,25 +375,25 @@ const ExportAgreementWorkflow = ({
             <TabsContent value="you" className="space-y-4 pt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("wf.fullName")}</label>
                   <Input
-                    placeholder="Enter your full name"
+                    placeholder={t("sign.fullNamePlaceholder")}
                     className="bg-secondary/50"
                     value={formData["confirmName"] || ""}
                     onChange={(e) => onFieldChange("confirmName", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Role</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("wf.role")}</label>
                   <Input
-                    placeholder="e.g. Director, CEO"
+                    placeholder={t("wf.rolePlaceholder")}
                     className="bg-secondary/50"
                     value={formData["confirmRole"] || ""}
                     onChange={(e) => onFieldChange("confirmRole", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Date</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("sign.date")}</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -401,7 +404,7 @@ const ExportAgreementWorkflow = ({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData["confirmDate"] || "Pick a date"}
+                        {formData["confirmDate"] || t("wf.pickDate")}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -417,7 +420,7 @@ const ExportAgreementWorkflow = ({
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Signature</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("sign.signature")}</label>
                 <SignaturePad
                   value={formData["confirmSignature"] || ""}
                   onChange={(val) => onFieldChange("confirmSignature", val)}
@@ -425,7 +428,7 @@ const ExportAgreementWorkflow = ({
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  Company stamp <span className="text-muted-foreground/70">(optional)</span>
+                  {t("wf.stamp")} <span className="text-muted-foreground/70">{t("cs.optional")}</span>
                 </label>
                 <StampUpload
                   value={formData["confirmStamp"] || ""}
@@ -438,12 +441,12 @@ const ExportAgreementWorkflow = ({
                 disabled={!generatedUrl || !signature}
               >
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                {userHasSigned ? "Re-apply signature" : "Confirm signature"}
+                {userHasSigned ? t("wf.reapply") : t("wf.confirm")}
               </Button>
               {userHasSigned && (
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  Signed — you can now send it to the other party in "They Sign".
+                  {t("wf.signedHint")}
                 </p>
               )}
             </TabsContent>
@@ -454,21 +457,20 @@ const ExportAgreementWorkflow = ({
                 <CounterSignPanel projectId={projectId} projectName={projectName} counterparty={counterparty} />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Save the project first so we can attach the counter-sign link to it.
+                  {t("cs.saveFirst")}
                 </p>
               )}
 
               {/* Upload the signed PDF returned by the other party. */}
               <div className="space-y-2 pt-4 border-t border-border">
-                <p className="text-sm font-medium text-foreground">Have a signed copy already?</p>
+                <p className="text-sm font-medium text-foreground">{t("wf.haveSigned")}</p>
                 <p className="text-xs text-muted-foreground max-w-md">
-                  Upload the counter-signed PDF and it will replace the preview
-                  above as the finalised agreement.
+                  {t("wf.haveSignedBody")}
                 </p>
-                <input {...signedPicker.inputProps} aria-label="Upload signed PDF" className="hidden" />
+                <input {...signedPicker.inputProps} aria-label={t("wf.uploadSigned")} className="hidden" />
                 <Button type="button" variant="outline" onClick={signedPicker.open}>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload signed PDF
+                  {t("wf.uploadSigned")}
                 </Button>
               </div>
             </TabsContent>
@@ -480,16 +482,14 @@ const ExportAgreementWorkflow = ({
       <AlertDialog open={warnOpen} onOpenChange={setWarnOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Regenerate the Export Agreement?</AlertDialogTitle>
+            <AlertDialogTitle>{t("wf.warnTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will <strong>null the previous agreement</strong>
-              {(signedUrl || finalUrl) ? " and any signatures applied to it" : ""}. You'll
-              need to confirm your signature again on the new copy.
+              {(signedUrl || finalUrl) ? t("wf.warnBodySigned") : t("wf.warnBody")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={doGenerate}>Regenerate</AlertDialogAction>
+            <AlertDialogCancel>{t("setup.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={doGenerate}>{t("wf.regenerateShort")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

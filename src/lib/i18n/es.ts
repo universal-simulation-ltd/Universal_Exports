@@ -1,4 +1,5 @@
 // Spanish.
+import { agreementEs } from "./agreement/es";
 import type { Messages } from "./en";
 
 export const es: Messages = {
@@ -252,4 +253,6 @@ export const es: Messages = {
   "mobileSign.toastNoSig": "Primero dibuja o sube una firma.",
   "mobileSign.toastPin": "Introduce el PIN de 6 dígitos que aparece en tu ordenador.",
   "mobileSign.toastFailed": "No se ha podido enviar la firma: comprueba tu conexión e inténtalo de nuevo.",
+  // The signing flow, audit trail and verify page (./agreement/).
+  ...agreementEs,
 };

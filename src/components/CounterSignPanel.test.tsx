@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 const list = vi.fn();
 vi.mock("@/lib/signatureStore", () => ({
@@ -8,7 +9,17 @@ vi.mock("@/lib/signatureStore", () => ({
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
-vi.mock("@unisim/sdk", () => ({ UnisimQr: () => null }));
+vi.mock("@/lib/auditStore", () => ({
+  finaliseSignature: vi.fn(),
+  getFinalPdf: vi.fn(),
+  markSent: vi.fn(),
+  shortHash: (s: string) => `${s.slice(0, 8)}…${s.slice(-8)}`,
+}));
+vi.mock("@unisim/sdk", () => ({
+  UnisimQr: () => null,
+  useLanguage: () => ({ language: "en-gb" }),
+  languageFallbacks: (l: string) => [l, "en"],
+}));
 
 import CounterSignPanel from "./CounterSignPanel";
 
@@ -62,5 +73,24 @@ describe("CounterSignPanel polling", () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
     expect(list).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Counter-signed")).toBeInTheDocument();
+  });
+
+  it("shows the audit trail and offers the signed copy once signed", async () => {
+    list.mockResolvedValue([{
+      ...pending,
+      status: "signed",
+      counter_signer_name: "Ana",
+      counter_signed_at: "2026-10-04T10:00:00Z",
+      viewed_pdf_at: "2026-10-04T09:58:00Z",
+      signer_ip: "203.0.113.7",
+      audit_id: "33333333-3333-4333-8333-333333333333",
+      document_sha256: "a".repeat(64),
+    }]);
+    render(<MemoryRouter><CounterSignPanel projectId="p1" projectName="Coffee" /></MemoryRouter>);
+    await act(async () => {});
+    expect(screen.getByText("203.0.113.7")).toBeInTheDocument();
+    expect(screen.getByText("aaaaaaaa…aaaaaaaa")).toBeInTheDocument();
+    expect(screen.getByText("Download the signed copy")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Check this agreement/ })).toHaveAttribute("href", "/verify/33333333-3333-4333-8333-333333333333");
   });
 });
