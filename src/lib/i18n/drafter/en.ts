@@ -54,7 +54,7 @@ export const drafterEn = {
   // The example project
   "example.title": "Explore with an example project",
   "example.desc": "A pre-filled UK export sale — see every section in action",
-  "example.new": "New here? Start here ↑",
+  "example.new": "No account needed — have a look first",
 
   // Company fields beyond the shared ones
   "party.eori": "EORI Number",
@@ -541,7 +541,7 @@ export const drafterEn = {
   "landing.ribbon": "100% Free for UK businesses",
   "landing.createFolder": "Create your sales folder",
   "landing.binding": "A binding Export Agreement",
-  "landing.signInNote": "Free for UK businesses — sign in with your Universal ID, or create one with your Companies House number.",
+  "landing.signInNote": "Starting your own needs a Universal ID — sign in, or create one with your Companies House number. Free for UK businesses.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Universal Exports icon",

@@ -46,7 +46,7 @@ export const drafterPtPT: DrafterMessages = {
   // The example project
   "example.title": "Explore com um projeto de exemplo",
   "example.desc": "Uma venda de exportação do Reino Unido já preenchida — veja cada secção em ação",
-  "example.new": "É novo aqui? Comece aqui ↑",
+  "example.new": "Não precisa de conta — dê uma vista de olhos primeiro",
 
   // Company fields beyond the shared ones
   "party.eori": "Número EORI",
@@ -533,7 +533,7 @@ export const drafterPtPT: DrafterMessages = {
   "landing.ribbon": "100% grátis para empresas do Reino Unido",
   "landing.createFolder": "Crie a sua pasta de vendas",
   "landing.binding": "Um acordo de exportação vinculativo",
-  "landing.signInNote": "Grátis para empresas do Reino Unido — inicie sessão com o seu Universal ID ou crie um com o seu número da Companies House.",
+  "landing.signInNote": "Para criar o seu, precisa de um Universal ID — inicie sessão ou crie um com o seu número da Companies House. Grátis para empresas do Reino Unido.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Ícone do Universal Exports",

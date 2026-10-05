@@ -46,7 +46,7 @@ export const drafterTr: DrafterMessages = {
   // The example project
   "example.title": "Örnek bir projeyle keşfedin",
   "example.desc": "Önceden doldurulmuş bir Birleşik Krallık ihracat satışı — her bölümü iş başında görün",
-  "example.new": "Yeni misiniz? Buradan başlayın ↑",
+  "example.new": "Hesap gerekmez — önce bir göz atın",
 
   // Company fields beyond the shared ones
   "party.eori": "EORI numarası",
@@ -533,7 +533,7 @@ export const drafterTr: DrafterMessages = {
   "landing.ribbon": "Birleşik Krallık işletmeleri için %100 ücretsiz",
   "landing.createFolder": "Satış klasörünüzü oluşturun",
   "landing.binding": "Bağlayıcı bir ihracat sözleşmesi",
-  "landing.signInNote": "Birleşik Krallık işletmeleri için ücretsiz — Universal ID ile giriş yapın ya da Companies House numaranızla bir tane oluşturun.",
+  "landing.signInNote": "Kendi projenizi başlatmak için bir Universal ID gerekir — giriş yapın ya da Companies House numaranızla bir tane oluşturun. Birleşik Krallık işletmeleri için ücretsiz.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Universal Exports simgesi",

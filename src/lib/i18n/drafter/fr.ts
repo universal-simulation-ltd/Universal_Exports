@@ -46,7 +46,7 @@ export const drafterFr: DrafterMessages = {
   // The example project
   "example.title": "Découvrir avec un projet d'exemple",
   "example.desc": "Une vente export britannique pré-remplie — voyez chaque section en action",
-  "example.new": "Nouveau ici ? Commencez par là ↑",
+  "example.new": "Aucun compte nécessaire — jetez-y un œil d'abord",
 
   // Company fields beyond the shared ones
   "party.eori": "Numéro EORI",
@@ -533,7 +533,7 @@ export const drafterFr: DrafterMessages = {
   "landing.ribbon": "100 % gratuit pour les entreprises britanniques",
   "landing.createFolder": "Créez votre dossier de vente",
   "landing.binding": "Un accord d'exportation contraignant",
-  "landing.signInNote": "Gratuit pour les entreprises britanniques — connectez-vous avec votre Universal ID, ou créez-en un avec votre numéro Companies House.",
+  "landing.signInNote": "Pour créer le vôtre, il faut un Universal ID — connectez-vous, ou créez-en un avec votre numéro Companies House. Gratuit pour les entreprises britanniques.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Icône Universal Exports",

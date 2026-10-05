@@ -103,8 +103,11 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* RIGHT — start project card */}
-          <div>
+          {/* RIGHT — start project card. First on a phone: stacked in DOM
+              order it came after the animation and all four feature cards,
+              so a newcomer had to scroll two screens to find the one thing
+              to do. From lg up it is the right-hand column again. */}
+          <div className="order-first lg:order-none">
             <div className="relative rounded-lg border border-border bg-card shadow-xs overflow-hidden">
               {/* "100% Free for UK businesses" corner ribbon — z-0 so the navbar changelog
                   dropdown (which floats down over this card) stays on top. */}
