@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Chip, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
+import { Chip, SignInDialog, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
 import { BackupError, downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { fillNodes } from "../lib/i18n/format";
@@ -8,6 +8,10 @@ import { useDrafterI18n } from "../lib/i18n/drafter/useDrafterI18n";
 import { type ProjectData } from "../lib/projectStore";
 import { useFreeAllowance, nearFreeLimit } from "../lib/useFreeAllowance";
 
+// Only its origin is used, by the in-app sign-in's "manage your account" link.
+// Sign-in itself happens in <SignInDialog /> on top of this one: linking to the
+// hub's /login navigated away from the agreement being worked on, and the hub
+// then sent a newcomer on to the Assess portal, not back here.
 const SIGNIN_URL = "https://app.unisim.co.uk/login";
 // Nothing is for sale for the everyday apps (2026-10-03): at the free limit the
 // note says how to make room, and one quiet link asks people who need more to
@@ -61,6 +65,7 @@ export default function HostedStoreDialog({
   const { status: allowance, refresh: refreshAllowance } = useFreeAllowance("exports", open);
 
   const [busy, setBusy] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justStored, setJustStored] = useState(false);
   // The one listed backup that turned out to have no file behind it, if any.
@@ -261,9 +266,10 @@ export default function HostedStoreDialog({
             {!signedIn ? (
               <div className="mt-3 rounded-lg bg-slate-50 p-3">
                 <p className="text-sm text-slate-700">{fillNodes(t("hosted.createId"), { id: <strong>Universal ID</strong> })}</p>
-                <a href={SIGNIN_URL} className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
+                <button type="button" onClick={() => setSignInOpen(true)} className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
                   {t("hosted.signIn")}
-                </a>
+                </button>
+                <SignInDialog open={signInOpen} onClose={() => setSignInOpen(false)} hubLoginHref={SIGNIN_URL} initialMode="signup" />
               </div>
             ) : (
               <div className="mt-3">
