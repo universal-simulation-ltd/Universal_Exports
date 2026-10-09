@@ -243,6 +243,8 @@ export const es: Messages = {
   "pad.received": "Firma recibida.",
   "pad.receivedAlt": "Vista previa de la firma recibida",
   "pad.newCode": "Generar un código nuevo",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "La firma se abre en",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Firma en el móvil",
   "mobileSign.intro": "Introduce el PIN de 6 dígitos que aparece en tu ordenador, dibuja tu firma y toca Enviar. La firma aparecerá en el formulario del ordenador.",

@@ -243,6 +243,8 @@ export const fr: Messages = {
   "pad.received": "Signature reçue.",
   "pad.receivedAlt": "Aperçu de la signature reçue",
   "pad.newCode": "Générer un nouveau code",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "La signature s'ouvre sur",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Signature sur mobile",
   "mobileSign.intro": "Saisissez le code PIN à 6 chiffres affiché sur votre ordinateur, dessinez votre signature, puis touchez Envoyer. La signature apparaîtra dans le formulaire sur l'ordinateur.",

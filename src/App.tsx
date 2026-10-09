@@ -16,6 +16,7 @@ import { UniversalAppsNavBar, type AboutAppConfig } from "@unisim/sdk";
 import credits from "./generated/credits.json";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
+import { SignatureModePreference } from "@/components/SignatureModePreference";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -94,6 +95,11 @@ function AppShell() {
         // articles, bundled from ./knowledge so they read offline.
         knowledgeBase={KNOWLEDGE_BASE}
         about={ABOUT}
+        // Tune this app ▸ "Signature opens on": the signature pad's
+        // double-tapped default, as a row (2026-09-30). No onResetDefaults —
+        // Exports keeps no preferences of its own; the SDK's Reset clears the
+        // default view and the language.
+        appPreferences={<SignatureModePreference />}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />

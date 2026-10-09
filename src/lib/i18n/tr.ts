@@ -244,6 +244,8 @@ export const tr: Messages = {
   "pad.received": "İmza alındı.",
   "pad.receivedAlt": "Alınan imzanın önizlemesi",
   "pad.newCode": "Yeni kod oluştur",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "İmza şununla açılır",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Telefonla imza",
   "mobileSign.intro": "Bilgisayarınızda gösterilen 6 haneli PIN'i girin, imzanızı çizin ve Gönder'e dokunun. İmza bilgisayardaki formda görünecek.",

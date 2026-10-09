@@ -243,6 +243,8 @@ export const de: Messages = {
   "pad.received": "Unterschrift empfangen.",
   "pad.receivedAlt": "Vorschau der empfangenen Unterschrift",
   "pad.newCode": "Neuen Code erzeugen",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "Unterschrift öffnet mit",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Unterschrift am Handy",
   "mobileSign.intro": "Geben Sie die 6-stellige PIN von Ihrem Computer ein, zeichnen Sie Ihre Unterschrift und tippen Sie auf Senden. Die Unterschrift erscheint im Formular am Computer.",

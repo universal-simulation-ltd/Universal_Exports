@@ -244,6 +244,8 @@ export const ptPT: Messages = {
   "pad.received": "Assinatura recebida.",
   "pad.receivedAlt": "Pré-visualização da assinatura recebida",
   "pad.newCode": "Gerar um novo código",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "A assinatura abre em",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Assinatura no telemóvel",
   "mobileSign.intro": "Introduza o PIN de 6 dígitos apresentado no computador, desenhe a sua assinatura e toque em Enviar. A assinatura aparecerá no formulário do computador.",

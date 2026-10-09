@@ -245,6 +245,8 @@ export const en = {
   "pad.received": "Signature received.",
   "pad.receivedAlt": "Returned signature preview",
   "pad.newCode": "Generate a new code",
+  // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
+  "pad.opensOn": "Signature opens on",
   // Phone signature handoff (/sign-mobile/:token)
   "mobileSign.title": "Mobile signature",
   "mobileSign.intro": "Enter the 6-digit PIN shown on your desktop, draw your signature, then tap Send. The signature will appear on the desktop form.",

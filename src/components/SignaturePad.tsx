@@ -1,13 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Upload, Trash2, Smartphone, CheckCircle2 } from "lucide-react";
-import { UnisimQr } from "@unisim/sdk";
+import { UnisimQr, useDefaultView } from "@unisim/sdk";
 import { supabase } from "@/lib/supabase";
 import { BASE_PATH } from "@/lib/basePath";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useI18n } from "@/lib/i18n";
 import { isImageDataUrl } from "@/lib/safeDataUrl";
 import { toast } from "sonner";
+import { SIGNATURE_MODE_ID, SIGNATURE_MODES, type SignatureMode } from "@/components/SignatureModePreference";
 
 // What an uploaded signature may be: these are what jsPDF embeds and what
 // every viewer of the counter-signature will accept (see safeDataUrl.ts).
@@ -35,6 +36,13 @@ function randomPin() {
   return String(n % 1_000_000).padStart(6, "0");
 }
 
+// The default mode is orange: filled while it is the one showing, an orange
+// outline while it is not (Jukebox's look — SDK README ▸ Default views).
+const DEFAULT_ACTIVE =
+  "data-[default-view=true]:bg-gradient-to-br data-[default-view=true]:from-[#FE8C01] data-[default-view=true]:to-[#E05504] data-[default-view=true]:text-white";
+const DEFAULT_IDLE =
+  "data-[default-view=true]:border-orange-400/70 data-[default-view=true]:text-orange-700 dark:data-[default-view=true]:text-orange-400";
+
 const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   // When the drafter is already on a phone there's no point offering the
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
@@ -42,7 +50,15 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
   const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [mode, setMode] = useState<"mobile" | "draw" | "upload">("draw");
+  const dv = useDefaultView<SignatureMode>(SIGNATURE_MODE_ID, "draw", { views: SIGNATURE_MODES });
+  // ⚠️ Worked out here, not from `isMobile`: that hook answers false on the
+  // first render and only corrects itself in an effect, and a phone that
+  // started in Mobile mode would already have minted a token and opened a
+  // Realtime channel for a QR it never shows. Same 768px breakpoint as
+  // hooks/use-mobile.
+  const [mode, setMode] = useState<SignatureMode>(() =>
+    dv.defaultView === "mobile" && window.innerWidth < 768 ? "draw" : dv.defaultView,
+  );
   const [mobileToken, setMobileToken] = useState<string | null>(null);
   const [mobilePin, setMobilePin] = useState<string | null>(null);
   const [mobileStatus, setMobileStatus] = useState<"idle" | "waiting" | "scanned" | "received">("idle");
@@ -201,7 +217,9 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             type="button"
             variant={mode === "mobile" ? "default" : "outline"}
             size="sm"
-            onClick={() => setMode("mobile")}
+            {...dv.buttonProps("mobile", t("pad.mobile"))}
+            className={mode === "mobile" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+            onClick={() => { dv.tap("mobile"); setMode("mobile"); }}
             aria-pressed={mode === "mobile"}
           >
             <Smartphone className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -212,17 +230,24 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
           type="button"
           variant={mode === "draw" ? "default" : "outline"}
           size="sm"
-          onClick={() => setMode("draw")}
+          {...dv.buttonProps("draw", t("pad.draw"))}
+          className={mode === "draw" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          onClick={() => { dv.tap("draw"); setMode("draw"); }}
           aria-pressed={mode === "draw"}
         >
           <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {t("pad.draw")}
         </Button>
+        {/* ⚠️ The file picker opens on the first click, so its second click
+            never reaches the button on a desktop: Upload's default is set from
+            Tune this app ▸ "Signature opens on" (SignatureModePreference.tsx). */}
         <Button
           type="button"
           variant={mode === "upload" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setMode("upload"); fileRef.current?.click(); }}
+          {...dv.buttonProps("upload", t("pad.upload"))}
+          className={mode === "upload" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          onClick={() => { dv.tap("upload"); setMode("upload"); fileRef.current?.click(); }}
           aria-pressed={mode === "upload"}
         >
           <Upload className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
