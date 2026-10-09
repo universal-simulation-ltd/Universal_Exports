@@ -40,7 +40,7 @@ export const drafterEs: DrafterMessages = {
   "main.logoTooLarge": "El logotipo debe ocupar menos de 2 MB",
   "main.logoUploaded": "Logotipo subido",
   "main.tradingAsShort": "operando como {name}",
-  "main.editContact": "Ajustar contacto",
+  "main.editContact": "Afinar contacto",
   "main.deleteContact": "Eliminar contacto",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterEs: DrafterMessages = {
   "proj.removeSelectedParty": "Quitar la parte seleccionada",
   "proj.lastUsed": "Último uso",
   "proj.contactSaved": "{name} guardado en contactos",
-  "proj.editYours": "Ajustar tus datos",
+  "proj.editYours": "Afinar tus datos",
   "proj.yoursUpdated": "Tus datos se han actualizado",
-  "proj.editOther": "Ajustar la otra parte",
+  "proj.editOther": "Afinar la otra parte",
   "proj.removeOther": "Quitar la otra parte",
   "proj.otherUpdated": "Datos de la otra parte actualizados",
   "proj.domestic": "Nacional",
@@ -259,7 +259,7 @@ export const drafterEs: DrafterMessages = {
   "product.saveFailed": "No se ha podido guardar en el catálogo",
   "product.removed": "Producto eliminado del catálogo",
   "product.updated": "Producto actualizado",
-  "product.edit": "Ajustar producto",
+  "product.edit": "Afinar producto",
   "product.delete": "Quitar del catálogo",
   "product.noMatch": "Ningún producto coincide",
   "product.addNew": "Añadir nuevo",
@@ -531,8 +531,9 @@ export const drafterEs: DrafterMessages = {
   "landing.multiCurrency": "Multidivisa",
   "landing.freeUk": "Gratis para empresas británicas",
   "landing.ribbon": "100 % gratis para empresas británicas",
-  "landing.createFolder": "Crea tu carpeta de ventas",
-  "landing.binding": "Un acuerdo de exportación vinculante",
+  "landing.createFolder": "Empieza una nueva operación",
+  "landing.binding": "El acuerdo, la factura y el albarán de una venta",
+  "landing.dealName": "Nombre de la operación",
   "landing.signInNote": "Para crear el tuyo necesitas un Universal ID: inicia sesión o crea uno con tu número de Companies House. Gratis para empresas británicas.",
 
   // Sign-in / sign-up

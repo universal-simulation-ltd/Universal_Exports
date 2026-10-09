@@ -40,7 +40,7 @@ export const drafterFr: DrafterMessages = {
   "main.logoTooLarge": "Le logo doit faire moins de 2 Mo",
   "main.logoUploaded": "Logo importé",
   "main.tradingAsShort": "opérant sous {name}",
-  "main.editContact": "Régler le contact",
+  "main.editContact": "Peaufiner le contact",
   "main.deleteContact": "Supprimer le contact",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterFr: DrafterMessages = {
   "proj.removeSelectedParty": "Retirer la partie sélectionnée",
   "proj.lastUsed": "Dernière utilisation",
   "proj.contactSaved": "{name} enregistré dans les contacts",
-  "proj.editYours": "Régler vos coordonnées",
+  "proj.editYours": "Peaufiner vos coordonnées",
   "proj.yoursUpdated": "Vos coordonnées ont été mises à jour",
-  "proj.editOther": "Régler l'autre partie",
+  "proj.editOther": "Peaufiner l'autre partie",
   "proj.removeOther": "Retirer l'autre partie",
   "proj.otherUpdated": "Coordonnées de l'autre partie mises à jour",
   "proj.domestic": "National",
@@ -259,7 +259,7 @@ export const drafterFr: DrafterMessages = {
   "product.saveFailed": "Échec de l'enregistrement dans le catalogue",
   "product.removed": "Produit retiré du catalogue",
   "product.updated": "Produit mis à jour",
-  "product.edit": "Régler le produit",
+  "product.edit": "Peaufiner le produit",
   "product.delete": "Retirer du catalogue",
   "product.noMatch": "Aucun produit correspondant",
   "product.addNew": "Ajouter",
@@ -531,8 +531,9 @@ export const drafterFr: DrafterMessages = {
   "landing.multiCurrency": "Multidevise",
   "landing.freeUk": "Gratuit pour les entreprises britanniques",
   "landing.ribbon": "100 % gratuit pour les entreprises britanniques",
-  "landing.createFolder": "Créez votre dossier de vente",
-  "landing.binding": "Un accord d'exportation contraignant",
+  "landing.createFolder": "Démarrer une nouvelle affaire",
+  "landing.binding": "L'accord, la facture et le bon de livraison d'une vente",
+  "landing.dealName": "Nom de l'affaire",
   "landing.signInNote": "Pour créer le vôtre, il faut un Universal ID — connectez-vous, ou créez-en un avec votre numéro Companies House. Gratuit pour les entreprises britanniques.",
 
   // Sign-in / sign-up

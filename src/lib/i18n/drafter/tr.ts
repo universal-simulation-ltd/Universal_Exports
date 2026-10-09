@@ -40,7 +40,7 @@ export const drafterTr: DrafterMessages = {
   "main.logoTooLarge": "Logo en fazla 2 MB olmalı",
   "main.logoUploaded": "Logo yüklendi",
   "main.tradingAsShort": "ticari adı: {name}",
-  "main.editContact": "Kişiyi ayarla",
+  "main.editContact": "Kişiye ince ayar yap",
   "main.deleteContact": "Kişiyi sil",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterTr: DrafterMessages = {
   "proj.removeSelectedParty": "Seçili tarafı kaldır",
   "proj.lastUsed": "Son kullanılan",
   "proj.contactSaved": "{name} kişilere kaydedildi",
-  "proj.editYours": "Bilgilerinizi ayarlayın",
+  "proj.editYours": "Bilgilerinize ince ayar yapın",
   "proj.yoursUpdated": "Bilgileriniz güncellendi",
-  "proj.editOther": "Karşı tarafı ayarla",
+  "proj.editOther": "Karşı tarafa ince ayar yap",
   "proj.removeOther": "Karşı tarafı kaldır",
   "proj.otherUpdated": "Karşı taraf bilgileri güncellendi",
   "proj.domestic": "Yurt içi",
@@ -259,7 +259,7 @@ export const drafterTr: DrafterMessages = {
   "product.saveFailed": "Kataloğa kaydedilemedi",
   "product.removed": "Ürün katalogdan kaldırıldı",
   "product.updated": "Ürün güncellendi",
-  "product.edit": "Ürünü ayarla",
+  "product.edit": "Ürüne ince ayar yap",
   "product.delete": "Katalogdan kaldır",
   "product.noMatch": "Eşleşen ürün yok",
   "product.addNew": "Yeni ekle",
@@ -531,8 +531,9 @@ export const drafterTr: DrafterMessages = {
   "landing.multiCurrency": "Çoklu para birimi",
   "landing.freeUk": "Birleşik Krallık işletmeleri için ücretsiz",
   "landing.ribbon": "Birleşik Krallık işletmeleri için %100 ücretsiz",
-  "landing.createFolder": "Satış klasörünüzü oluşturun",
-  "landing.binding": "Bağlayıcı bir ihracat sözleşmesi",
+  "landing.createFolder": "Yeni bir satış başlatın",
+  "landing.binding": "Tek bir satış için sözleşme, fatura ve irsaliye",
+  "landing.dealName": "Satışın adı",
   "landing.signInNote": "Kendi projenizi başlatmak için bir Universal ID gerekir — giriş yapın ya da Companies House numaranızla bir tane oluşturun. Birleşik Krallık işletmeleri için ücretsiz.",
 
   // Sign-in / sign-up

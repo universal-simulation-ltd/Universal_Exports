@@ -40,7 +40,7 @@ export const drafterDe: DrafterMessages = {
   "main.logoTooLarge": "Das Logo muss kleiner als 2 MB sein",
   "main.logoUploaded": "Logo hochgeladen",
   "main.tradingAsShort": "handelnd als {name}",
-  "main.editContact": "Kontakt anpassen",
+  "main.editContact": "Kontakt feinjustieren",
   "main.deleteContact": "Kontakt löschen",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterDe: DrafterMessages = {
   "proj.removeSelectedParty": "Ausgewählte Partei entfernen",
   "proj.lastUsed": "Zuletzt verwendet",
   "proj.contactSaved": "{name} in Kontakten gespeichert",
-  "proj.editYours": "Ihre Daten anpassen",
+  "proj.editYours": "Ihre Daten feinjustieren",
   "proj.yoursUpdated": "Ihre Daten aktualisiert",
-  "proj.editOther": "Gegenpartei anpassen",
+  "proj.editOther": "Gegenpartei feinjustieren",
   "proj.removeOther": "Gegenpartei entfernen",
   "proj.otherUpdated": "Daten der Gegenpartei aktualisiert",
   "proj.domestic": "Inland",
@@ -259,7 +259,7 @@ export const drafterDe: DrafterMessages = {
   "product.saveFailed": "Speichern im Katalog fehlgeschlagen",
   "product.removed": "Produkt aus dem Katalog entfernt",
   "product.updated": "Produkt aktualisiert",
-  "product.edit": "Produkt anpassen",
+  "product.edit": "Produkt feinjustieren",
   "product.delete": "Aus dem Katalog entfernen",
   "product.noMatch": "Keine passenden Produkte",
   "product.addNew": "Neu hinzufügen",
@@ -531,8 +531,9 @@ export const drafterDe: DrafterMessages = {
   "landing.multiCurrency": "Mehrere Währungen",
   "landing.freeUk": "Kostenlos für britische Unternehmen",
   "landing.ribbon": "100 % kostenlos für britische Unternehmen",
-  "landing.createFolder": "Verkaufsordner anlegen",
-  "landing.binding": "Eine verbindliche Exportvereinbarung",
+  "landing.createFolder": "Ein neues Geschäft beginnen",
+  "landing.binding": "Vereinbarung, Rechnung und Lieferschein für einen Verkauf",
+  "landing.dealName": "Name des Geschäfts",
   "landing.signInNote": "Für ein eigenes Projekt brauchen Sie eine Universal ID – melden Sie sich an oder erstellen Sie eine mit Ihrer Companies House-Nummer. Kostenlos für britische Unternehmen.",
 
   // Sign-in / sign-up

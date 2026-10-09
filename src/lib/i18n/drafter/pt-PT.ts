@@ -40,7 +40,7 @@ export const drafterPtPT: DrafterMessages = {
   "main.logoTooLarge": "O logótipo deve ter menos de 2 MB",
   "main.logoUploaded": "Logótipo carregado",
   "main.tradingAsShort": "a operar como {name}",
-  "main.editContact": "Ajustar contacto",
+  "main.editContact": "Afinar contacto",
   "main.deleteContact": "Eliminar contacto",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterPtPT: DrafterMessages = {
   "proj.removeSelectedParty": "Remover a parte selecionada",
   "proj.lastUsed": "Última utilização",
   "proj.contactSaved": "{name} guardado nos contactos",
-  "proj.editYours": "Ajustar os seus dados",
+  "proj.editYours": "Afinar os seus dados",
   "proj.yoursUpdated": "Os seus dados foram atualizados",
-  "proj.editOther": "Ajustar a outra parte",
+  "proj.editOther": "Afinar a outra parte",
   "proj.removeOther": "Remover a outra parte",
   "proj.otherUpdated": "Dados da outra parte atualizados",
   "proj.domestic": "Nacional",
@@ -259,7 +259,7 @@ export const drafterPtPT: DrafterMessages = {
   "product.saveFailed": "Não foi possível guardar no catálogo",
   "product.removed": "Produto removido do catálogo",
   "product.updated": "Produto atualizado",
-  "product.edit": "Ajustar produto",
+  "product.edit": "Afinar produto",
   "product.delete": "Remover do catálogo",
   "product.noMatch": "Nenhum produto corresponde",
   "product.addNew": "Adicionar novo",
@@ -531,8 +531,9 @@ export const drafterPtPT: DrafterMessages = {
   "landing.multiCurrency": "Multimoeda",
   "landing.freeUk": "Grátis para empresas do Reino Unido",
   "landing.ribbon": "100% grátis para empresas do Reino Unido",
-  "landing.createFolder": "Crie a sua pasta de vendas",
-  "landing.binding": "Um acordo de exportação vinculativo",
+  "landing.createFolder": "Comece um novo negócio",
+  "landing.binding": "O acordo, a fatura e a guia de remessa de uma venda",
+  "landing.dealName": "Nome do negócio",
   "landing.signInNote": "Para criar o seu, precisa de um Universal ID — inicie sessão ou crie um com o seu número da Companies House. Grátis para empresas do Reino Unido.",
 
   // Sign-in / sign-up

@@ -40,7 +40,7 @@ export const drafterIt: DrafterMessages = {
   "main.logoTooLarge": "Il logo deve essere inferiore a 2 MB",
   "main.logoUploaded": "Logo caricato",
   "main.tradingAsShort": "op. come {name}",
-  "main.editContact": "Regola contatto",
+  "main.editContact": "Perfeziona contatto",
   "main.deleteContact": "Elimina contatto",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterIt: DrafterMessages = {
   "proj.removeSelectedParty": "Rimuovi la parte selezionata",
   "proj.lastUsed": "Ultimo utilizzo",
   "proj.contactSaved": "{name} salvato nei contatti",
-  "proj.editYours": "Regola i tuoi dati",
+  "proj.editYours": "Perfeziona i tuoi dati",
   "proj.yoursUpdated": "I tuoi dati sono stati aggiornati",
-  "proj.editOther": "Regola l'altra parte",
+  "proj.editOther": "Perfeziona l'altra parte",
   "proj.removeOther": "Rimuovi l'altra parte",
   "proj.otherUpdated": "Dati dell'altra parte aggiornati",
   "proj.domestic": "Nazionale",
@@ -259,7 +259,7 @@ export const drafterIt: DrafterMessages = {
   "product.saveFailed": "Impossibile salvare nel catalogo",
   "product.removed": "Prodotto rimosso dal catalogo",
   "product.updated": "Prodotto aggiornato",
-  "product.edit": "Regola prodotto",
+  "product.edit": "Perfeziona prodotto",
   "product.delete": "Rimuovi dal catalogo",
   "product.noMatch": "Nessun prodotto corrispondente",
   "product.addNew": "Aggiungi nuovo",
@@ -531,8 +531,9 @@ export const drafterIt: DrafterMessages = {
   "landing.multiCurrency": "Multivaluta",
   "landing.freeUk": "Gratis per le imprese britanniche",
   "landing.ribbon": "100% gratis per le imprese britanniche",
-  "landing.createFolder": "Crea la tua cartella vendite",
-  "landing.binding": "Un accordo di esportazione vincolante",
+  "landing.createFolder": "Inizia una nuova trattativa",
+  "landing.binding": "Accordo, fattura e documento di trasporto per una vendita",
+  "landing.dealName": "Nome della trattativa",
   "landing.signInNote": "Per crearne uno tuo serve un Universal ID: accedi oppure creane uno con il tuo numero Companies House. Gratis per le imprese britanniche.",
 
   // Sign-in / sign-up

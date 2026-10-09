@@ -40,7 +40,7 @@ export const drafterPtBR: DrafterMessages = {
   "main.logoTooLarge": "O logotipo deve ter menos de 2 MB",
   "main.logoUploaded": "Logotipo enviado",
   "main.tradingAsShort": "nome fantasia: {name}",
-  "main.editContact": "Ajustar contato",
+  "main.editContact": "Afinar contato",
   "main.deleteContact": "Excluir contato",
 
   // The example project
@@ -64,9 +64,9 @@ export const drafterPtBR: DrafterMessages = {
   "proj.removeSelectedParty": "Remover a parte selecionada",
   "proj.lastUsed": "Usado por último",
   "proj.contactSaved": "{name} salvo nos contatos",
-  "proj.editYours": "Ajustar seus dados",
+  "proj.editYours": "Afinar seus dados",
   "proj.yoursUpdated": "Seus dados foram atualizados",
-  "proj.editOther": "Ajustar outra parte",
+  "proj.editOther": "Afinar outra parte",
   "proj.removeOther": "Remover outra parte",
   "proj.otherUpdated": "Dados da outra parte atualizados",
   "proj.domestic": "Nacional",
@@ -259,7 +259,7 @@ export const drafterPtBR: DrafterMessages = {
   "product.saveFailed": "Não foi possível salvar no catálogo",
   "product.removed": "Produto removido do catálogo",
   "product.updated": "Produto atualizado",
-  "product.edit": "Ajustar produto",
+  "product.edit": "Afinar produto",
   "product.delete": "Remover do catálogo",
   "product.noMatch": "Nenhum produto encontrado",
   "product.addNew": "Adicionar novo",
@@ -531,8 +531,9 @@ export const drafterPtBR: DrafterMessages = {
   "landing.multiCurrency": "Várias moedas",
   "landing.freeUk": "Grátis para empresas do Reino Unido",
   "landing.ribbon": "100% grátis para empresas do Reino Unido",
-  "landing.createFolder": "Crie sua pasta de vendas",
-  "landing.binding": "Um contrato de exportação vinculante",
+  "landing.createFolder": "Comece um novo negócio",
+  "landing.binding": "O contrato, a fatura e a nota de entrega de uma venda",
+  "landing.dealName": "Nome do negócio",
   "landing.signInNote": "Para criar o seu, você precisa de um Universal ID — entre ou crie um com o número da Companies House. Grátis para empresas do Reino Unido.",
 
   // Sign-in / sign-up

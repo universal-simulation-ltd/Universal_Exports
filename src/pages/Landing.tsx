@@ -125,7 +125,7 @@ export default function Landing() {
                 <div className="w-full max-w-xs space-y-4">
                   <div>
                     <label htmlFor="landing-project-name" className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("setup.projectName")}
+                      {t("landing.dealName")}
                     </label>
                     <Input
                       id="landing-project-name"

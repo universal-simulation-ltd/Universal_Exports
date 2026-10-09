@@ -48,7 +48,7 @@ export const drafterEn = {
   "main.logoTooLarge": "Logo must be under 2MB",
   "main.logoUploaded": "Logo uploaded",
   "main.tradingAsShort": "t/a {name}",
-  "main.editContact": "Tune contact",
+  "main.editContact": "Fine-tune contact",
   "main.deleteContact": "Delete contact",
 
   // The example project
@@ -72,9 +72,9 @@ export const drafterEn = {
   "proj.removeSelectedParty": "Remove selected party",
   "proj.lastUsed": "Last used",
   "proj.contactSaved": "{name} saved to contacts",
-  "proj.editYours": "Tune your details",
+  "proj.editYours": "Fine-tune your details",
   "proj.yoursUpdated": "Your details updated",
-  "proj.editOther": "Tune other party",
+  "proj.editOther": "Fine-tune other party",
   "proj.removeOther": "Remove other party",
   "proj.otherUpdated": "Other party details updated",
   "proj.domestic": "Domestic",
@@ -267,7 +267,7 @@ export const drafterEn = {
   "product.saveFailed": "Failed to save to catalogue",
   "product.removed": "Product removed from catalogue",
   "product.updated": "Product updated",
-  "product.edit": "Tune product",
+  "product.edit": "Fine-tune product",
   "product.delete": "Remove from the catalogue",
   "product.noMatch": "No matching products",
   "product.addNew": "Add New",
@@ -539,8 +539,9 @@ export const drafterEn = {
   "landing.multiCurrency": "Multi-currency",
   "landing.freeUk": "Free for UK businesses",
   "landing.ribbon": "100% Free for UK businesses",
-  "landing.createFolder": "Create your sales folder",
-  "landing.binding": "A binding Export Agreement",
+  "landing.createFolder": "Start a new deal",
+  "landing.binding": "The agreement, invoice and delivery note for one sale",
+  "landing.dealName": "Deal name",
   "landing.signInNote": "Starting your own needs a Universal ID — sign in, or create one with your Companies House number. Free for UK businesses.",
 
   // Sign-in / sign-up
