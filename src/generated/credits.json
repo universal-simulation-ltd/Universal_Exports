@@ -1,8 +1,8 @@
 {
   "app": "universal-exports",
   "appVersion": "0.0.0",
-  "generated": "2026-10-04",
-  "noticesCount": 153,
+  "generated": "2026-10-10",
+  "noticesCount": 157,
   "ships": [
     {
       "name": "@hookform/resolvers",
@@ -11,252 +11,19 @@
       "repo": "https://github.com/react-hook-form/resolvers",
       "homepage": "https://react-hook-form.com",
       "authors": [
-        "bluebill1049"
+        "Beier (Bill) Luo"
       ],
       "source": "node_modules"
     },
     {
-      "name": "@radix-ui/react-accordion",
-      "version": "1.2.12",
+      "name": "@radix-ui/*",
+      "title": "Radix Primitives",
       "licence": "MIT",
       "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-alert-dialog",
-      "version": "1.1.15",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-aspect-ratio",
-      "version": "1.1.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-avatar",
-      "version": "1.1.11",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-checkbox",
-      "version": "1.3.3",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-collapsible",
-      "version": "1.1.12",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-context-menu",
-      "version": "2.2.16",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-dialog",
-      "version": "1.1.15",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-dropdown-menu",
-      "version": "2.1.16",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-hover-card",
-      "version": "1.1.15",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-label",
-      "version": "2.1.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-menubar",
-      "version": "1.1.16",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-navigation-menu",
-      "version": "1.2.14",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-popover",
-      "version": "1.1.15",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-progress",
-      "version": "1.1.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-radio-group",
-      "version": "1.3.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-scroll-area",
-      "version": "1.2.10",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-select",
-      "version": "2.2.6",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-separator",
-      "version": "1.1.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-slider",
-      "version": "1.3.6",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-slot",
-      "version": "1.2.4",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-switch",
-      "version": "1.2.6",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-tabs",
-      "version": "1.1.13",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-toast",
-      "version": "1.2.15",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-toggle",
-      "version": "1.1.10",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-toggle-group",
-      "version": "1.1.11",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
-      "name": "@radix-ui/react-tooltip",
-      "version": "1.2.8",
-      "licence": "MIT",
-      "repo": "https://github.com/radix-ui/primitives",
-      "homepage": "https://radix-ui.com/primitives",
-      "authors": [],
-      "source": "node_modules"
+      "authors": [
+        "WorkOS"
+      ],
+      "source": "overlay"
     },
     {
       "name": "@supabase/supabase-js",
@@ -273,12 +40,13 @@
     },
     {
       "name": "@tanstack/react-query",
+      "title": "TanStack Query",
       "version": "5.100.14",
       "licence": "MIT",
       "repo": "https://github.com/TanStack/query",
       "homepage": "https://tanstack.com/query",
       "authors": [
-        "tannerlinsley"
+        "Tanner Linsley"
       ],
       "source": "node_modules"
     },
@@ -310,7 +78,7 @@
       "repo": "https://github.com/pacocoursey/cmdk",
       "homepage": "https://github.com/pacocoursey/cmdk#readme",
       "authors": [
-        "Paco"
+        "Paco Coursey"
       ],
       "source": "node_modules"
     },
@@ -349,11 +117,15 @@
     },
     {
       "name": "jspdf",
+      "title": "jsPDF",
       "version": "4.2.1",
       "licence": "MIT",
       "repo": "https://github.com/parallax/jsPDF",
       "homepage": "https://github.com/parallax/jsPDF",
-      "authors": [],
+      "authors": [
+        "James Hall",
+        "yWorks GmbH"
+      ],
       "source": "node_modules"
     },
     {
@@ -372,7 +144,9 @@
       "version": "0.3.0",
       "licence": "MIT",
       "repo": "https://github.com/pacocoursey/next-themes",
-      "authors": [],
+      "authors": [
+        "Paco Coursey"
+      ],
       "source": "node_modules"
     },
     {
@@ -445,12 +219,13 @@
     },
     {
       "name": "recharts",
+      "title": "Recharts",
       "version": "2.15.4",
       "licence": "MIT",
       "repo": "https://github.com/recharts/recharts",
       "homepage": "https://github.com/recharts/recharts",
       "authors": [
-        "recharts group"
+        "Recharts Group"
       ],
       "source": "node_modules"
     },
@@ -480,6 +255,7 @@
       "name": "tailwindcss-animate",
       "version": "1.0.7",
       "licence": "MIT",
+      "repo": "https://github.com/jamiebuilds/tailwindcss-animate",
       "authors": [
         "Jamie Kyle"
       ],
@@ -515,7 +291,9 @@
       "licence": "MIT",
       "repo": "https://github.com/eslint/eslint",
       "homepage": "https://eslint.org",
-      "authors": [],
+      "authors": [
+        "OpenJS Foundation"
+      ],
       "source": "node_modules"
     },
     {
@@ -530,20 +308,13 @@
       "source": "node_modules"
     },
     {
-      "name": "@tailwindcss/postcss",
-      "version": "4.3.3",
-      "licence": "MIT",
-      "repo": "https://github.com/tailwindlabs/tailwindcss",
-      "homepage": "https://tailwindcss.com",
-      "authors": [],
-      "source": "node_modules"
-    },
-    {
       "name": "@tailwindcss/typography",
       "version": "0.5.19",
       "licence": "MIT",
       "repo": "https://github.com/tailwindlabs/tailwindcss-typography",
-      "authors": [],
+      "authors": [
+        "Tailwind Labs, Inc."
+      ],
       "source": "node_modules"
     },
     {
@@ -607,13 +378,16 @@
       "licence": "MIT",
       "repo": "https://github.com/facebook/react",
       "homepage": "https://react.dev/",
-      "authors": [],
+      "authors": [
+        "Meta Platforms, Inc."
+      ],
       "source": "node_modules"
     },
     {
       "name": "eslint-plugin-react-refresh",
       "version": "0.4.26",
       "licence": "MIT",
+      "repo": "https://github.com/ArnaudBarre/eslint-plugin-react-refresh",
       "authors": [
         "Arnaud Barré"
       ],
@@ -635,8 +409,7 @@
       "licence": "MIT",
       "repo": "https://github.com/jsdom/jsdom",
       "authors": [
-        "Elijah Insua",
-        "Domenic Denicola"
+        "Elijah Insua"
       ],
       "source": "node_modules"
     },
