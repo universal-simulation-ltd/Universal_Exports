@@ -95,7 +95,7 @@ Gli Incoterms sono un insieme di regole commerciali standard pubblicate dalla Ca
 
 ## Progetti
 
-Un progetto contiene tutto ciò che riguarda un'operazione: i tuoi dati, l'altra parte, i prodotti, la spedizione, il pagamento e ogni sezione dei documenti. Ti serve un Universal ID per lavorare ai progetti, che vengono salvati nel tuo account così puoi riprenderli su un altro computer. Quando crei qui un Universal ID, ti viene chiesto un numero di Companies House del Regno Unito; l'app lo cerca così puoi confermare che l'azienda è tua.
+Un progetto contiene tutto ciò che riguarda un'operazione: i tuoi dati, l'altra parte, i prodotti, la spedizione, il pagamento e ogni sezione dei documenti. Ti serve un Universal ID per lavorare ai progetti, che vengono salvati nel tuo account così puoi riprenderli su un altro computer. Per creare un Universal ID e avviare un'operazione non serve un numero di impresa. Gli accordi di esportazione però sono per un importatore o esportatore del Regno Unito, quindi prima di generarne uno aggiungi il tuo numero Companies House nei tuoi dati; l'app lo cerca così puoi confermare che l'azienda è tua.
 
 Quando finisci una sezione puoi bloccarla. Una sezione bloccata viene mostrata come documento finito e la barra laterale indica quali sezioni richiedono ancora dati obbligatori.
 
@@ -177,7 +177,7 @@ Il tuo logo, la lingua scelta e l'ultimo contatto selezionato vengono ricordati 
 ## Servizi con cui l'app comunica
 
 - **UK Trade Tariff Service** — quando cerchi un codice doganale, il codice viene inviato lì.
-- **Ricerca su Companies House** — quando crei un Universal ID, il numero di impresa che inserisci viene verificato tramite il server di UNI·SIM.
+- **Ricerca su Companies House** — quando cerchi il tuo numero di impresa nei tuoi dati, viene verificato tramite il server di UNI·SIM.
 - **Email** — se chiedi all'app di inviare una richiesta di firma, l'indirizzo del destinatario, il suo nome e il link di firma vengono trasmessi al fornitore email di UNI·SIM per recapitarla.
 
 ## Backup ospitati

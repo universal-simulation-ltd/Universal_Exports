@@ -38,6 +38,18 @@ export function isValidCompanyNumber(raw: string): boolean {
   return /^[A-Z0-9]{8}$/.test(normalizeCompanyNumber(raw));
 }
 
+/**
+ * Where the drafter's own company number stands for the Export Agreement
+ * checklist: nothing entered, entered but not a Companies House number, or
+ * fine. The agreement can't be generated until it is "ok" (it is for a UK
+ * importer or exporter); a Universal ID and a new deal don't need it.
+ */
+export function agreementCompanyNumberStatus(raw: string | null | undefined): "missing" | "invalid" | "ok" {
+  const v = (raw ?? "").trim();
+  if (!v) return "missing";
+  return isValidCompanyNumber(v) ? "ok" : "invalid";
+}
+
 export async function lookupCompany(raw: string): Promise<CompanyLookupResult> {
   const number = normalizeCompanyNumber(raw);
   if (!/^[A-Z0-9]{8}$/.test(number)) return { ok: false, reason: "invalid_number" };

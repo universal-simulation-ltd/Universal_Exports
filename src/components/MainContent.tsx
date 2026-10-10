@@ -14,6 +14,8 @@ import TooltipLabel from "@/components/TooltipLabel";
 import ProductDetails from "@/components/ProductDetails";
 import CustomsLookup from "@/components/CustomsLookup";
 import ExportAgreementWorkflow from "@/components/ExportAgreementWorkflow";
+import CompanyNumberLookup from "@/components/CompanyNumberLookup";
+import { agreementCompanyNumberStatus, normalizeCompanyNumber } from "@/lib/companiesHouse";
 import LockedSectionView from "@/components/LockedSectionView";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
@@ -747,10 +749,13 @@ const MainContent = ({
   }, []);
 
   // Company details form fragment
+  // `own` = the drafter's own company: its number gets the Companies House
+  // lookup (and is what the Export Agreement checklist requires).
   const companyFields = (
     details: CompanyDetails,
     onChange: (d: CompanyDetails) => void,
-    label: string
+    label: string,
+    own = false
   ) => (
     <div className="space-y-3">
       <p className="text-sm font-medium text-foreground">{label}</p>
@@ -762,10 +767,14 @@ const MainContent = ({
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.tradingName")}</label>
         <Input placeholder={t("field.tradingName")} className="bg-secondary/50" value={details.tradingName} onChange={(e) => onChange({ ...details, tradingName: e.target.value })} />
       </div>
+      {own ? (
+        <CompanyNumberLookup details={details} onChange={onChange} />
+      ) : (
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.companyNumber")}</label>
         <Input placeholder={tf("common.eg", { example: "12345678" })} className="bg-secondary/50" value={details.companyNumber} onChange={(e) => onChange({ ...details, companyNumber: e.target.value })} />
       </div>
+      )}
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("field.vatNumber")}</label>
         <Input placeholder={tf("common.eg", { example: "GB123456789" })} className="bg-secondary/50" value={details.vatNumber} onChange={(e) => onChange({ ...details, vatNumber: e.target.value })} />
@@ -831,7 +840,7 @@ const MainContent = ({
               </Button>
             )}
           </div>
-          {companyFields(editYourDetails, setEditYourDetails, "")}
+          {companyFields(editYourDetails, setEditYourDetails, "", true)}
           <Button onClick={handleSaveYourDetails} className="mt-4">
             <Save className="mr-2 h-4 w-4" />
             {t("yourDetails.save")}
@@ -1081,7 +1090,7 @@ const MainContent = ({
                               </Button>
                             )}
                           </div>
-                          {companyFields(yourDetails, setYourDetails, "")}
+                          {companyFields(yourDetails, setYourDetails, "", true)}
                         </>
                       )}
                     </div>
@@ -1757,7 +1766,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   <div id={`${foldId}-party-you`} className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
                     {editingYourDetails ? (
                       <div className="space-y-3 pt-2">
-                        {companyFields(yourDetails, setYourDetails, "")}
+                        {companyFields(yourDetails, setYourDetails, "", true)}
                         <div className="flex gap-2">
                           <Button size="sm" onClick={async () => { await saveYourDetails(yourDetails); setEditYourDetails(yourDetails); setEditingYourDetails(false); toast.success(t("proj.yoursUpdated")); }}>
                             <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
@@ -2204,7 +2213,23 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             }
           }
 
-          // 5. Required sections filled
+          // 5. Your Companies House number. Not asked for at sign-up (anyone can
+          // create a Universal ID and start a deal), but the agreement is for a
+          // UK importer or exporter, so it can't be generated — and so can't be
+          // signed or sent — until the drafter's own company number is valid.
+          const crn = (yourDetails.companyNumber || "").trim();
+          const crnStatus = agreementCompanyNumberStatus(crn);
+          const crnOk = crnStatus === "ok";
+          checks.push({
+            label: t("agree.crnTitle"),
+            status: crnOk ? "pass" : "missing",
+            details: crnOk
+              ? tf("auth.companyNo", { number: normalizeCompanyNumber(crn) })
+              : crnStatus === "invalid" ? `${t("auth.invalidNumber")} ${t("agree.crnMissing")}` : t("agree.crnMissing"),
+            links: crnOk ? undefined : [{ label: t("yourDetails.title"), docId: "your-details" }],
+          });
+
+          // 6. Required sections filled
           const requiredSections = [
             { label: t("txn.title"), docId: "transaction", keys: ["billAmount", "drawer", "drawee"] },
             { label: t("ship.title"), docId: "shipment", keys: ["incoterms", "portLoading", "portDischarge"] },
@@ -2221,7 +2246,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             });
           }
 
-          // 6. Product total vs transaction amount
+          // 7. Product total vs transaction amount
           const prodTotal = productTotals.totalIncTax;
           const txnAmount = parseFloat(val("transaction", "billAmount")) || 0;
           if (prodTotal > 0 && txnAmount > 0 && Math.abs(prodTotal - txnAmount) > 0.01) {

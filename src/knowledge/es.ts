@@ -95,7 +95,7 @@ Los Incoterms son un conjunto de reglas comerciales estándar publicadas por la 
 
 ## Proyectos
 
-Un proyecto reúne todo lo relativo a una operación: sus datos, la otra parte, los productos, el envío, el pago y cada sección de los documentos. Necesita un Universal ID para trabajar en proyectos, que se guardan en su cuenta para que pueda retomarlos en otro ordenador. Cuando crea un Universal ID aquí, se le pide un número de Companies House del Reino Unido; la aplicación lo busca para que pueda confirmar que la empresa es suya.
+Un proyecto reúne todo lo relativo a una operación: sus datos, la otra parte, los productos, el envío, el pago y cada sección de los documentos. Necesita un Universal ID para trabajar en proyectos, que se guardan en su cuenta para que pueda retomarlos en otro ordenador. Para crear un Universal ID y empezar una operación no necesita número de empresa. Sin embargo, los acuerdos de exportación son para un importador o exportador del Reino Unido, así que antes de generar uno añade su número de Companies House en sus datos; la aplicación lo busca para que pueda confirmar que la empresa es suya.
 
 Al terminar una sección, puede bloquearla. Una sección bloqueada se muestra como un documento terminado, y la barra lateral indica qué secciones aún necesitan datos obligatorios.
 
@@ -177,7 +177,7 @@ Su logotipo, el idioma elegido y el último contacto que seleccionó los recuerd
 ## Servicios con los que se comunica la aplicación
 
 - **UK Trade Tariff Service** — cuando consulta un código de mercancía, el código se envía allí.
-- **Consulta en Companies House** — cuando crea un Universal ID, el número de empresa que introduce se comprueba a través del servidor de UNI·SIM.
+- **Consulta en Companies House** — cuando busca su número de empresa en sus datos, se comprueba a través del servidor de UNI·SIM.
 - **Correo electrónico** — si pide a la aplicación que envíe una solicitud de firma, la dirección del destinatario, su nombre y el enlace de firma se transmiten al proveedor de correo de UNI·SIM para entregarla.
 
 ## Copias alojadas

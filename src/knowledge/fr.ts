@@ -95,7 +95,7 @@ Les Incoterms sont un ensemble de règles commerciales normalisées publiées pa
 
 ## Projets
 
-Un projet regroupe tout ce qui concerne une opération : vos coordonnées, l'autre partie, les produits, l'expédition, le paiement et chaque section de document. Il vous faut un Universal ID pour travailler sur des projets, et ceux-ci sont enregistrés dans votre compte afin que vous puissiez les reprendre sur un autre ordinateur. Lorsque vous créez un Universal ID ici, un numéro de Companies House britannique vous est demandé ; l'application le recherche pour que vous puissiez confirmer que l'entreprise est bien la vôtre.
+Un projet regroupe tout ce qui concerne une opération : vos coordonnées, l'autre partie, les produits, l'expédition, le paiement et chaque section de document. Il vous faut un Universal ID pour travailler sur des projets, et ceux-ci sont enregistrés dans votre compte afin que vous puissiez les reprendre sur un autre ordinateur. Créer un Universal ID et démarrer une opération ne demandent aucun numéro d'entreprise. Les accords d'exportation sont toutefois destinés à un importateur ou exportateur britannique : avant d'en générer un, vous ajoutez votre numéro Companies House dans vos coordonnées ; l'application le recherche pour que vous puissiez confirmer que l'entreprise est bien la vôtre.
 
 Une fois une section terminée, vous pouvez la verrouiller. Une section verrouillée s'affiche comme un document finalisé, et la barre latérale indique les sections dans lesquelles il manque encore des informations obligatoires.
 
@@ -177,7 +177,7 @@ Votre logo, votre choix de langue et le dernier contact que vous avez sélection
 ## Services avec lesquels l'application communique
 
 - **UK Trade Tariff Service** — lorsque vous recherchez un code de nomenclature, le code y est envoyé.
-- **Recherche Companies House** — lorsque vous créez un Universal ID, le numéro d'entreprise que vous saisissez est vérifié par l'intermédiaire du serveur d'UNI·SIM.
+- **Recherche Companies House** — lorsque vous recherchez votre numéro d'entreprise dans vos coordonnées, il est vérifié par l'intermédiaire du serveur d'UNI·SIM.
 - **E-mail** — si vous demandez à l'application d'envoyer une demande de signature, l'adresse du destinataire, son nom et le lien de signature sont transmis au fournisseur de messagerie d'UNI·SIM pour la distribuer.
 
 ## Sauvegardes hébergées

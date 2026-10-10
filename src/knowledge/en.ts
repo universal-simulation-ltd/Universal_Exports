@@ -95,7 +95,7 @@ Incoterms are a set of standard trade rules published by the International Chamb
 
 ## Projects
 
-A project holds everything about one deal: your details, the other party, products, shipment, payment and every document section. You need a Universal ID to work on projects, and they are saved to your account so you can pick them up again on another computer. When you create a Universal ID here, you are asked for a UK Companies House number; the app looks it up so you can confirm the company is yours.
+A project holds everything about one deal: your details, the other party, products, shipment, payment and every document section. You need a Universal ID to work on projects, and they are saved to your account so you can pick them up again on another computer. Creating a Universal ID and starting a deal don't need a company number. Export agreements are for a UK importer or exporter, though, so before you generate one you add your Companies House number in Your details; the app looks it up so you can confirm the company is yours.
 
 As you finish a section you can lock it. A locked section is shown as a finished document, and the sidebar shows which sections still need required details.
 
@@ -177,7 +177,7 @@ Your logo, your language choice and the last contact you picked are remembered b
 ## Services the app talks to
 
 - **UK Trade Tariff Service** — when you look up a commodity code, the code is sent there.
-- **Companies House lookup** — when you create a Universal ID, the company number you enter is checked through UNI·SIM's server.
+- **Companies House lookup** — when you look up your company number in Your details, it is checked through UNI·SIM's server.
 - **Email** — if you ask the app to send a signing request, the recipient's address, their name and the signing link are passed to UNI·SIM's email provider to deliver it.
 
 ## Hosted backups

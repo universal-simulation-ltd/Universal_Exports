@@ -95,7 +95,7 @@ Os Incoterms são um conjunto de regras comerciais normalizadas publicadas pela 
 
 ## Projetos
 
-Um projeto reúne tudo sobre um negócio: os seus dados, a outra parte, os produtos, a expedição, o pagamento e cada secção de documento. Precisa de um Universal ID para trabalhar em projetos, e estes são guardados na sua conta para que os possa retomar noutro computador. Ao criar aqui um Universal ID, é-lhe pedido um número da Companies House do Reino Unido; a aplicação consulta-o para que possa confirmar que a empresa é sua.
+Um projeto reúne tudo sobre um negócio: os seus dados, a outra parte, os produtos, a expedição, o pagamento e cada secção de documento. Precisa de um Universal ID para trabalhar em projetos, e estes são guardados na sua conta para que os possa retomar noutro computador. Criar um Universal ID e iniciar um negócio não exigem número de empresa. Mas os acordos de exportação destinam-se a um importador ou exportador do Reino Unido, por isso, antes de gerar um, indica o número da Companies House nos seus dados; a aplicação consulta-o para que possa confirmar que a empresa é sua.
 
 Quando termina uma secção, pode bloqueá-la. Uma secção bloqueada é apresentada como documento concluído, e a barra lateral mostra que secções ainda precisam de dados obrigatórios.
 
@@ -177,7 +177,7 @@ O seu logótipo, o idioma escolhido e o último contacto selecionado ficam memor
 ## Serviços com que a aplicação comunica
 
 - **UK Trade Tariff Service** — quando consulta um código de mercadoria, o código é enviado para esse serviço.
-- **Consulta à Companies House** — quando cria um Universal ID, o número da empresa que introduz é verificado através do servidor da UNI·SIM.
+- **Consulta à Companies House** — quando consulta o número da sua empresa nos seus dados, este é verificado através do servidor da UNI·SIM.
 - **E-mail** — se pedir à aplicação que envie um pedido de assinatura, o endereço do destinatário, o nome deste e a ligação de assinatura são transmitidos ao fornecedor de e-mail da UNI·SIM para a entrega.
 
 ## Cópias de segurança alojadas

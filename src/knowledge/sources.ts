@@ -120,7 +120,7 @@ export const SOURCES: Record<string, Source[]> = {
     },
     {
       kind: 'guidance',
-      title: 'Companies House API — the company lookup at sign-up',
+      title: 'Companies House API — the company lookup in Your details',
       publisher: 'Companies House',
       href: 'https://developer.company-information.service.gov.uk/',
     },

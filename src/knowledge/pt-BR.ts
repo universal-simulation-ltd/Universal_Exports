@@ -95,7 +95,7 @@ Os Incoterms são um conjunto de regras comerciais padronizadas publicadas pela 
 
 ## Projetos
 
-Um projeto reúne tudo sobre um negócio: seus dados, a outra parte, os produtos, o embarque, o pagamento e cada seção de documento. Você precisa de um Universal ID para trabalhar em projetos, e eles são salvos na sua conta para que você possa retomá-los em outro computador. Ao criar um Universal ID aqui, será solicitado um número da Companies House do Reino Unido; o app o consulta para que você confirme que a empresa é sua.
+Um projeto reúne tudo sobre um negócio: seus dados, a outra parte, os produtos, o embarque, o pagamento e cada seção de documento. Você precisa de um Universal ID para trabalhar em projetos, e eles são salvos na sua conta para que você possa retomá-los em outro computador. Criar um Universal ID e iniciar um negócio não exigem número de empresa. Mas os contratos de exportação são para um importador ou exportador do Reino Unido, então, antes de gerar um, você informa o número da Companies House nos seus dados; o app o consulta para que você confirme que a empresa é sua.
 
 Ao terminar uma seção, você pode bloqueá-la. Uma seção bloqueada é exibida como documento finalizado, e a barra lateral mostra quais seções ainda precisam de dados obrigatórios.
 
@@ -177,7 +177,7 @@ Seu logotipo, o idioma escolhido e o último contato selecionado ficam guardados
 ## Serviços com que o app se comunica
 
 - **UK Trade Tariff Service** — quando você consulta um código de mercadoria, o código é enviado para lá.
-- **Consulta à Companies House** — quando você cria um Universal ID, o número da empresa que você informa é verificado pelo servidor da UNI·SIM.
+- **Consulta à Companies House** — quando você consulta o número da sua empresa nos seus dados, ele é verificado pelo servidor da UNI·SIM.
 - **E-mail** — se você pedir ao app que envie uma solicitação de assinatura, o endereço do destinatário, o nome dele e o link de assinatura são repassados ao provedor de e-mail da UNI·SIM para a entrega.
 
 ## Backups hospedados

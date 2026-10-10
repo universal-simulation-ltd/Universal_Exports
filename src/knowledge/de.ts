@@ -95,7 +95,7 @@ Incoterms sind eine Reihe standardisierter Handelsregeln, die von der Internatio
 
 ## Projekte
 
-Ein Projekt enthält alles zu einem Geschäft: Ihre Angaben, die andere Partei, Produkte, Versand, Zahlung und jeden Dokumentabschnitt. Sie brauchen eine Universal ID, um an Projekten zu arbeiten, und diese werden in Ihrem Konto gespeichert, sodass Sie sie auf einem anderen Computer wieder aufnehmen können. Wenn Sie hier eine Universal ID erstellen, werden Sie nach einer britischen Companies-House-Nummer gefragt; die App schlägt sie nach, damit Sie bestätigen können, dass das Unternehmen Ihres ist.
+Ein Projekt enthält alles zu einem Geschäft: Ihre Angaben, die andere Partei, Produkte, Versand, Zahlung und jeden Dokumentabschnitt. Sie brauchen eine Universal ID, um an Projekten zu arbeiten, und diese werden in Ihrem Konto gespeichert, sodass Sie sie auf einem anderen Computer wieder aufnehmen können. Für eine Universal ID und ein neues Geschäft brauchen Sie keine Unternehmensnummer. Exportvereinbarungen sind jedoch für einen britischen Importeur oder Exporteur, daher tragen Sie vor dem Generieren Ihre Companies-House-Nummer in Ihre Daten ein; die App schlägt sie nach, damit Sie bestätigen können, dass das Unternehmen Ihres ist.
 
 Wenn Sie einen Abschnitt fertiggestellt haben, können Sie ihn sperren. Ein gesperrter Abschnitt wird als fertiges Dokument angezeigt, und die Seitenleiste zeigt, in welchen Abschnitten noch Pflichtangaben fehlen.
 
@@ -177,7 +177,7 @@ Ihr Logo, Ihre Sprachwahl und der zuletzt ausgewählte Kontakt werden von diesem
 ## Dienste, mit denen die App kommuniziert
 
 - **UK Trade Tariff Service** — wenn Sie eine Warennummer nachschlagen, wird die Nummer dorthin gesendet.
-- **Companies-House-Abfrage** — wenn Sie eine Universal ID erstellen, wird die eingegebene Unternehmensnummer über den Server von UNI·SIM geprüft.
+- **Companies-House-Abfrage** — wenn Sie Ihre Unternehmensnummer in Ihren Daten nachschlagen, wird sie über den Server von UNI·SIM geprüft.
 - **E-Mail** — wenn Sie die App eine Unterschriftsanfrage senden lassen, werden die Adresse des Empfängers, sein Name und der Unterschriftslink an den E-Mail-Anbieter von UNI·SIM übermittelt, um sie zuzustellen.
 
 ## Gehostete Sicherungen

@@ -95,7 +95,7 @@ Incoterms, Milletlerarası Ticaret Odası tarafından yayımlanan standart ticar
 
 ## Projeler
 
-Bir proje, bir anlaşmayla ilgili her şeyi içerir: sizin bilgileriniz, karşı taraf, ürünler, sevkiyat, ödeme ve her belge bölümü. Projeler üzerinde çalışmak için bir Universal ID'ye ihtiyacınız vardır ve projeler, başka bir bilgisayarda kaldığınız yerden devam edebilmeniz için hesabınıza kaydedilir. Burada bir Universal ID oluşturduğunuzda sizden Birleşik Krallık Companies House numarası istenir; uygulama, şirketin size ait olduğunu teyit edebilmeniz için bu numarayı sorgular.
+Bir proje, bir anlaşmayla ilgili her şeyi içerir: sizin bilgileriniz, karşı taraf, ürünler, sevkiyat, ödeme ve her belge bölümü. Projeler üzerinde çalışmak için bir Universal ID'ye ihtiyacınız vardır ve projeler, başka bir bilgisayarda kaldığınız yerden devam edebilmeniz için hesabınıza kaydedilir. Universal ID oluşturmak ve bir anlaşma başlatmak için şirket numarası gerekmez. Ancak ihracat sözleşmeleri Birleşik Krallık'taki bir ithalatçı ya da ihracatçı içindir; bu yüzden bir sözleşme oluşturmadan önce Companies House numaranızı bilgilerinize eklersiniz. Uygulama, şirketin size ait olduğunu teyit edebilmeniz için bu numarayı sorgular.
 
 Bir bölümü bitirdiğinizde onu kilitleyebilirsiniz. Kilitli bir bölüm tamamlanmış bir belge olarak gösterilir ve kenar çubuğu hangi bölümlerde hâlâ zorunlu bilgilerin eksik olduğunu gösterir.
 
@@ -177,7 +177,7 @@ Logonuz, dil tercihiniz ve en son seçtiğiniz kişi, bu bilgisayardaki bu taray
 ## Uygulamanın iletişim kurduğu hizmetler
 
 - **UK Trade Tariff Service** — bir GTİP kodu sorguladığınızda kod oraya gönderilir.
-- **Companies House sorgusu** — bir Universal ID oluşturduğunuzda girdiğiniz şirket numarası UNI·SIM'in sunucusu üzerinden kontrol edilir.
+- **Companies House sorgusu** — bilgilerinizde şirket numaranızı sorguladığınızda numara UNI·SIM'in sunucusu üzerinden kontrol edilir.
 - **E-posta** — uygulamadan bir imza talebi göndermesini isterseniz alıcının adresi, adı ve imza bağlantısı, teslim edilmesi için UNI·SIM'in e-posta sağlayıcısına iletilir.
 
 ## Barındırılan yedekler
