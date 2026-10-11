@@ -92,7 +92,7 @@ export default function Landing() {
               ))}
             </div>
 
-            <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Languages className="h-3.5 w-3.5" /> {t("landing.languages")}
               </span>
@@ -109,12 +109,14 @@ export default function Landing() {
               to do. From lg up it is the right-hand column again. */}
           <div className="order-first lg:order-none">
             <div className="relative rounded-lg border border-border bg-card shadow-xs overflow-hidden">
-              {/* "100% Free for UK businesses" corner ribbon — z-0 so the navbar changelog
-                  dropdown (which floats down over this card) stays on top. */}
-              <div className="pointer-events-none absolute top-[26px] right-[-58px] z-0 w-48 rotate-45 origin-center bg-linear-to-r from-primary to-[#E54E0F] text-primary-foreground text-center text-[9px] font-bold uppercase tracking-[0.06em] py-1.5 shadow-[0_2px_8px_rgba(247,106,31,0.35)] ring-1 ring-primary/40 select-none whitespace-nowrap">
-                {t("landing.ribbon")}
-              </div>
               <div className="flex flex-col items-center justify-center p-8 md:p-10">
+                {/* "100% Free for UK businesses". This was a rotated corner
+                    ribbon, but the card's overflow-hidden cut its text off at
+                    every width and language ("…UK BUSINE" in English, far less in
+                    the longer translations). A chip in the flow fits and wraps. */}
+                <Chip size="sm" icon={<span>🇬🇧</span>} className="mb-5 max-w-full whitespace-normal! text-center">
+                  {t("landing.ribbon")}
+                </Chip>
                 <FileCheck className="h-12 w-12 text-primary mb-4" />
                 <h2 className="text-2xl font-semibold text-foreground mb-1 text-center">
                   {t("landing.createFolder")}
