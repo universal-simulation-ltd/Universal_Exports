@@ -53,14 +53,40 @@ async function callSign(body: Record<string, unknown>): Promise<SignResult> {
   return { ok: false, code: 'network' }
 }
 
-/** Record that the signer opened stored PDF `viewId` (time, IP, browser). */
-export function recordDocumentViewed(token: string, viewId: string): Promise<SignResult> {
-  return callSign({ action: 'view', token, viewId })
+// The signer's country for the audit trail. The Edge Function can't see it
+// (Supabase drops Cloudflare's country header), so the suite's portal Worker,
+// which can, hands out a short-lived signed token naming it, and the function
+// checks the signature before recording it. Best effort: no token, no country;
+// signing is never held up for it.
+const GEO_URL = 'https://opensource.unisim.co.uk/api/geo'
+let geoCache: { token: string; at: number } | null = null
+
+async function geoToken(): Promise<string | undefined> {
+  // Tokens live 10 minutes; reuse one for 8.
+  if (geoCache && Date.now() - geoCache.at < 8 * 60_000) return geoCache.token
+  try {
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 2500)
+    const res = await fetch(GEO_URL, { signal: ctrl.signal, cache: 'no-store' })
+    clearTimeout(timer)
+    if (!res.ok) return undefined
+    const { token } = (await res.json()) as { token?: string }
+    if (typeof token !== 'string') return undefined
+    geoCache = { token, at: Date.now() }
+    return token
+  } catch {
+    return undefined
+  }
+}
+
+/** Record that the signer opened stored PDF `viewId` (time, IP, browser, country). */
+export async function recordDocumentViewed(token: string, viewId: string): Promise<SignResult> {
+  return callSign({ action: 'view', token, viewId, geo: await geoToken() })
 }
 
 /** Sign the opened document; the server then builds the signed copy. */
-export function submitSignature(args: { token: string; viewId: string; name: string; signature: string }): Promise<SignResult> {
-  return callSign({ action: 'submit', ...args })
+export async function submitSignature(args: { token: string; viewId: string; name: string; signature: string }): Promise<SignResult> {
+  return callSign({ action: 'submit', ...args, geo: await geoToken() })
 }
 
 /** Build the signed copy for a signed link that has none yet. Idempotent. */
