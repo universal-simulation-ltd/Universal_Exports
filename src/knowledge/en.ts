@@ -108,7 +108,7 @@ The PDFs, including the export agreement and each individual document, are produ
 - **PDFs** of the export agreement and of each document, before and after signing.
 - **Deal XML** — the agreement's details as a structured file that other trade or customs software can read.
 - **Save to desktop** — the whole editable project as a backup file. You can open it again later to carry on editing and regenerate the documents. It does not include your signature, which lives only on the signed PDF.
-- **Box labels** — a printable sheet of QR labels to stick on each carton. See the privacy article for what those codes open.
+- **Box labels** — a printable sheet of QR labels to stick on each carton, when you add the QR code to the agreement. See the privacy article for what those codes open.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ A drawn signature captured this way records that a named person signed at a part
 ## Saved to your account
 
 - Your projects, including every document's details.
-- Your own company details, your saved contacts, your bank details and your product catalogue.
+- Your own company details, your saved contacts and your product catalogue.
+- Your bank details, only if you tick **Save bank details to my account** under Bank Details. The box starts unticked; it is already ticked if you saved bank details to your account before this choice existed. Untick it to keep them on this device only, and use **Remove it from my account** to delete the copy saved there.
 
 These are stored in UNI·SIM's database under your Universal ID. The database only lets your signed-in account read or change them. Everything travels over encrypted connections, but it is not end-to-end encrypted: the data is held so the service can give it back to you, not locked with a key only you hold.
 
 ## Kept only in your browser
 
-Your logo, your language choice and the last contact you picked are remembered by this browser on this computer. They are not saved to your account.
+Your logo, your language choice, the last contact you picked and, unless you save them to your account, your bank details are remembered by this browser on this computer. They are not saved to your account.
+
+## Agreements you generate
+
+An agreement PDF is built in your browser and stays there unless you share it. A copy (the PDF and the details in it) is stored online in two cases only:
+
+- **You tick Add a QR code that opens an online copy** before you generate or sign. The box starts unticked.
+- **You create a counter-sign link,** because the other party has to be able to open the agreement. The copy on your screen is stored then. While the link is waiting for a signature, each new version you generate or sign is stored too, so they always open the latest one.
 
 ## Links and QR codes
 
-- **The QR code on a generated agreement, and on the box labels,** opens a read-only online copy of that agreement, including the PDF. Anyone who has the link or can scan the code can view it; no sign-in is needed. That is the point, so a buyer or a customs officer can check the paperwork, but it also means you should share those codes only with people who should see the deal. The link is a long random code that cannot be guessed. The online copy is only created when you are signed in; without it, the agreement is made without a QR code and the box labels are marked as a preview.
+- **The QR code on an agreement, and on the box labels,** is only there if you ticked Add a QR code. It opens a read-only online copy of that agreement, including the PDF. Anyone who has the link or can scan the code can view it; no sign-in is needed. That is the point, so a buyer or a customs officer can check the paperwork, but it also means you should share those codes only with people who should see the deal. The link is a long random code that cannot be guessed. The online copy can only be created when you are signed in; without it, the agreement is made without a QR code and the box labels are marked as a preview.
 - **A counter-sign link** lets whoever holds it open the request and sign it once, and afterwards look up who signed it. Send it only to the person who should sign. It also opens the latest agreement PDF for the project. Deleting a project deletes its online copies and counter-sign links, so its QR codes and signing links stop working.
 - **The phone signature hand-off** is not stored at all; see the signing article.
+
+## Signing evidence
+
+When the other party opens the agreement from a counter-sign link, and again when they sign it, UNI·SIM's server records:
+
+- the time;
+- their IP address;
+- their browser, as the user-agent text it sends (which browser and operating system, and their versions);
+- their country, worked out from the IP address by Cloudflare. No precise location is recorded, and the device's location is never asked for.
+
+It also records the SHA-256 fingerprint of the document they opened and of the signed copy. This is the evidence an electronic signature rests on, and the other party is told before they sign. It is shown only to the two of you: in your counter-sign panel, to whoever holds the signing link, and on the audit page added to the signed copy. It never appears on the public page for checking a signed copy. Nothing like this is recorded when you sign your own copy.
+
+Signing evidence and the signed copy are kept for 7 years after signing, then deleted. Deleting the project or your account deletes them sooner.
 
 ## Services the app talks to
 

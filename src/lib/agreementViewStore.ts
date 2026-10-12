@@ -2,10 +2,16 @@ import { supabase } from './supabase'
 import { isUuid } from './signatureStore'
 import type { AgreementPdfInput, CounterpartyBox } from './exportAgreementPdf'
 
-// Read-only agreement views — back the QR code stamped on every generated
-// Export Agreement PDF. See supabase/schema.sql → public.agreement_views.
+// Read-only agreement views — back the QR code on a generated Export Agreement
+// PDF, and the document a counter-sign link opens. See supabase/schema.sql →
+// public.agreement_views.
 //
-// Each generate / sign mints one immutable row: a JSON snapshot of the
+// Opt-in: a row is only written when the drafter ticks "Add a QR code that
+// opens an online copy", or makes a counter-sign link (and, while that link is
+// waiting for a signature, for each newer version). Otherwise the PDF never
+// leaves the browser. See ExportAgreementWorkflow.
+//
+// Each stored generate / sign is one immutable row: a JSON snapshot of the
 // agreement data plus the PDF itself, keyed by the uuid token in the public
 // /view/:token URL. The token is client-minted (crypto.randomUUID) because
 // the QR has to be baked into the PDF before the row can be written.

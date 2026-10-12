@@ -208,8 +208,10 @@ grant execute on function public.exports_submit_agreement_counter_signature(uuid
 create index if not exists exports_agreement_signatures_user_project_idx
   on public.exports_agreement_signatures(user_id, project_id);
 
--- READ-ONLY AGREEMENT VIEWS — backs the QR code stamped on every generated
--- Export Agreement PDF. Each generate / sign mints one immutable row: a JSON
+-- READ-ONLY AGREEMENT VIEWS — backs the QR code on a generated Export
+-- Agreement PDF and the document a counter-sign link opens. Written only when
+-- the drafter opts in (the QR option, or making a counter-sign link). Each
+-- stored generate / sign is one immutable row: a JSON
 -- snapshot of the agreement data plus the PDF itself (data URL, same pattern
 -- as the stored signature images), keyed by the random uuid token used in the
 -- public /view/:token URL.

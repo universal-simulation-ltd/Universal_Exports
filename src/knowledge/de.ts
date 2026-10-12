@@ -108,7 +108,7 @@ Die PDFs, einschließlich der Exportvereinbarung und jedes einzelnen Dokuments, 
 - **PDFs** der Exportvereinbarung und jedes Dokuments, vor und nach der Unterzeichnung.
 - **Deal XML** — die Angaben der Vereinbarung als strukturierte Datei, die andere Handels- oder Zollsoftware lesen kann.
 - **Auf dem Computer speichern** — das gesamte bearbeitbare Projekt als Sicherungsdatei. Sie können sie später wieder öffnen, um weiterzuarbeiten und die Dokumente neu zu erstellen. Ihre Unterschrift ist darin nicht enthalten; sie befindet sich nur im unterschriebenen PDF.
-- **Kartonetiketten** — ein druckbarer Bogen mit QR-Etiketten zum Aufkleben auf jeden Karton. Was diese Codes öffnen, erfahren Sie im Artikel zum Datenschutz.
+- **Kartonetiketten** — ein druckbarer Bogen mit QR-Etiketten zum Aufkleben auf jeden Karton, wenn Sie der Vereinbarung den QR-Code hinzufügen. Was diese Codes öffnen, erfahren Sie im Artikel zum Datenschutz.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Eine auf diese Weise erfasste gezeichnete Unterschrift belegt, dass eine namentl
 ## In Ihrem Konto gespeichert
 
 - Ihre Projekte, einschließlich der Angaben jedes Dokuments.
-- Ihre eigenen Unternehmensangaben, Ihre gespeicherten Kontakte, Ihre Bankverbindung und Ihr Produktkatalog.
+- Die Daten Ihres Unternehmens, Ihre gespeicherten Kontakte und Ihr Produktkatalog.
+- Ihre Bankdaten, nur wenn Sie unter Bankdaten **Bankdaten in meinem Konto speichern** ankreuzen. Das Kästchen ist zunächst nicht angekreuzt; es ist bereits angekreuzt, wenn Sie Bankdaten in Ihrem Konto gespeichert hatten, bevor es diese Wahl gab. Entfernen Sie das Häkchen, um sie nur auf diesem Gerät zu behalten, und löschen Sie die dort gespeicherte Kopie mit **Aus meinem Konto entfernen**.
 
 Diese Daten werden in der Datenbank von UNI·SIM unter Ihrer Universal ID gespeichert. Die Datenbank erlaubt nur Ihrem angemeldeten Konto, sie zu lesen oder zu ändern. Alles wird über verschlüsselte Verbindungen übertragen, aber nicht Ende-zu-Ende-verschlüsselt: Die Daten werden aufbewahrt, damit der Dienst sie Ihnen zurückgeben kann, und nicht mit einem Schlüssel verschlossen, den nur Sie besitzen.
 
 ## Nur in Ihrem Browser gespeichert
 
-Ihr Logo, Ihre Sprachwahl und der zuletzt ausgewählte Kontakt werden von diesem Browser auf diesem Computer gespeichert. Sie werden nicht in Ihrem Konto gespeichert.
+Ihr Logo, Ihre Sprachwahl, der zuletzt gewählte Kontakt und, sofern Sie sie nicht in Ihrem Konto speichern, Ihre Bankdaten werden von diesem Browser auf diesem Computer gespeichert. Sie werden nicht in Ihrem Konto gespeichert.
+
+## Vereinbarungen, die Sie erstellen
+
+Das PDF einer Vereinbarung wird in Ihrem Browser erstellt und bleibt dort, solange Sie es nicht teilen. Eine Kopie (das PDF und die Angaben darin) wird nur in zwei Fällen online gespeichert:
+
+- **Sie kreuzen QR-Code hinzufügen, der eine Online-Kopie öffnet an,** bevor Sie erstellen oder unterschreiben. Das Kästchen ist zunächst nicht angekreuzt.
+- **Sie erstellen einen Link zur Gegenzeichnung,** denn die andere Partei muss die Vereinbarung öffnen können. Dann wird die Kopie auf Ihrem Bildschirm gespeichert. Solange der Link auf eine Unterschrift wartet, wird auch jede neue Version gespeichert, die Sie erstellen oder unterschreiben, damit die andere Partei immer die neueste öffnet.
 
 ## Links und QR-Codes
 
-- **Der QR-Code auf einer erstellten Vereinbarung und auf den Kartonetiketten** öffnet eine schreibgeschützte Online-Kopie dieser Vereinbarung, einschließlich des PDFs. Jeder, der den Link hat oder den Code scannen kann, kann sie ansehen; eine Anmeldung ist nicht nötig. Das ist beabsichtigt, damit ein Käufer oder ein Zollbeamter die Unterlagen prüfen kann, bedeutet aber auch, dass Sie diese Codes nur mit Personen teilen sollten, die das Geschäft sehen sollen. Der Link ist ein langer Zufallscode, der nicht erraten werden kann. Die Online-Kopie wird nur erstellt, wenn Sie angemeldet sind; ohne sie wird die Vereinbarung ohne QR-Code erstellt und die Kartonetiketten werden als Vorschau gekennzeichnet.
+- **Der QR-Code auf einer Vereinbarung und auf den Kartonetiketten** ist nur vorhanden, wenn Sie QR-Code hinzufügen angekreuzt haben. Er öffnet eine schreibgeschützte Online-Kopie dieser Vereinbarung, einschließlich des PDFs. Jeder, der den Link hat oder den Code scannen kann, kann sie ansehen; eine Anmeldung ist nicht nötig. Das ist beabsichtigt, damit ein Käufer oder ein Zollbeamter die Unterlagen prüfen kann, bedeutet aber auch, dass Sie diese Codes nur mit Personen teilen sollten, die das Geschäft sehen sollen. Der Link ist ein langer Zufallscode, der nicht erraten werden kann. Die Online-Kopie kann nur erstellt werden, wenn Sie angemeldet sind; ohne sie wird die Vereinbarung ohne QR-Code erstellt und die Kartonetiketten werden als Vorschau gekennzeichnet.
 - **Ein Link zur Gegenzeichnung** erlaubt jedem, der ihn besitzt, die Anfrage zu öffnen und einmal zu unterschreiben und danach nachzusehen, wer unterschrieben hat. Senden Sie ihn nur an die Person, die unterschreiben soll. Er öffnet außerdem das neueste Vereinbarungs-PDF des Projekts. Wenn Sie ein Projekt löschen, werden seine Online-Kopien und Links zur Gegenzeichnung mitgelöscht, sodass seine QR-Codes und Unterschriftslinks nicht mehr funktionieren.
 - **Die Übergabe der Unterschrift ans Telefon** wird überhaupt nicht gespeichert; siehe den Artikel zum Unterschreiben.
+
+## Nachweise der Unterschrift
+
+Wenn die andere Partei die Vereinbarung über einen Link zur Gegenzeichnung öffnet, und noch einmal, wenn sie unterschreibt, speichert der Server von UNI·SIM:
+
+- die Uhrzeit;
+- ihre IP-Adresse;
+- ihren Browser, als den User-Agent-Text, den er sendet (Browser, Betriebssystem und deren Versionen);
+- ihr Land, das Cloudflare aus der IP-Adresse ermittelt. Es wird kein genauer Standort gespeichert, und der Standort des Geräts wird nie abgefragt.
+
+Außerdem speichert er den SHA-256-Fingerabdruck des geöffneten Dokuments und der unterschriebenen Kopie. Das sind die Nachweise, auf denen eine elektronische Unterschrift beruht, und die andere Partei wird vor dem Unterschreiben darauf hingewiesen. Sie werden nur Ihnen beiden gezeigt: in Ihrem Bereich zur Gegenzeichnung, jedem, der den Unterschriftslink besitzt, und auf der Prüfseite, die der unterschriebenen Kopie beigefügt wird. Auf der öffentlichen Seite zum Prüfen einer unterschriebenen Kopie erscheinen sie nie. Wenn Sie Ihr eigenes Exemplar unterschreiben, wird nichts dergleichen gespeichert.
+
+Nachweise der Unterschrift und die unterschriebene Kopie werden 7 Jahre nach der Unterschrift aufbewahrt und dann gelöscht. Wenn Sie das Projekt oder Ihr Konto löschen, werden sie früher gelöscht.
 
 ## Dienste, mit denen die App kommuniziert
 

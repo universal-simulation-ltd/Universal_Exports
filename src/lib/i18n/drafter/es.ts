@@ -99,6 +99,15 @@ export const drafterEs: DrafterMessages = {
   "bank.yourCount.other": "Tus bancos: {count} cuentas en divisa",
   "bank.partyCount.one": "Bancos de la otra parte: {count} cuenta en divisa",
   "bank.partyCount.other": "Bancos de la otra parte: {count} cuentas en divisa",
+  "bank.cloudSync": "Guardar los datos bancarios en mi cuenta",
+  "bank.cloudSyncHint": "Sin marcar, se guardan solo en este navegador, en este dispositivo.",
+  "bank.cloudSyncOnHint": "Se guardan en su Universal ID, así que le acompañan en sus otros dispositivos.",
+  "bank.cloudOn": "Datos bancarios guardados en su cuenta.",
+  "bank.cloudOff": "Los datos bancarios ahora se guardan solo en este dispositivo.",
+  "bank.cloudCopyKept": "Todavía hay una copia guardada en su cuenta.",
+  "bank.removeCloud": "Eliminarla de mi cuenta",
+  "bank.cloudRemoved": "Datos bancarios eliminados de su cuenta.",
+  "bank.cloudRemoveFailed": "No se pudieron eliminar los datos bancarios de su cuenta. Inténtelo de nuevo.",
 
   // Currency picker
   "currency.other": "Otra",

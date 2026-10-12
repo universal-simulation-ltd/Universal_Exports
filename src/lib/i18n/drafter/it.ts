@@ -99,6 +99,15 @@ export const drafterIt: DrafterMessages = {
   "bank.yourCount.other": "Le tue banche: {count} conti in valuta",
   "bank.partyCount.one": "Banche dell'altra parte: {count} conto in valuta",
   "bank.partyCount.other": "Banche dell'altra parte: {count} conti in valuta",
+  "bank.cloudSync": "Salva le coordinate bancarie nel mio account",
+  "bank.cloudSyncHint": "Se non selezionato, restano solo in questo browser, su questo dispositivo.",
+  "bank.cloudSyncOnHint": "Vengono salvate nel tuo Universal ID, così ti seguono sugli altri dispositivi.",
+  "bank.cloudOn": "Coordinate bancarie salvate nel tuo account.",
+  "bank.cloudOff": "Le coordinate bancarie ora restano solo su questo dispositivo.",
+  "bank.cloudCopyKept": "Una copia è ancora salvata nel tuo account.",
+  "bank.removeCloud": "Rimuovila dal mio account",
+  "bank.cloudRemoved": "Coordinate bancarie rimosse dal tuo account.",
+  "bank.cloudRemoveFailed": "Impossibile rimuovere le coordinate bancarie dal tuo account. Riprova.",
 
   // Currency picker
   "currency.other": "Altra",

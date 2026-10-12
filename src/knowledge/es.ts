@@ -108,7 +108,7 @@ Los PDF, incluidos el acuerdo de exportación y cada documento individual, los g
 - **PDF** del acuerdo de exportación y de cada documento, antes y después de la firma.
 - **Deal XML** — los datos del acuerdo como archivo estructurado que otros programas comerciales o aduaneros pueden leer.
 - **Guardar en el escritorio** — todo el proyecto editable como archivo de copia de seguridad. Puede volver a abrirlo más adelante para seguir editándolo y regenerar los documentos. No incluye su firma, que solo figura en el PDF firmado.
-- **Etiquetas para cajas** — una hoja imprimible de etiquetas QR para pegar en cada caja. Consulte el artículo sobre privacidad para saber qué abren esos códigos.
+- **Etiquetas para cajas** — una hoja imprimible de etiquetas QR para pegar en cada caja, cuando añade el código QR al acuerdo. Consulte el artículo sobre privacidad para saber qué abren esos códigos.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Una firma dibujada y recogida de este modo deja constancia de que una persona id
 ## Guardado en su cuenta
 
 - Sus proyectos, incluidos los datos de cada documento.
-- Los datos de su propia empresa, sus contactos guardados, sus datos bancarios y su catálogo de productos.
+- Los datos de su empresa, sus contactos guardados y su catálogo de productos.
+- Sus datos bancarios, solo si marca **Guardar los datos bancarios en mi cuenta** en Datos bancarios. La casilla empieza sin marcar; ya aparece marcada si guardó datos bancarios en su cuenta antes de que existiera esta opción. Desmárquela para guardarlos solo en este dispositivo y use **Eliminarla de mi cuenta** para borrar la copia guardada allí.
 
 Se almacenan en la base de datos de UNI·SIM vinculados a su Universal ID. La base de datos solo permite que su cuenta con sesión iniciada los lea o modifique. Todo viaja por conexiones cifradas, pero no con cifrado de extremo a extremo: los datos se conservan para que el servicio pueda devolvérselos, no bloqueados con una clave que solo usted posea.
 
 ## Guardado solo en su navegador
 
-Su logotipo, el idioma elegido y el último contacto que seleccionó los recuerda este navegador en este ordenador. No se guardan en su cuenta.
+Su logotipo, su elección de idioma, el último contacto que eligió y, salvo que los guarde en su cuenta, sus datos bancarios se recuerdan en este navegador, en este ordenador. No se guardan en su cuenta.
+
+## Los acuerdos que genera
+
+El PDF de un acuerdo se crea en su navegador y se queda ahí, salvo que usted lo comparta. Solo se guarda una copia en línea (el PDF y los datos que contiene) en dos casos:
+
+- **Marca Añadir un código QR que abre una copia en línea** antes de generar o firmar. La casilla empieza sin marcar.
+- **Crea un enlace de contrafirma,** porque la otra parte tiene que poder abrir el acuerdo. En ese momento se guarda la copia que tiene en pantalla. Mientras el enlace espera una firma, también se guarda cada nueva versión que usted genere o firme, para que la otra parte abra siempre la más reciente.
 
 ## Enlaces y códigos QR
 
-- **El código QR de un acuerdo generado, y el de las etiquetas para cajas,** abre una copia en línea de solo lectura de ese acuerdo, incluido el PDF. Cualquiera que tenga el enlace o pueda escanear el código puede verla; no hace falta iniciar sesión. Esa es la idea, para que un comprador o un funcionario de aduanas pueda comprobar la documentación, pero también significa que solo debe compartir esos códigos con personas que deban ver la operación. El enlace es un código aleatorio largo que no se puede adivinar. La copia en línea solo se crea cuando ha iniciado sesión; sin ella, el acuerdo se genera sin código QR y las etiquetas para cajas se marcan como vista previa.
+- **El código QR de un acuerdo, y el de las etiquetas para cajas,** solo aparece si marcó Añadir un código QR. Abre una copia en línea de solo lectura de ese acuerdo, incluido el PDF. Cualquiera que tenga el enlace o pueda escanear el código puede verla; no hace falta iniciar sesión. Esa es la idea, para que un comprador o un funcionario de aduanas pueda comprobar la documentación, pero también significa que solo debe compartir esos códigos con personas que deban ver la operación. El enlace es un código aleatorio largo que no se puede adivinar. La copia en línea solo puede crearse cuando ha iniciado sesión; sin ella, el acuerdo se genera sin código QR y las etiquetas para cajas se marcan como vista previa.
 - **Un enlace de contrafirma** permite a quien lo tenga abrir la solicitud y firmarla una vez, y después consultar quién la firmó. Envíelo solo a la persona que deba firmar. También abre el PDF del acuerdo más reciente del proyecto. Al eliminar un proyecto se eliminan sus copias en línea y sus enlaces de contrafirma, por lo que sus códigos QR y enlaces de firma dejan de funcionar.
 - **El paso de la firma por el teléfono** no se almacena en absoluto; consulte el artículo sobre la firma.
+
+## Pruebas de la firma
+
+Cuando la otra parte abre el acuerdo desde un enlace de contrafirma, y de nuevo cuando lo firma, el servidor de UNI·SIM registra:
+
+- la hora;
+- su dirección IP;
+- su navegador, como el texto «user-agent» que envía (el navegador, el sistema operativo y sus versiones);
+- su país, que Cloudflare deduce de la dirección IP. No se registra ninguna ubicación precisa y nunca se pide la ubicación del dispositivo.
+
+También registra la huella SHA-256 del documento que abrió y de la copia firmada. Son las pruebas en las que se apoya una firma electrónica, y se informa a la otra parte antes de firmar. Solo se muestran a ustedes dos: en su panel de contrafirma, a quien tenga el enlace de firma y en la página de auditoría añadida a la copia firmada. Nunca aparecen en la página pública para comprobar una copia firmada. No se registra nada parecido cuando usted firma su propia copia.
+
+Las pruebas de la firma y la copia firmada se conservan 7 años después de la firma y luego se eliminan. Si elimina el proyecto o su cuenta, se eliminan antes.
 
 ## Servicios con los que se comunica la aplicación
 

@@ -108,7 +108,7 @@ Os PDF, incluindo o contrato de exportação e cada documento individual, são g
 - **PDF** do contrato de exportação e de cada documento, antes e depois da assinatura.
 - **XML do negócio** — os dados do contrato num ficheiro estruturado que outro software de comércio ou aduaneiro consegue ler.
 - **Guardar no computador** — o projeto completo e editável como ficheiro de cópia de segurança. Pode abri-lo mais tarde para continuar a editar e voltar a gerar os documentos. Não inclui a sua assinatura, que existe apenas no PDF assinado.
-- **Etiquetas para caixas** — uma folha imprimível de etiquetas com código QR para colar em cada caixa. Consulte o artigo sobre privacidade para saber o que esses códigos abrem.
+- **Etiquetas para caixas** — uma folha imprimível de etiquetas com código QR para colar em cada caixa, quando adiciona o código QR ao contrato. Consulte o artigo sobre privacidade para saber o que esses códigos abrem.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Uma assinatura desenhada e captada desta forma regista que uma pessoa identifica
 ## Guardado na sua conta
 
 - Os seus projetos, incluindo os dados de cada documento.
-- Os dados da sua própria empresa, os seus contactos guardados, os seus dados bancários e o seu catálogo de produtos.
+- Os dados da sua empresa, os seus contactos guardados e o seu catálogo de produtos.
+- Os seus dados bancários, apenas se marcar **Guardar os dados bancários na minha conta** em Dados bancários. A caixa começa desmarcada; já vem marcada se guardou dados bancários na sua conta antes de esta opção existir. Desmarque-a para os manter apenas neste dispositivo e use **Remover da minha conta** para apagar a cópia aí guardada.
 
 Estes dados são armazenados na base de dados da UNI·SIM associados ao seu Universal ID. A base de dados só permite que a sua conta com sessão iniciada os leia ou altere. Tudo circula através de ligações encriptadas, mas não há encriptação ponto a ponto: os dados são guardados para que o serviço lhos possa devolver, e não trancados com uma chave que só o utilizador possui.
 
 ## Mantido apenas no seu navegador
 
-O seu logótipo, o idioma escolhido e o último contacto selecionado ficam memorizados neste navegador, neste computador. Não são guardados na sua conta.
+O seu logótipo, a sua escolha de idioma, o último contacto que selecionou e, a menos que os guarde na sua conta, os seus dados bancários ficam memorizados neste navegador, neste computador. Não são guardados na sua conta.
+
+## Os contratos que gera
+
+O PDF de um contrato é criado no seu navegador e fica nele, a menos que o partilhe. Uma cópia (o PDF e os dados que contém) só é guardada online em dois casos:
+
+- **Marca Adicionar um código QR que abre uma cópia online** antes de gerar ou assinar. A caixa começa desmarcada.
+- **Cria uma ligação de contra-assinatura,** porque a outra parte tem de conseguir abrir o contrato. A cópia que está no seu ecrã é guardada nesse momento. Enquanto a ligação aguarda uma assinatura, cada nova versão que gerar ou assinar também é guardada, para que a outra parte abra sempre a mais recente.
 
 ## Ligações e códigos QR
 
-- **O código QR num contrato gerado, e nas etiquetas para caixas,** abre uma cópia online só de leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha a ligação ou consiga ler o código pode vê-la; não é necessário iniciar sessão. É esse o objetivo, para que um comprador ou um funcionário aduaneiro possa verificar a documentação, mas também significa que só deve partilhar esses códigos com pessoas que devam ver o negócio. A ligação é um código aleatório longo que não pode ser adivinhado. A cópia online só é criada quando tem sessão iniciada; sem ela, o contrato é gerado sem código QR e as etiquetas para caixas são marcadas como pré-visualização.
+- **O código QR num contrato, e nas etiquetas para caixas,** só existe se marcou Adicionar um código QR. Abre uma cópia online só de leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha a ligação ou consiga ler o código pode vê-la; não é necessário iniciar sessão. É esse o objetivo, para que um comprador ou um funcionário aduaneiro possa verificar a documentação, mas também significa que só deve partilhar esses códigos com pessoas que devam ver o negócio. A ligação é um código aleatório longo que não pode ser adivinhado. A cópia online só pode ser criada quando tem sessão iniciada; sem ela, o contrato é gerado sem código QR e as etiquetas para caixas são marcadas como pré-visualização.
 - **Uma ligação de contra-assinatura** permite a quem a detiver abrir o pedido e assiná-lo uma vez e, depois, consultar quem o assinou. Envie-a apenas à pessoa que deve assinar. Também abre o PDF do contrato mais recente do projeto. Eliminar um projeto elimina as respetivas cópias online e ligações de contra-assinatura, pelo que os códigos QR e as ligações de assinatura deixam de funcionar.
 - **A passagem da assinatura para o telemóvel** não é armazenada de todo; consulte o artigo sobre assinatura.
+
+## Provas da assinatura
+
+Quando a outra parte abre o contrato a partir de uma ligação de contra-assinatura, e novamente quando o assina, o servidor da UNI·SIM regista:
+
+- a hora;
+- o respetivo endereço IP;
+- o respetivo navegador, como o texto "user-agent" que este envia (navegador, sistema operativo e respetivas versões);
+- o respetivo país, deduzido do endereço IP pela Cloudflare. Não é registada nenhuma localização precisa e a localização do dispositivo nunca é pedida.
+
+Regista também a impressão digital SHA-256 do documento aberto e da cópia assinada. São as provas em que assenta uma assinatura eletrónica, e a outra parte é informada antes de assinar. São mostradas apenas a ambos: no seu painel de contra-assinatura, a quem detiver a ligação de assinatura e na página de auditoria acrescentada à cópia assinada. Nunca aparecem na página pública para verificar uma cópia assinada. Nada disto é registado quando assina o seu próprio exemplar.
+
+As provas da assinatura e a cópia assinada são conservadas durante 7 anos após a assinatura e depois eliminadas. Eliminar o projeto ou a sua conta elimina-as mais cedo.
 
 ## Serviços com que a aplicação comunica
 

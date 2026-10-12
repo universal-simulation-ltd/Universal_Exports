@@ -108,7 +108,7 @@ Os PDFs, incluindo o contrato de exportação e cada documento individual, são 
 - **PDFs** do contrato de exportação e de cada documento, antes e depois da assinatura.
 - **XML do negócio** — os dados do contrato em um arquivo estruturado que outros softwares de comércio ou aduana podem ler.
 - **Salvar no computador** — o projeto inteiro e editável como arquivo de backup. Você pode abri-lo depois para continuar editando e gerar os documentos novamente. Ele não inclui sua assinatura, que existe apenas no PDF assinado.
-- **Etiquetas para caixas** — uma folha imprimível de etiquetas com QR code para colar em cada caixa. Consulte o artigo sobre privacidade para saber o que esses códigos abrem.
+- **Etiquetas para caixas** — uma folha imprimível de etiquetas com QR code para colar em cada caixa, quando você adiciona o QR code ao contrato. Consulte o artigo sobre privacidade para saber o que esses códigos abrem.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Uma assinatura desenhada e capturada dessa forma registra que uma pessoa identif
 ## Salvo na sua conta
 
 - Seus projetos, incluindo os dados de cada documento.
-- Os dados da sua própria empresa, seus contatos salvos, seus dados bancários e seu catálogo de produtos.
+- Os dados da sua empresa, seus contatos salvos e seu catálogo de produtos.
+- Seus dados bancários, apenas se você marcar **Salvar os dados bancários na minha conta** em Dados bancários. A caixa começa desmarcada; ela já vem marcada se você salvou dados bancários na sua conta antes de essa opção existir. Desmarque-a para mantê-los só neste aparelho e use **Remover da minha conta** para apagar a cópia salva lá.
 
 Esses dados ficam armazenados no banco de dados da UNI·SIM vinculados ao seu Universal ID. O banco de dados só permite que a sua conta conectada os leia ou altere. Tudo trafega por conexões criptografadas, mas não há criptografia de ponta a ponta: os dados são guardados para que o serviço possa devolvê-los a você, não trancados com uma chave que só você possui.
 
 ## Mantido apenas no seu navegador
 
-Seu logotipo, o idioma escolhido e o último contato selecionado ficam guardados neste navegador, neste computador. Eles não são salvos na sua conta.
+Seu logotipo, sua escolha de idioma, o último contato que você selecionou e, a menos que você os salve na sua conta, seus dados bancários ficam guardados neste navegador, neste computador. Eles não são salvos na sua conta.
+
+## Os contratos que você gera
+
+O PDF de um contrato é criado no seu navegador e fica nele, a menos que você o compartilhe. Uma cópia (o PDF e os dados nele) só é armazenada on-line em dois casos:
+
+- **Você marca Adicionar um código QR que abre uma cópia on-line** antes de gerar ou assinar. A caixa começa desmarcada.
+- **Você cria um link de contra-assinatura,** porque a outra parte precisa conseguir abrir o contrato. A cópia que está na sua tela é armazenada nesse momento. Enquanto o link aguarda uma assinatura, cada nova versão que você gerar ou assinar também é armazenada, para que a outra parte sempre abra a mais recente.
 
 ## Links e QR codes
 
-- **O QR code em um contrato gerado, e nas etiquetas para caixas,** abre uma cópia on-line somente leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha o link ou consiga escanear o código pode vê-la; não é preciso fazer login. Esse é o objetivo, para que um comprador ou um agente aduaneiro possa conferir a documentação, mas também significa que você deve compartilhar esses códigos apenas com pessoas que devem ver o negócio. O link é um código aleatório longo que não pode ser adivinhado. A cópia on-line só é criada quando você está conectado; sem ela, o contrato é gerado sem QR code e as etiquetas para caixas são marcadas como prévia.
+- **O QR code em um contrato, e nas etiquetas para caixas,** só aparece se você marcou Adicionar um código QR. Ele abre uma cópia on-line somente leitura desse contrato, incluindo o PDF. Qualquer pessoa que tenha o link ou consiga escanear o código pode vê-la; não é preciso fazer login. Esse é o objetivo, para que um comprador ou um agente aduaneiro possa conferir a documentação, mas também significa que você deve compartilhar esses códigos apenas com pessoas que devem ver o negócio. O link é um código aleatório longo que não pode ser adivinhado. A cópia on-line só pode ser criada quando você está conectado; sem ela, o contrato é gerado sem QR code e as etiquetas para caixas são marcadas como prévia.
 - **Um link de contra-assinatura** permite que quem o tiver abra a solicitação e assine uma vez e, depois, consulte quem assinou. Envie-o apenas para a pessoa que deve assinar. Ele também abre o PDF do contrato mais recente do projeto. Excluir um projeto exclui as cópias on-line e os links de contra-assinatura dele, então os QR codes e os links de assinatura param de funcionar.
 - **A transferência da assinatura pelo celular** não é armazenada de forma alguma; consulte o artigo sobre assinatura.
+
+## Provas da assinatura
+
+Quando a outra parte abre o contrato por um link de contra-assinatura, e de novo quando o assina, o servidor da UNI·SIM registra:
+
+- o horário;
+- o endereço IP dela;
+- o navegador dela, como o texto "user-agent" que ele envia (navegador, sistema operacional e suas versões);
+- o país dela, deduzido do endereço IP pela Cloudflare. Nenhuma localização precisa é registrada, e a localização do aparelho nunca é solicitada.
+
+Ele também registra a impressão digital SHA-256 do documento aberto e da cópia assinada. Essas são as provas em que uma assinatura eletrônica se apoia, e a outra parte é avisada antes de assinar. Elas são mostradas apenas a vocês dois: no seu painel de contra-assinatura, a quem tiver o link de assinatura e na página de auditoria adicionada à cópia assinada. Nunca aparecem na página pública para verificar uma cópia assinada. Nada parecido é registrado quando você assina a sua própria via.
+
+As provas da assinatura e a cópia assinada são mantidas por 7 anos após a assinatura e depois excluídas. Excluir o projeto ou a sua conta as exclui antes.
 
 ## Serviços com que o app se comunica
 

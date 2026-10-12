@@ -36,6 +36,12 @@ interface Props {
   /** The drafter's own name and signature, sent to the other party in a live session. */
   drafterName?: string;
   drafterSignature?: string;
+  /**
+   * Store the agreement on screen online, if it isn't already, so the link can
+   * open it. Called just before a link is made — making a link is what shares
+   * the agreement with the other party. False when it couldn't be stored.
+   */
+  ensureDocumentShared?: () => Promise<boolean>;
 }
 
 function formatDateTime(lang: string, iso: string | null | undefined): string {
@@ -58,7 +64,7 @@ function formatDateTime(lang: string, iso: string | null | undefined): string {
  * - Polls every 8 s while a token is pending so the panel auto-updates when
  *   the other party signs without a manual refresh.
  */
-const CounterSignPanel = ({ projectId, projectName, counterparty, drafterName = "", drafterSignature = "" }: Props) => {
+const CounterSignPanel = ({ projectId, projectName, counterparty, drafterName = "", drafterSignature = "", ensureDocumentShared }: Props) => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const [tokens,      setTokens]      = useState<AgreementSignature[]>([]);
@@ -180,6 +186,11 @@ const CounterSignPanel = ({ projectId, projectName, counterparty, drafterName = 
     }
 
     setGenerating(true);
+    if (ensureDocumentShared && !(await ensureDocumentShared())) {
+      setGenerating(false);
+      toast.error(t("cs.shareFailed"));
+      return;
+    }
     const row = await createSignatureToken({ projectId, projectName });
     setGenerating(false);
     if (row) {
@@ -380,6 +391,7 @@ ${t("cs.mailThanks")}`;
       {!active ? (
         <>
           <p className="text-sm text-muted-foreground max-w-md">{t("cs.intro")}</p>
+          <p className="text-xs text-muted-foreground max-w-md">{t("cs.storesCopy")}</p>
           <Button onClick={handleGenerate} disabled={generating}>
             {generating ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />{t("cs.generating")}</>

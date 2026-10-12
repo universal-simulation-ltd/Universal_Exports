@@ -23,7 +23,7 @@ import { ProjectData, saveProject, createProjectId, deleteProject } from "@/lib/
 import { CompanyDetails, loadYourDetails, saveYourDetails, loadContacts, saveContact, deleteContact, emptyDetails } from "@/lib/contactStore";
 import { loadCatalogue, catalogueDisplayTitle } from "@/lib/productCatalogueStore";
 import { DEMO_CATALOGUE, DEMO_OTHER_PARTY } from "@/lib/demoProject";
-import { BankAccount, emptyBankAccount, loadYourBanks, saveYourBanks, loadPartyBanks, savePartyBanks } from "@/lib/bankStore";
+import { BankAccount, emptyBankAccount, loadBanks, saveBanks, setBankCloudSync, removeCloudBanks } from "@/lib/bankStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -1375,10 +1375,43 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
   const [yourBanks, setYourBanks] = useState<Record<string, BankAccount>>({});
   const [partyBanks, setPartyBanks] = useState<Record<string, BankAccount>>({});
   const [confirmDelete, setConfirmDelete] = useState<{ type: "your" | "party"; currency: string } | null>(null);
+  // "Save bank details to my account" — unticked by default: the details stay
+  // in this browser. See lib/bankStore.ts.
+  const [cloudSync, setCloudSync] = useState(false);
+  const [cloudCopy, setCloudCopy] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [syncBusy, setSyncBusy] = useState(false);
 
   useEffect(() => {
-    loadYourBanks().then(setYourBanks);
-    loadPartyBanks().then(setPartyBanks);
+    loadBanks().then((b) => {
+      setYourBanks(b.your);
+      setPartyBanks(b.party);
+      setCloudSync(b.cloudSync);
+      setCloudCopy(b.cloudCopy);
+      setSignedIn(b.signedIn);
+    });
+  }, []);
+
+  const handleCloudSyncChange = useCallback(async (on: boolean) => {
+    setSyncBusy(true);
+    const ok = await setBankCloudSync(on, { your: yourBanks, party: partyBanks });
+    setSyncBusy(false);
+    if (!ok) return;
+    setCloudSync(on);
+    if (on) setCloudCopy(true);
+    toast.success(on ? t("bank.cloudOn") : t("bank.cloudOff"));
+  }, [yourBanks, partyBanks]);
+
+  const handleRemoveCloud = useCallback(async () => {
+    setSyncBusy(true);
+    const ok = await removeCloudBanks();
+    setSyncBusy(false);
+    if (ok) {
+      setCloudCopy(false);
+      toast.success(t("bank.cloudRemoved"));
+    } else {
+      toast.error(t("bank.cloudRemoveFailed"));
+    }
   }, []);
 
   const currentYourAccount = yourBanks[yourCurrency] || emptyBankAccount(yourCurrency);
@@ -1387,7 +1420,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
   const handleYourChange = useCallback((account: BankAccount) => {
     setYourBanks((prev) => {
       const updated = { ...prev, [yourCurrency]: { ...account, currency: yourCurrency } };
-      saveYourBanks(updated);
+      saveBanks("your", updated);
       return updated;
     });
   }, [yourCurrency]);
@@ -1395,7 +1428,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
   const handlePartyChange = useCallback((account: BankAccount) => {
     setPartyBanks((prev) => {
       const updated = { ...prev, [partyCurrency]: { ...account, currency: partyCurrency } };
-      savePartyBanks(updated);
+      saveBanks("party", updated);
       return updated;
     });
   }, [partyCurrency]);
@@ -1405,14 +1438,14 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
       setYourBanks((prev) => {
         const updated = { ...prev };
         delete updated[currency];
-        saveYourBanks(updated);
+        saveBanks("your", updated);
         return { ...updated };
       });
     } else {
       setPartyBanks((prev) => {
         const updated = { ...prev };
         delete updated[currency];
-        savePartyBanks(updated);
+        saveBanks("party", updated);
         return { ...updated };
       });
     }
@@ -1453,6 +1486,40 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         <h2 className="text-base font-semibold text-foreground">{t("sidebar.bankDetails")}</h2>
         <p className="text-sm text-muted-foreground mt-1">{t("bank.desc")}</p>
       </div>
+
+      {signedIn && (
+        <div className="max-w-lg space-y-2">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <Checkbox
+              className="mt-0.5"
+              checked={cloudSync}
+              disabled={syncBusy}
+              onCheckedChange={(v) => void handleCloudSyncChange(v === true)}
+            />
+            <span>
+              <span className="text-sm text-foreground block">{t("bank.cloudSync")}</span>
+              <span className="text-xs text-muted-foreground block">
+                {cloudSync ? t("bank.cloudSyncOnHint") : t("bank.cloudSyncHint")}
+              </span>
+            </span>
+          </label>
+          {!cloudSync && cloudCopy && (
+            <div className="flex flex-wrap items-center gap-2 pl-6">
+              <p className="text-xs text-muted-foreground">{t("bank.cloudCopyKept")}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={syncBusy}
+                onClick={() => void handleRemoveCloud()}
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                {t("bank.removeCloud")}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Your Bank Details - collapsible */}
       <div className="rounded-md border border-border overflow-hidden">

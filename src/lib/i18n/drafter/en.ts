@@ -107,6 +107,15 @@ export const drafterEn = {
   "bank.yourCount.other": "Your banks: {count} currency accounts",
   "bank.partyCount.one": "Other party banks: {count} currency account",
   "bank.partyCount.other": "Other party banks: {count} currency accounts",
+  "bank.cloudSync": "Save bank details to my account",
+  "bank.cloudSyncHint": "Unticked, they are kept only in this browser on this device.",
+  "bank.cloudSyncOnHint": "They are saved to your Universal ID, so they follow you to other devices.",
+  "bank.cloudOn": "Bank details saved to your account.",
+  "bank.cloudOff": "Bank details are now kept on this device only.",
+  "bank.cloudCopyKept": "A copy is still saved in your account.",
+  "bank.removeCloud": "Remove it from my account",
+  "bank.cloudRemoved": "Bank details removed from your account.",
+  "bank.cloudRemoveFailed": "Could not remove the bank details from your account. Please try again.",
 
   // Currency picker
   "currency.other": "Other",

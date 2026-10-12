@@ -3,6 +3,7 @@ import { useFileDrop } from "@unisim/sdk";
 import { BASE_PATH } from "@/lib/basePath";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,9 +38,10 @@ import HostedStoreDialog from "@/components/HostedStoreDialog";
 import { type ProjectData } from "@/lib/projectStore";
 import { unisimQrPngDataUrl } from "@unisim/sdk";
 import { saveAgreementView } from "@/lib/agreementViewStore";
+import { listSignatureTokens } from "@/lib/signatureStore";
 import { downloadDealXml } from "@/lib/dealXml";
 import { useI18n } from "@/lib/i18n";
-import type { AgreementPdfInput, AgreementSignatureBlock } from "@/lib/exportAgreementPdf";
+import type { AgreementPdfInput, AgreementSignatureBlock, CounterpartyBox } from "@/lib/exportAgreementPdf";
 
 // The PDF builders (and jsPDF behind them, ~300 kB) load on first use, not
 // with the editor: most visits never generate a PDF.
@@ -99,6 +101,14 @@ const ExportAgreementWorkflow = ({
   // printable sheet of 8 scan labels. Null until an agreement is generated, or
   // when the online-view link couldn't be minted (then the PDF has no QR either).
   const [qrInfo, setQrInfo] = useState<{ dataUrl: string; url: string; reserved: boolean } | null>(null);
+  // "Add a QR code that opens an online copy" — unticked by default. Only then
+  // (or when the user makes a counter-sign link, below) is the agreement stored
+  // online in exports_agreement_views; otherwise the PDF stays on this device.
+  const [shareOnline, setShareOnline] = useState(false);
+  // The document on screen now, and whether that exact file is stored online.
+  // A counter-sign link opens the newest stored copy, so making a link stores
+  // this one first if it isn't already (ensureDocumentShared).
+  const currentDocRef = useRef<{ blob: Blob; input: AgreementPdfInput; counterpartyBox: CounterpartyBox | null; stored: boolean } | null>(null);
 
   // Snapshot of the data the current PDF was generated from — used to decide
   // whether a re-generate would discard a *different* agreement (and warn).
@@ -124,13 +134,39 @@ const ExportAgreementWorkflow = ({
   const signerName = formData["confirmName"] || "";
   const stamp = formData["confirmStamp"] || "";
 
-  // Build the PDF with a header QR linking to a public read-only copy, and mint
-  // the box-label QR. Order: render QR → build PDF → try to reserve the online
-  // row. If reserving succeeds, the agreement's header carries the QR and the
-  // box labels resolve. If it fails (e.g. no account), we still hand back the
-  // label QR so the sheet can be generated — but flagged `reserved:false`, so
-  // the labels get watermarked and the *agreement's own header QR is dropped*
-  // (the main document must never carry a code that points nowhere).
+  // Store a built agreement online (exports_agreement_views) under `token`.
+  // Only ever called for one of the user's explicit choices: the QR option, or
+  // a counter-sign link (see ensureDocumentShared / hasOpenSigningLink).
+  const storeOnline = useCallback(async (token: string, input: AgreementPdfInput, blob: Blob, counterpartyBox: CounterpartyBox | null) => {
+    try {
+      return await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: blob, counterpartyBox });
+    } catch (e) {
+      console.error("[exports] couldn't store the agreement online:", e);
+      return false;
+    }
+  }, [projectId, projectName]);
+
+  // A counter-sign link opens the newest stored copy of the agreement. While a
+  // link the user made is still waiting for a signature, a new version must be
+  // stored too, or the other party would sign an older one.
+  const hasOpenSigningLink = useCallback(async () => {
+    if (!projectId || projectId.startsWith("demo-")) return false;
+    try {
+      const rows = await listSignatureTokens(projectId);
+      return rows.some((r) => r.status === "pending");
+    } catch {
+      return false;
+    }
+  }, [projectId]);
+
+  // Build the PDF. With "Add a QR code" ticked: render a header QR linking to a
+  // public read-only copy, build, then try to reserve the online row. If that
+  // succeeds, the header carries the QR and the box labels resolve. If it fails
+  // (e.g. no account), we still hand back the label QR so the sheet can be made
+  // — flagged `reserved:false`, so the labels get watermarked and the
+  // *agreement's own header QR is dropped* (the main document must never carry
+  // a code that points nowhere). Unticked: no QR, no labels, and nothing is
+  // stored online unless a signing link is waiting for this project.
   const buildPdfWithViewLink = useCallback(async (sig: AgreementSignatureBlock | null) => {
     const input = buildPdfInput(sig);
     const { buildAgreementPdf } = await loadAgreementPdf();
@@ -138,22 +174,20 @@ const ExportAgreementWorkflow = ({
     const viewUrl =
       `${window.location.origin}${BASE_PATH}/view/${token}`;
     let dataUrl = "";
-    try {
-      dataUrl = await unisimQrPngDataUrl(viewUrl, 256);
-    } catch (e) {
-      console.error("[exports] QR render failed:", e);
+    if (shareOnline) {
+      try {
+        dataUrl = await unisimQrPngDataUrl(viewUrl, 256);
+      } catch (e) {
+        console.error("[exports] QR render failed:", e);
+      }
     }
 
     if (dataUrl) {
       input.qr = { dataUrl, url: viewUrl };
       const built = await buildAgreementPdf(input);
-      let reserved = false;
-      try {
-        reserved = await saveAgreementView({ id: token, projectId, projectName, input, pdfBlob: built.blob, counterpartyBox: built.counterpartyBox });
-      } catch (e) {
-        console.error("[exports] online view link couldn't be reserved — labels will be watermarked:", e);
-      }
+      const reserved = await storeOnline(token, input, built.blob, built.counterpartyBox);
       if (reserved) {
+        currentDocRef.current = { blob: built.blob, input, counterpartyBox: built.counterpartyBox, stored: true };
         return { ...built, input, labelQr: { dataUrl, url: viewUrl, reserved: true } };
       }
       // Couldn't reserve — rebuild the agreement WITHOUT its header QR, but keep
@@ -163,8 +197,24 @@ const ExportAgreementWorkflow = ({
 
     input.qr = null;
     const labelQr = dataUrl ? { dataUrl, url: viewUrl, reserved: false } : null;
-    return { ...(await buildAgreementPdf(input)), input, labelQr };
-  }, [buildPdfInput, projectId, projectName]);
+    const built = await buildAgreementPdf(input);
+    const stored = (await hasOpenSigningLink())
+      ? await storeOnline(token, input, built.blob, built.counterpartyBox)
+      : false;
+    currentDocRef.current = { blob: built.blob, input, counterpartyBox: built.counterpartyBox, stored };
+    return { ...built, input, labelQr };
+  }, [buildPdfInput, shareOnline, storeOnline, hasOpenSigningLink]);
+
+  // Called by the counter-sign panel just before it makes a link: the other
+  // party opens the newest stored copy, so store the one on screen if needed.
+  const ensureDocumentShared = useCallback(async () => {
+    const doc = currentDocRef.current;
+    if (!doc) return false;
+    if (doc.stored) return true;
+    const ok = await storeOnline(crypto.randomUUID(), doc.input, doc.blob, doc.counterpartyBox);
+    if (ok) doc.stored = true;
+    return ok;
+  }, [storeOnline]);
 
   // ── Generate the unsigned overview ────────────────────────────────────────
   const doGenerate = useCallback(async () => {
@@ -302,6 +352,17 @@ const ExportAgreementWorkflow = ({
             {t("wf.resolveChecklist")}
           </p>
         )}
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <Checkbox
+            className="mt-0.5"
+            checked={shareOnline}
+            onCheckedChange={(v) => setShareOnline(v === true)}
+          />
+          <span>
+            <span className="text-sm text-foreground block">{t("wf.shareOnline")}</span>
+            <span className="text-xs text-muted-foreground block">{t("wf.shareOnlineHint")}</span>
+          </span>
+        </label>
       </div>
 
       {/* Single embedded PDF preview — updates in place once the signature is
@@ -460,6 +521,7 @@ const ExportAgreementWorkflow = ({
                   counterparty={counterparty}
                   drafterName={signerName}
                   drafterSignature={signature}
+                  ensureDocumentShared={ensureDocumentShared}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">

@@ -108,7 +108,7 @@ Les PDF, y compris l'accord d'exportation et chaque document individuel, sont pr
 - **Des PDF** de l'accord d'exportation et de chaque document, avant et après signature.
 - **Deal XML** — les informations de l'accord sous forme de fichier structuré lisible par d'autres logiciels commerciaux ou douaniers.
 - **Enregistrer sur l'ordinateur** — l'ensemble du projet modifiable sous forme de fichier de sauvegarde. Vous pouvez le rouvrir plus tard pour poursuivre la modification et régénérer les documents. Il n'inclut pas votre signature, qui ne figure que sur le PDF signé.
-- **Étiquettes de colis** — une feuille imprimable d'étiquettes QR à coller sur chaque carton. Consultez l'article sur la confidentialité pour savoir ce que ces codes ouvrent.
+- **Étiquettes de colis** — une feuille imprimable d'étiquettes QR à coller sur chaque carton, lorsque vous ajoutez le code QR à l'accord. Consultez l'article sur la confidentialité pour savoir ce que ces codes ouvrent.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Une signature dessinée recueillie de cette manière atteste qu'une personne nom
 ## Enregistré dans votre compte
 
 - Vos projets, y compris les informations de chaque document.
-- Les coordonnées de votre entreprise, vos contacts enregistrés, vos coordonnées bancaires et votre catalogue de produits.
+- Les coordonnées de votre entreprise, vos contacts enregistrés et votre catalogue de produits.
+- Vos coordonnées bancaires, uniquement si vous cochez **Enregistrer les coordonnées bancaires dans mon compte** dans Coordonnées bancaires. La case est décochée au départ ; elle est déjà cochée si vous aviez enregistré des coordonnées bancaires dans votre compte avant que ce choix n'existe. Décochez-la pour les garder uniquement sur cet appareil, et utilisez **La supprimer de mon compte** pour effacer la copie qui y est enregistrée.
 
 Ces données sont stockées dans la base de données d'UNI·SIM, rattachées à votre Universal ID. La base de données ne permet qu'à votre compte connecté de les lire ou de les modifier. Tout circule par des connexions chiffrées, mais sans chiffrement de bout en bout : les données sont conservées pour que le service puisse vous les restituer, et ne sont pas verrouillées par une clé que vous seul détiendriez.
 
 ## Conservé uniquement dans votre navigateur
 
-Votre logo, votre choix de langue et le dernier contact que vous avez sélectionné sont mémorisés par ce navigateur sur cet ordinateur. Ils ne sont pas enregistrés dans votre compte.
+Votre logo, votre choix de langue, le dernier contact que vous avez sélectionné et, sauf si vous les enregistrez dans votre compte, vos coordonnées bancaires sont mémorisés par ce navigateur sur cet ordinateur. Ils ne sont pas enregistrés dans votre compte.
+
+## Les accords que vous générez
+
+Le PDF d'un accord est produit dans votre navigateur et y reste, sauf si vous le partagez. Une copie (le PDF et les informations qu'il contient) n'est stockée en ligne que dans deux cas :
+
+- **Vous cochez Ajouter un code QR qui ouvre une copie en ligne** avant de générer ou de signer. La case est décochée au départ.
+- **Vous créez un lien de contre-signature,** car l'autre partie doit pouvoir ouvrir l'accord. La copie affichée à l'écran est alors stockée. Tant que le lien attend une signature, chaque nouvelle version que vous générez ou signez est aussi stockée, pour que l'autre partie ouvre toujours la plus récente.
 
 ## Liens et codes QR
 
-- **Le code QR figurant sur un accord généré, ainsi que sur les étiquettes de colis,** ouvre une copie en ligne en lecture seule de cet accord, PDF compris. Toute personne qui dispose du lien ou peut scanner le code peut la consulter ; aucune connexion n'est nécessaire. C'est voulu, afin qu'un acheteur ou un agent des douanes puisse vérifier les documents, mais cela signifie aussi que vous ne devez partager ces codes qu'avec les personnes censées voir l'opération. Le lien est un long code aléatoire impossible à deviner. La copie en ligne n'est créée que si vous êtes connecté ; sinon, l'accord est produit sans code QR et les étiquettes de colis sont marquées comme un aperçu.
+- **Le code QR figurant sur un accord, ainsi que sur les étiquettes de colis,** n'apparaît que si vous avez coché Ajouter un code QR. Il ouvre une copie en ligne en lecture seule de cet accord, PDF compris. Toute personne qui dispose du lien ou peut scanner le code peut la consulter ; aucune connexion n'est nécessaire. C'est voulu, afin qu'un acheteur ou un agent des douanes puisse vérifier les documents, mais cela signifie aussi que vous ne devez partager ces codes qu'avec les personnes censées voir l'opération. Le lien est un long code aléatoire impossible à deviner. La copie en ligne ne peut être créée que si vous êtes connecté ; sinon, l'accord est produit sans code QR et les étiquettes de colis sont marquées comme un aperçu.
 - **Un lien de contre-signature** permet à quiconque le détient d'ouvrir la demande et de la signer une fois, puis de consulter qui l'a signée. Ne l'envoyez qu'à la personne qui doit signer. Il ouvre aussi le PDF d'accord le plus récent du projet. Supprimer un projet supprime ses copies en ligne et ses liens de contre-signature : ses codes QR et ses liens de signature cessent alors de fonctionner.
 - **Le passage de la signature par le téléphone** n'est pas stocké du tout ; consultez l'article sur la signature.
+
+## Preuves de signature
+
+Lorsque l'autre partie ouvre l'accord depuis un lien de contre-signature, puis à nouveau lorsqu'elle le signe, le serveur d'UNI·SIM enregistre :
+
+- l'heure ;
+- son adresse IP ;
+- son navigateur, sous la forme du texte « user-agent » qu'il envoie (le navigateur, le système d'exploitation et leurs versions) ;
+- son pays, déduit de l'adresse IP par Cloudflare. Aucune localisation précise n'est enregistrée, et la position de l'appareil n'est jamais demandée.
+
+Il enregistre aussi l'empreinte SHA-256 du document ouvert et de la copie signée. Ce sont les preuves sur lesquelles repose une signature électronique, et l'autre partie en est informée avant de signer. Elles ne sont montrées qu'à vous deux : dans votre panneau de contre-signature, à quiconque détient le lien de signature, et sur la page d'audit ajoutée à la copie signée. Elles n'apparaissent jamais sur la page publique de vérification d'une copie signée. Rien de tel n'est enregistré lorsque vous signez votre propre exemplaire.
+
+Les preuves de signature et la copie signée sont conservées 7 ans après la signature, puis supprimées. Supprimer le projet ou votre compte les supprime plus tôt.
 
 ## Services avec lesquels l'application communique
 

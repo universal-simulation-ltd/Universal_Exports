@@ -108,7 +108,7 @@ I PDF, compresi l'accordo di esportazione e ogni singolo documento, vengono prod
 - **PDF** dell'accordo di esportazione e di ciascun documento, prima e dopo la firma.
 - **Deal XML** — i dati dell'accordo in un file strutturato leggibile da altri software commerciali o doganali.
 - **Salva sul computer** — l'intero progetto modificabile come file di backup. Puoi riaprirlo in seguito per continuare a modificarlo e rigenerare i documenti. Non include la tua firma, che si trova solo nel PDF firmato.
-- **Etichette per i colli** — un foglio stampabile di etichette QR da applicare su ogni cartone. Consulta l'articolo sulla privacy per sapere che cosa aprono quei codici.
+- **Etichette per i colli** — un foglio stampabile di etichette QR da applicare su ogni cartone, quando aggiungi il codice QR all'accordo. Consulta l'articolo sulla privacy per sapere che cosa aprono quei codici.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Una firma disegnata raccolta in questo modo attesta che una persona identificata
 ## Salvato nel tuo account
 
 - I tuoi progetti, compresi i dati di ogni documento.
-- I dati della tua azienda, i contatti salvati, le coordinate bancarie e il catalogo prodotti.
+- I dati della tua azienda, i contatti salvati e il catalogo prodotti.
+- Le tue coordinate bancarie, solo se selezioni **Salva le coordinate bancarie nel mio account** in Coordinate bancarie. La casella parte non selezionata; risulta già selezionata se avevi salvato coordinate bancarie nel tuo account prima che esistesse questa scelta. Deselezionala per tenerle solo su questo dispositivo e usa **Rimuovila dal mio account** per cancellare la copia salvata lì.
 
 Questi dati sono archiviati nel database di UNI·SIM, associati al tuo Universal ID. Il database consente solo al tuo account con accesso effettuato di leggerli o modificarli. Tutto viaggia su connessioni cifrate, ma non con crittografia end-to-end: i dati sono conservati perché il servizio possa restituirteli, non bloccati con una chiave che possiedi solo tu.
 
 ## Conservato solo nel browser
 
-Il tuo logo, la lingua scelta e l'ultimo contatto selezionato vengono ricordati da questo browser su questo computer. Non vengono salvati nel tuo account.
+Il tuo logo, la lingua scelta, l'ultimo contatto selezionato e, a meno che tu non le salvi nel tuo account, le tue coordinate bancarie vengono ricordati da questo browser su questo computer. Non vengono salvati nel tuo account.
+
+## Gli accordi che generi
+
+Il PDF di un accordo viene creato nel tuo browser e resta lì, a meno che tu non lo condivida. Una copia (il PDF e i dati che contiene) viene salvata online solo in due casi:
+
+- **Selezioni Aggiungi un codice QR che apre una copia online** prima di generare o firmare. La casella parte non selezionata.
+- **Crei un link di controfirma,** perché l'altra parte deve poter aprire l'accordo. In quel momento viene salvata la copia che hai sullo schermo. Finché il link è in attesa di una firma, viene salvata anche ogni nuova versione che generi o firmi, così l'altra parte apre sempre la più recente.
 
 ## Link e codici QR
 
-- **Il codice QR su un accordo generato, e quello sulle etichette per i colli,** apre una copia online in sola lettura di quell'accordo, PDF compreso. Chiunque abbia il link o possa scansionare il codice può vederla; non serve accedere. È proprio lo scopo, così un acquirente o un funzionario doganale può controllare i documenti, ma significa anche che dovresti condividere quei codici solo con chi deve vedere l'operazione. Il link è un lungo codice casuale che non può essere indovinato. La copia online viene creata solo quando hai effettuato l'accesso; senza di essa, l'accordo viene prodotto senza codice QR e le etichette per i colli sono contrassegnate come anteprima.
+- **Il codice QR su un accordo, e quello sulle etichette per i colli,** c'è solo se hai selezionato Aggiungi un codice QR. Apre una copia online in sola lettura di quell'accordo, PDF compreso. Chiunque abbia il link o possa scansionare il codice può vederla; non serve accedere. È proprio lo scopo, così un acquirente o un funzionario doganale può controllare i documenti, ma significa anche che dovresti condividere quei codici solo con chi deve vedere l'operazione. Il link è un lungo codice casuale che non può essere indovinato. La copia online può essere creata solo quando hai effettuato l'accesso; senza di essa, l'accordo viene prodotto senza codice QR e le etichette per i colli sono contrassegnate come anteprima.
 - **Un link di controfirma** permette a chiunque lo possieda di aprire la richiesta e firmarla una volta, e in seguito di vedere chi l'ha firmata. Invialo solo alla persona che deve firmare. Apre anche il PDF dell'accordo più recente del progetto. Eliminando un progetto si eliminano anche le sue copie online e i link di controfirma, quindi i suoi codici QR e i link di firma smettono di funzionare.
 - **Il passaggio della firma tramite telefono** non viene archiviato affatto; consulta l'articolo sulla firma.
+
+## Prove della firma
+
+Quando l'altra parte apre l'accordo da un link di controfirma, e di nuovo quando lo firma, il server di UNI·SIM registra:
+
+- l'ora;
+- il suo indirizzo IP;
+- il suo browser, come testo «user-agent» che invia (browser, sistema operativo e relative versioni);
+- il suo paese, ricavato dall'indirizzo IP da Cloudflare. Non viene registrata alcuna posizione precisa e la posizione del dispositivo non viene mai richiesta.
+
+Registra anche l'impronta SHA-256 del documento aperto e della copia firmata. Sono le prove su cui si basa una firma elettronica, e l'altra parte ne viene informata prima di firmare. Sono mostrate solo a voi due: nel tuo pannello di controfirma, a chi possiede il link di firma e nella pagina di audit aggiunta alla copia firmata. Non compaiono mai nella pagina pubblica per verificare una copia firmata. Nulla di simile viene registrato quando firmi la tua copia.
+
+Le prove della firma e la copia firmata vengono conservate per 7 anni dalla firma, poi eliminate. Eliminando il progetto o il tuo account vengono eliminate prima.
 
 ## Servizi con cui l'app comunica
 

@@ -108,7 +108,7 @@ Bir bölümü bitirdiğinizde onu kilitleyebilirsiniz. Kilitli bir bölüm tamam
 - **PDF'ler** — ihracat sözleşmesinin ve her belgenin imzadan önceki ve sonraki hâlleri.
 - **Anlaşma XML'i** — sözleşme bilgilerinin, diğer ticaret veya gümrük yazılımlarının okuyabileceği yapılandırılmış bir dosya hâli.
 - **Masaüstüne kaydet** — düzenlenebilir projenin tamamı, bir yedek dosyası olarak. Daha sonra düzenlemeye devam etmek ve belgeleri yeniden oluşturmak için tekrar açabilirsiniz. İmzanızı içermez; imzanız yalnızca imzalı PDF'te bulunur.
-- **Koli etiketleri** — her koliye yapıştırmak için yazdırılabilir bir QR etiket sayfası. Bu kodların neyi açtığını öğrenmek için gizlilik makalesine bakın.
+- **Koli etiketleri** — sözleşmeye QR kodu eklediğinizde, her koliye yapıştırmak için yazdırılabilir bir QR etiket sayfası. Bu kodların neyi açtığını öğrenmek için gizlilik makalesine bakın.
 
 ## Hosted by UNI·SIM
 
@@ -160,19 +160,40 @@ Bu şekilde alınan çizilmiş bir imza, adı belirli bir kişinin belirli bir z
 ## Hesabınıza kaydedilenler
 
 - Her belgenin bilgileri dahil projeleriniz.
-- Kendi şirket bilgileriniz, kayıtlı kişileriniz, banka bilgileriniz ve ürün kataloğunuz.
+- Şirket bilgileriniz, kayıtlı kişileriniz ve ürün kataloğunuz.
+- Banka bilgileriniz, yalnızca Banka bilgileri bölümünde **Banka bilgilerini hesabıma kaydet** kutusunu işaretlerseniz. Kutu başlangıçta işaretsizdir; bu seçenek eklenmeden önce banka bilgilerini hesabınıza kaydettiyseniz zaten işaretlidir. Yalnızca bu cihazda tutmak için işareti kaldırın ve oradaki kopyayı silmek için **Hesabımdan kaldır** düğmesini kullanın.
 
 Bunlar, UNI·SIM'in veritabanında Universal ID'nize bağlı olarak saklanır. Veritabanı, bunları yalnızca oturum açmış hesabınızın okumasına veya değiştirmesine izin verir. Her şey şifreli bağlantılar üzerinden iletilir, ancak uçtan uca şifreleme yoktur: veriler, yalnızca sizde bulunan bir anahtarla kilitlenmek için değil, hizmetin onları size geri verebilmesi için tutulur.
 
 ## Yalnızca tarayıcınızda tutulanlar
 
-Logonuz, dil tercihiniz ve en son seçtiğiniz kişi, bu bilgisayardaki bu tarayıcı tarafından hatırlanır. Hesabınıza kaydedilmezler.
+Logonuz, dil seçiminiz, en son seçtiğiniz kişi ve hesabınıza kaydetmediğiniz sürece banka bilgileriniz bu bilgisayardaki bu tarayıcıda hatırlanır. Hesabınıza kaydedilmezler.
+
+## Oluşturduğunuz sözleşmeler
+
+Sözleşme PDF'si tarayıcınızda oluşturulur ve siz paylaşmadıkça orada kalır. Bir kopya (PDF ve içindeki bilgiler) yalnızca iki durumda çevrimiçi saklanır:
+
+- **Oluşturmadan veya imzalamadan önce Çevrimiçi kopyayı açan bir QR kodu ekle kutusunu işaretlerseniz.** Kutu başlangıçta işaretsizdir.
+- **Bir karşı imza bağlantısı oluşturursanız,** çünkü karşı tarafın sözleşmeyi açabilmesi gerekir. O anda ekranınızdaki kopya saklanır. Bağlantı imza beklerken oluşturduğunuz veya imzaladığınız her yeni sürüm de saklanır; böylece karşı taraf her zaman en yenisini açar.
 
 ## Bağlantılar ve QR kodlar
 
-- **Oluşturulan bir sözleşmedeki ve koli etiketlerindeki QR kod,** PDF dahil olmak üzere o sözleşmenin salt okunur çevrimiçi bir kopyasını açar. Bağlantıya sahip olan veya kodu tarayabilen herkes bunu görüntüleyebilir; oturum açmak gerekmez. Amaç budur, böylece bir alıcı veya gümrük memuru evrakları kontrol edebilir; ancak bu, söz konusu kodları yalnızca anlaşmayı görmesi gereken kişilerle paylaşmanız gerektiği anlamına da gelir. Bağlantı, tahmin edilemeyen uzun ve rastgele bir koddur. Çevrimiçi kopya yalnızca oturum açmışken oluşturulur; o olmadan sözleşme QR kod olmadan hazırlanır ve koli etiketleri önizleme olarak işaretlenir.
+- **Bir sözleşmedeki ve koli etiketlerindeki QR kod** yalnızca QR kodu ekle kutusunu işaretlediyseniz bulunur. PDF dahil olmak üzere o sözleşmenin salt okunur çevrimiçi bir kopyasını açar. Bağlantıya sahip olan veya kodu tarayabilen herkes bunu görüntüleyebilir; oturum açmak gerekmez. Amaç budur, böylece bir alıcı veya gümrük memuru evrakları kontrol edebilir; ancak bu, söz konusu kodları yalnızca anlaşmayı görmesi gereken kişilerle paylaşmanız gerektiği anlamına da gelir. Bağlantı, tahmin edilemeyen uzun ve rastgele bir koddur. Çevrimiçi kopya yalnızca oturum açmışken oluşturulabilir; o olmadan sözleşme QR kod olmadan hazırlanır ve koli etiketleri önizleme olarak işaretlenir.
 - **Karşı imza bağlantısı**, elinde bulunduran kişinin talebi açmasına ve bir kez imzalamasına, ardından kimin imzaladığını sorgulamasına olanak tanır. Bağlantıyı yalnızca imzalaması gereken kişiye gönderin. Ayrıca projenin en son sözleşme PDF'sini açar. Bir projeyi silmek, çevrimiçi kopyalarını ve karşı imza bağlantılarını da siler; böylece QR kodları ve imza bağlantıları artık çalışmaz.
 - **İmzanın telefona aktarımı** hiçbir şekilde saklanmaz; imzalama makalesine bakın.
+
+## İmza kanıtları
+
+Karşı taraf sözleşmeyi bir karşı imza bağlantısından açtığında ve imzaladığında UNI·SIM'in sunucusu şunları kaydeder:
+
+- zaman;
+- IP adresi;
+- tarayıcısı, gönderdiği "user-agent" metni olarak (tarayıcı, işletim sistemi ve sürümleri);
+- ülkesi; Cloudflare bunu IP adresinden çıkarır. Kesin konum kaydedilmez ve cihazın konumu asla istenmez.
+
+Ayrıca açılan belgenin ve imzalı kopyanın SHA-256 parmak izini kaydeder. Bunlar elektronik imzanın dayandığı kanıtlardır ve karşı taraf imzalamadan önce bilgilendirilir. Yalnızca ikinize gösterilir: karşı imza panelinizde, imza bağlantısına sahip olan kişiye ve imzalı kopyaya eklenen denetim sayfasında. İmzalı bir kopyayı doğrulamaya yarayan herkese açık sayfada asla görünmez. Kendi nüshanızı imzaladığınızda buna benzer hiçbir şey kaydedilmez.
+
+İmza kanıtları ve imzalı kopya, imzadan sonra 7 yıl saklanır ve ardından silinir. Projeyi veya hesabınızı silmek bunları daha erken siler.
 
 ## Uygulamanın iletişim kurduğu hizmetler
 

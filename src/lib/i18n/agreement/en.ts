@@ -44,6 +44,8 @@ export const agreementEn = {
   "wf.warnTitle": "Regenerate the Export Agreement?",
   "wf.warnBody": "This replaces the previous agreement. You'll need to confirm your signature again on the new copy.",
   "wf.warnBodySigned": "This replaces the previous agreement and any signatures applied to it. You'll need to confirm your signature again on the new copy.",
+  "wf.shareOnline": "Add a QR code that opens an online copy",
+  "wf.shareOnlineHint": "Stores a copy of the agreement online. Anyone with the code can view it, so a buyer or customs officer can check the paperwork. Box labels need it too.",
   // They Sign panel (drafter)
   "cs.loading": "Loading counter-sign status…",
   "cs.saveFirst": "Save the project first so we can attach the counter-sign link to it.",
@@ -76,6 +78,8 @@ export const agreementEn = {
   "cs.intro": "Generate a one-time link to send to the other party. They'll be able to open the agreement and counter-sign it from any device.",
   "cs.generate": "Generate counter-sign link",
   "cs.generating": "Generating…",
+  "cs.storesCopy": "Creating a link stores a copy of the agreement online so the other party can open it. While the link is waiting for a signature, each new version you generate or sign is stored too.",
+  "cs.shareFailed": "Could not store the agreement online for the other party. Make sure you are signed in and try again.",
   "cs.shareIntro": "Send the QR code or the link below to the other party. This panel updates by itself once they sign.",
   "cs.qrLabel": "counter-signing this agreement",
   "cs.link": "Link",

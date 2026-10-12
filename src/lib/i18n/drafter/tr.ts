@@ -99,6 +99,15 @@ export const drafterTr: DrafterMessages = {
   "bank.yourCount.other": "Bankalarınız: {count} para birimi hesabı",
   "bank.partyCount.one": "Karşı taraf bankaları: {count} para birimi hesabı",
   "bank.partyCount.other": "Karşı taraf bankaları: {count} para birimi hesabı",
+  "bank.cloudSync": "Banka bilgilerini hesabıma kaydet",
+  "bank.cloudSyncHint": "İşaretli değilse yalnızca bu cihazdaki bu tarayıcıda saklanır.",
+  "bank.cloudSyncOnHint": "Universal ID'nize kaydedilir, böylece diğer cihazlarınızda da kullanılabilir.",
+  "bank.cloudOn": "Banka bilgileri hesabınıza kaydedildi.",
+  "bank.cloudOff": "Banka bilgileri artık yalnızca bu cihazda saklanıyor.",
+  "bank.cloudCopyKept": "Hesabınızda hâlâ bir kopya kayıtlı.",
+  "bank.removeCloud": "Hesabımdan kaldır",
+  "bank.cloudRemoved": "Banka bilgileri hesabınızdan kaldırıldı.",
+  "bank.cloudRemoveFailed": "Banka bilgileri hesabınızdan kaldırılamadı. Lütfen tekrar deneyin.",
 
   // Currency picker
   "currency.other": "Diğer",

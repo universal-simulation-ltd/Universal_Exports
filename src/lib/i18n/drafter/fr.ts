@@ -99,6 +99,15 @@ export const drafterFr: DrafterMessages = {
   "bank.yourCount.other": "Vos banques : {count} comptes en devises",
   "bank.partyCount.one": "Banques de l'autre partie : {count} compte en devise",
   "bank.partyCount.other": "Banques de l'autre partie : {count} comptes en devises",
+  "bank.cloudSync": "Enregistrer les coordonnées bancaires dans mon compte",
+  "bank.cloudSyncHint": "Décoché, elles restent uniquement dans ce navigateur, sur cet appareil.",
+  "bank.cloudSyncOnHint": "Elles sont enregistrées dans votre Universal ID et vous suivent sur vos autres appareils.",
+  "bank.cloudOn": "Coordonnées bancaires enregistrées dans votre compte.",
+  "bank.cloudOff": "Les coordonnées bancaires sont désormais conservées sur cet appareil uniquement.",
+  "bank.cloudCopyKept": "Une copie est toujours enregistrée dans votre compte.",
+  "bank.removeCloud": "La supprimer de mon compte",
+  "bank.cloudRemoved": "Coordonnées bancaires supprimées de votre compte.",
+  "bank.cloudRemoveFailed": "Impossible de supprimer les coordonnées bancaires de votre compte. Veuillez réessayer.",
 
   // Currency picker
   "currency.other": "Autre",
