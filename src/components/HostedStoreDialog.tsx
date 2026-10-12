@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Chip, SignInDialog, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, type HostedUpload } from "@unisim/sdk";
+import { Chip, SignInDialog, useUniversal, useUser, useOrg, useCredits, useFileDrop, useHostedUploads, useAppFreeToken, withReturnUrl, type HostedUpload } from "@unisim/sdk";
 import { storeExportPdf, deleteHostedExport, openHostedExport, HostedObjectMissingError } from "../lib/hostedStore";
 import { BackupError, downloadBackup, readBackupFile } from "../lib/projectBackup";
 import { fillNodes } from "../lib/i18n/format";
@@ -287,7 +287,7 @@ export default function HostedStoreDialog({
                     <p className="text-sm text-slate-600">
                       {t("hosted.noCompany")}
                     </p>
-                    <a href={SET_UP_COMPANY_URL} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
+                    <a href={withReturnUrl(SET_UP_COMPANY_URL)} target="_blank" rel="noreferrer" className="mt-2 inline-flex rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800">
                       {t("hosted.setUpCompany")}
                     </a>
                   </div>
