@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect, useId } from "react";
 import { useNavigate } from "react-router-dom";
-import { Chip, ValueChip, useFileDrop } from "@unisim/sdk";
+import { Chip, ValueChip, useFileDrop, useRevealOnOpen } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -576,9 +576,9 @@ const MainContent = ({
   }, [resetSetupState, onConfirmNewProject]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollIntoViewSmooth = useCallback((el: HTMLElement | null) => {
-    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-  }, []);
+  // A form or list a click swaps in for its buttons (Add details, Address
+  // book, Create new, the pencil's edit form) scrolls fully on screen.
+  const revealRef = useRevealOnOpen();
   const foldId = useId();
 
   // Product catalogue (for totals)
@@ -1062,7 +1062,7 @@ const MainContent = ({
                           </button>
                         </div>
                       ) : (
-                        <>
+                        <div ref={revealRef} className="space-y-3">
                           {/* Logo upload */}
                           <div>
                             <label className="text-sm font-medium text-foreground mb-1 block">{t("main.businessLogo")}</label>
@@ -1091,7 +1091,7 @@ const MainContent = ({
                             )}
                           </div>
                           {companyFields(yourDetails, setYourDetails, "", true)}
-                        </>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1173,7 +1173,7 @@ const MainContent = ({
                       })()}
 
                       {otherPartyMode === "addressbook" && (
-                        <div ref={scrollIntoViewSmooth} className="space-y-3">
+                        <div ref={revealRef} className="space-y-3">
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder={t("setup.searchContacts")}
@@ -1215,7 +1215,7 @@ const MainContent = ({
                       )}
 
                       {otherPartyMode === "create" && (
-                        <div ref={scrollIntoViewSmooth} className="space-y-3">
+                        <div ref={revealRef} className="space-y-3">
                           {companyFields(otherParty, setOtherParty, "")}
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={handleSaveAsContact}>
@@ -1832,7 +1832,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 {expandedParty === "you" && (
                   <div id={`${foldId}-party-you`} className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
                     {editingYourDetails ? (
-                      <div className="space-y-3 pt-2">
+                      <div ref={revealRef} className="space-y-3 pt-2">
                         {companyFields(yourDetails, setYourDetails, "", true)}
                         <div className="flex gap-2">
                           <Button size="sm" onClick={async () => { await saveYourDetails(yourDetails); setEditYourDetails(yourDetails); setEditingYourDetails(false); toast.success(t("proj.yoursUpdated")); }}>
@@ -1900,7 +1900,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 {expandedParty === "other" && (
                   <div id={`${foldId}-party-other`} className="px-4 pb-4 pt-1 border-t border-border space-y-1.5">
                     {editingOtherParty ? (
-                      <div className="space-y-3 pt-2">
+                      <div ref={revealRef} className="space-y-3 pt-2">
                         {companyFields(otherParty, setOtherParty, "")}
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => { setEditingOtherParty(false); toast.success(t("proj.otherUpdated")); }}>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRevealOnOpen } from "@unisim/sdk";
 import { Hand, Radio, CheckCircle2, FileText, PenLine, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSignTogether, type TogetherField } from "@/lib/together";
@@ -28,6 +29,8 @@ interface Props {
  */
 const SignTogetherPanel = ({ token, drafterName, drafterSignature, onSigned, onClose }: Props) => {
   const { t } = useI18n();
+  // Mounted by "Sign together" in place of its button: scroll it on screen.
+  const revealRef = useRevealOnOpen<HTMLElement>();
   const live = useSignTogether({ token, role: "drafter", name: drafterName, enabled: true });
   const [docUrl, setDocUrl] = useState<string | null>(null);
   const [pointing, setPointing] = useState<TogetherField | null>(null);
@@ -75,7 +78,7 @@ const SignTogetherPanel = ({ token, drafterName, drafterSignature, onSigned, onC
     peer.present && peer.focus === field ? "ring-2 ring-sky-400 ring-offset-2 ring-offset-background" : "";
 
   return (
-    <section className="rounded-lg border border-sky-200 bg-sky-50/60 p-4 space-y-4 dark:border-sky-900 dark:bg-sky-950/30">
+    <section ref={revealRef} className="rounded-lg border border-sky-200 bg-sky-50/60 p-4 space-y-4 dark:border-sky-900 dark:bg-sky-950/30">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 text-sm font-semibold text-sky-900 dark:text-sky-200">
           <Radio className={cn("h-4 w-4", connected && "animate-pulse")} aria-hidden="true" />

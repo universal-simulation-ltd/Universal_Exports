@@ -23,6 +23,7 @@ vi.mock("@/lib/auditStore", () => ({
 }));
 vi.mock("@unisim/sdk", () => ({
   UnisimQr: () => null,
+  useRevealOnOpen: () => () => {},
   useLanguage: () => ({ language: "en-gb" }),
   languageFallbacks: (l: string) => [l, "en"],
 }));

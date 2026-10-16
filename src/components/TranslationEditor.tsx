@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRevealOnOpen } from "@unisim/sdk";
 import { Languages, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ const TranslationEditor = ({ token }: { token: string }) => {
   const [device, setDevice] = useState<DeviceAvailability>("unavailable");
   const [busy, setBusy] = useState<"device" | "save" | null>(null);
   const [open, setOpen] = useState(false);
+  // The editor takes the button's place: scroll it fully on screen.
+  const revealRef = useRevealOnOpen();
   const source = useMemo(() => agreementRows(snapshot), [snapshot]);
 
   useEffect(() => {
@@ -105,7 +108,7 @@ const TranslationEditor = ({ token }: { token: string }) => {
           {saved ? t("translate.edit") : t("translate.add")}
         </Button>
       ) : (
-        <div className="space-y-3">
+        <div ref={revealRef} className="space-y-3">
           <div className="flex flex-wrap items-end gap-2">
             <div className="space-y-1">
               <label htmlFor="tr-lang" className="text-xs text-muted-foreground block">{t("translate.language")}</label>
