@@ -243,6 +243,8 @@ export const ptBR: Messages = {
   "pad.connected": "Celular conectado — aguardando a assinatura.",
   "pad.received": "Assinatura recebida.",
   "pad.receivedAlt": "Prévia da assinatura recebida",
+  "pad.attested": "Assinado por {email} via Universal ID · {time}",
+  "pad.attestedCheck": "Verificar",
   "pad.newCode": "Gerar um novo código",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "A assinatura abre em",

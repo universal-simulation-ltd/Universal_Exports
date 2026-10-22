@@ -27,6 +27,7 @@ import { getTranslation, type AgreementTranslation } from "@/lib/translation";
 import AgreementSideBySide from "@/components/AgreementSideBySide";
 import { cn } from "@/lib/utils";
 import { fill, fillNodes, formatLongDate } from "@/lib/i18n/format";
+import { attestationMatches, type PhoneAttestation } from "@/lib/phoneAttest";
 
 /**
  * Counter-sign landing page — the QR / link the drafter sends opens here.
@@ -101,6 +102,8 @@ const Sign = () => {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [name, setName] = useState("");
   const [signature, setSignature] = useState("");
+  // Set when the signature came from the UNI·SIM Hub app and checked out.
+  const [attestation, setAttestation] = useState<PhoneAttestation | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // The document opened in THIS page load (a reload asks again: the binding
   // is to the copy you were actually shown).
@@ -222,7 +225,8 @@ const Sign = () => {
     if (legacyPath) {
       signedOk = await submitCounterSignature({ token, name: signer, signature });
     } else {
-      const res = await submitSignature({ token, viewId: openedViewId, name: signer, signature });
+      const attest = attestation && (await attestationMatches(attestation, signature)) ? attestation.certId : undefined;
+      const res = await submitSignature({ token, viewId: openedViewId, name: signer, signature, attest });
       if (res.code === "document_changed") {
         setSubmitting(false);
         setOpenedViewId(null);
@@ -472,6 +476,8 @@ const Sign = () => {
                     setSignature(v);
                     if (senderHere) live.ink(v);
                   }}
+                  attestation={attestation}
+                  onAttestation={setAttestation}
                 />
               </div>
 

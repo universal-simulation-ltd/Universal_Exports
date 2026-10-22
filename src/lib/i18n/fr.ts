@@ -242,6 +242,8 @@ export const fr: Messages = {
   "pad.connected": "Téléphone connecté — en attente de la signature.",
   "pad.received": "Signature reçue.",
   "pad.receivedAlt": "Aperçu de la signature reçue",
+  "pad.attested": "Signé par {email} via Universal ID · {time}",
+  "pad.attestedCheck": "Vérifier",
   "pad.newCode": "Générer un nouveau code",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "La signature s'ouvre sur",

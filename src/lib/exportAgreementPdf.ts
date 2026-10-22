@@ -65,6 +65,13 @@ export interface AgreementSignatureBlock {
    * preferred). Rendered next to the signature when present.
    */
   stampDataUrl?: string;
+  /**
+   * Scan to sign from the UNI·SIM Hub app (platform 0306), already checked
+   * against this signature (lib/phoneAttest.ts): "Signed by <email> via
+   * Universal ID · <time>" printed under the date, with a QR to
+   * app.unisim.co.uk/check?attest=<id>.
+   */
+  attest?: { line: string; checkUrl: string; qrDataUrl?: string };
 }
 
 export interface AgreementPdfInput {
@@ -341,7 +348,7 @@ export async function buildAgreementPdf(input: AgreementPdfInput): Promise<Built
   // Two columns so both sides can see where they sign. The drafter's drawn
   // signature (when present) fills in above their line; the counterparty always
   // shows a blank line to counter-sign on the shared / printed copy.
-  ensureSpace(150);
+  ensureSpace(input.signature?.attest ? 210 : 150);
   doc.setDrawColor(226, 232, 240);
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += LINE + 4;
@@ -415,6 +422,32 @@ export async function buildAgreementPdf(input: AgreementPdfInput): Promise<Built
     // Date (filled for the drafter's signed copy, blank prompt otherwise).
     dateBaseline = cy;
     doc.text(sig ? `Date: ${sig.date}` : "Date: ______________", x, cy);
+    if (sig?.attest) {
+      // Who signed on the phone, with a QR (also a link) to check it.
+      const qr = 40;
+      const top = cy + 8;
+      const textW = lineW - (sig.attest.qrDataUrl ? qr + 8 : 0);
+      doc.setFont(FONT, "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(4, 120, 87);
+      const lines = (doc.splitTextToSize(sig.attest.line, textW) as string[]).slice(0, 3);
+      let ty = top + 8;
+      for (const l of lines) { doc.text(l, x, ty); ty += 9; }
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 116, 139);
+      const urlLines = (doc.splitTextToSize(sig.attest.checkUrl, textW) as string[]).slice(0, 2);
+      for (const l of urlLines) { doc.text(l, x, ty); ty += 8; }
+      if (sig.attest.qrDataUrl) {
+        try {
+          doc.addImage(sig.attest.qrDataUrl, "PNG", x + lineW - qr, top, qr, qr);
+          doc.link(x + lineW - qr, top, qr, qr, { url: sig.attest.checkUrl });
+        } catch {
+          // ignore a QR that won't embed; the line and URL still say it
+        }
+      }
+      cy = Math.max(ty - 8, sig.attest.qrDataUrl ? top + qr : 0);
+      doc.setFontSize(9);
+    }
     if (!sig) {
       cy += 12;
       doc.setTextColor(148, 163, 184);

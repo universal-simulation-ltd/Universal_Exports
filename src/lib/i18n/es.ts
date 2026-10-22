@@ -242,6 +242,8 @@ export const es: Messages = {
   "pad.connected": "Móvil conectado: esperando la firma.",
   "pad.received": "Firma recibida.",
   "pad.receivedAlt": "Vista previa de la firma recibida",
+  "pad.attested": "Firmado por {email} con Universal ID · {time}",
+  "pad.attestedCheck": "Comprobar",
   "pad.newCode": "Generar un código nuevo",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "La firma se abre en",

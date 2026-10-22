@@ -244,6 +244,9 @@ export const en = {
   "pad.connected": "Phone connected — waiting for the signature.",
   "pad.received": "Signature received.",
   "pad.receivedAlt": "Returned signature preview",
+  // Scan to sign from the UNI·SIM Hub app (platform 0306): {email} is the signer's confirmed Universal ID email, {time} when our server recorded it. "Universal ID" is a product name.
+  "pad.attested": "Signed by {email} via Universal ID · {time}",
+  "pad.attestedCheck": "Check",
   "pad.newCode": "Generate a new code",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "Signature opens on",

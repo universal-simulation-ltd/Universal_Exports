@@ -243,6 +243,8 @@ export const tr: Messages = {
   "pad.connected": "Telefon bağlandı — imza bekleniyor.",
   "pad.received": "İmza alındı.",
   "pad.receivedAlt": "Alınan imzanın önizlemesi",
+  "pad.attested": "{email} tarafından Universal ID ile imzalandı · {time}",
+  "pad.attestedCheck": "Doğrula",
   "pad.newCode": "Yeni kod oluştur",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "İmza şununla açılır",

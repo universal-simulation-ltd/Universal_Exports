@@ -242,6 +242,8 @@ export const de: Messages = {
   "pad.connected": "Handy verbunden – warte auf die Unterschrift.",
   "pad.received": "Unterschrift empfangen.",
   "pad.receivedAlt": "Vorschau der empfangenen Unterschrift",
+  "pad.attested": "Unterschrieben von {email} über die Universal ID · {time}",
+  "pad.attestedCheck": "Prüfen",
   "pad.newCode": "Neuen Code erzeugen",
   // Tune this app ▸ the one the pad opens on (2026-09-30, default views).
   "pad.opensOn": "Unterschrift öffnet mit",

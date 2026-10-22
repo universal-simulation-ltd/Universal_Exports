@@ -9,6 +9,8 @@ import { useI18n } from "@/lib/i18n";
 import { isImageDataUrl } from "@/lib/safeDataUrl";
 import { toast } from "sonner";
 import { SIGNATURE_MODE_ID, SIGNATURE_MODES, type SignatureMode } from "@/components/SignatureModePreference";
+import { attestationMatches, formatAttestLocal, verifyPhoneAttestation, type PhoneAttestation } from "@/lib/phoneAttest";
+import { fill } from "@/lib/i18n/format";
 
 // What an uploaded signature may be: these are what jsPDF embeds and what
 // every viewer of the counter-signature will accept (see safeDataUrl.ts).
@@ -17,6 +19,15 @@ const UPLOAD_TYPES = ["image/png", "image/jpeg"];
 interface SignaturePadProps {
   value: string; // base64 data URL
   onChange: (value: string) => void;
+  /**
+   * Scan to sign, step 2 (platform 0306): a checked attestation that the
+   * signature came from the UNI·SIM Hub app, signed in with a confirmed
+   * Universal ID. The pad shows "Signed by … via Universal ID" while it is
+   * about exactly `value`, and reports a new one (or null, when the signature
+   * is replaced by any other means) through `onAttestation`.
+   */
+  attestation?: PhoneAttestation | null;
+  onAttestation?: (attestation: PhoneAttestation | null) => void;
 }
 
 function randomToken() {
@@ -43,11 +54,25 @@ const DEFAULT_ACTIVE =
 const DEFAULT_IDLE =
   "data-[default-view=true]:border-orange-400/70 data-[default-view=true]:text-orange-700 dark:data-[default-view=true]:text-orange-400";
 
-const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
+const SignaturePad = ({ value, onChange: onChangeProp, attestation, onAttestation }: SignaturePadProps) => {
   // When the drafter is already on a phone there's no point offering the
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
   const isMobile = useIsMobile();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  // Any new signature other than a checked phone one drops the attestation.
+  const onChange = useCallback((v: string) => {
+    onChangeProp(v);
+    onAttestation?.(null);
+  }, [onChangeProp, onAttestation]);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  // Shown only while the attestation is about the very image in `value`.
+  const [attested, setAttested] = useState<PhoneAttestation | null>(null);
+  useEffect(() => {
+    let live = true;
+    void attestationMatches(attestation, value).then((ok) => { if (live) setAttested(ok ? attestation ?? null : null); });
+    return () => { live = false; };
+  }, [attestation, value]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const dv = useDefaultView<SignatureMode>(SIGNATURE_MODE_ID, "draw", { views: SIGNATURE_MODES });
@@ -103,6 +128,14 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
         if (!isImageDataUrl(sig)) return;
         onChange(sig);
         setMobileStatus("received");
+        // Sent from the UNI·SIM Hub app by a confirmed Universal ID? Believed
+        // only if the record matches this channel and this image, and only
+        // while this is still the signature in use.
+        if (payload.attest !== undefined && onAttestation) {
+          void verifyPhoneAttestation((fn, args) => supabase.rpc(fn, args), {
+            attest: payload.attest, channelToken: mobileToken, signature: sig, app: "exports",
+          }).then((a) => { if (a && valueRef.current === sig) onAttestation(a); });
+        }
         // Brief delay so the user sees the "received" confirmation before
         // we drop them back to the Draw mode preview of the new signature.
         setTimeout(() => setMode("draw"), 1200);
@@ -111,7 +144,7 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [mobileToken, mobilePin, onChange]);
+  }, [mobileToken, mobilePin, onChange, onAttestation]);
 
   function regenerateMobileToken() {
     setMobileToken(randomToken());
@@ -346,6 +379,16 @@ const SignaturePad = ({ value, onChange }: SignaturePadProps) => {
             </button>
           </div>
         </div>
+      )}
+
+      {attested && (
+        <p className="text-xs text-emerald-700 dark:text-emerald-400 flex flex-wrap items-center gap-x-1.5" data-testid="phone-attested">
+          <CheckCircle2 className="h-3 w-3 shrink-0" aria-hidden="true" />
+          <span>{fill(t("pad.attested"), { email: attested.signerEmail, time: formatAttestLocal(attested.signedAt, lang) })}</span>
+          <a href={attested.checkUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+            {t("pad.attestedCheck")}
+          </a>
+        </p>
       )}
     </div>
   );

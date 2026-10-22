@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileDrop } from "@unisim/sdk";
 import { BASE_PATH } from "@/lib/basePath";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ import { listSignatureTokens } from "@/lib/signatureStore";
 import { downloadDealXml } from "@/lib/dealXml";
 import { useI18n } from "@/lib/i18n";
 import type { AgreementPdfInput, AgreementSignatureBlock, CounterpartyBox } from "@/lib/exportAgreementPdf";
+import { attestationForPrint, parseStoredAttestation, type PhoneAttestation } from "@/lib/phoneAttest";
 
 // The PDF builders (and jsPDF behind them, ~300 kB) load on first use, not
 // with the editor: most visits never generate a PDF.
@@ -133,6 +134,14 @@ const ExportAgreementWorkflow = ({
   const signature = formData["confirmSignature"] || "";
   const signerName = formData["confirmName"] || "";
   const stamp = formData["confirmStamp"] || "";
+  // Scan to sign from the UNI·SIM Hub app (platform 0306): kept with the
+  // project beside the signature, and only ever used while it is about exactly
+  // that image (re-checked before it is shown or printed).
+  const signatureAttest = useMemo(() => parseStoredAttestation(formData["confirmSignatureAttest"]), [formData]);
+  const setSignatureAttest = useCallback(
+    (a: PhoneAttestation | null) => onFieldChange("confirmSignatureAttest", a ? JSON.stringify(a) : ""),
+    [onFieldChange],
+  );
 
   // Store a built agreement online (exports_agreement_views) under `token`.
   // Only ever called for one of the user's explicit choices: the QR option, or
@@ -294,11 +303,21 @@ const ExportAgreementWorkflow = ({
     }
     const today = new Date();
     onFieldChange("confirmDate", format(today, "yyyy-MM-dd"));
+    // Signed on a phone through the Hub app by a confirmed Universal ID: the
+    // signed copy says so under the signature, with a QR to check it.
+    let attest: AgreementSignatureBlock["attest"];
+    const printed = await attestationForPrint(signatureAttest, signature);
+    if (printed) {
+      let qrDataUrl: string | undefined;
+      try { qrDataUrl = await unisimQrPngDataUrl(printed.checkUrl, 256); } catch { qrDataUrl = undefined; }
+      attest = { ...printed, qrDataUrl };
+    }
     const { blob, url, labelQr } = await buildPdfWithViewLink({
       name: signerName.trim(),
       dataUrl: signature,
       date: format(today, "PPP"),
       stampDataUrl: stamp.startsWith("data:") ? stamp : undefined,
+      attest,
     });
     revoke(signedUrl);
     revoke(finalUrl);
@@ -307,7 +326,7 @@ const ExportAgreementWorkflow = ({
     setFinalUrl(null);
     setQrInfo(labelQr);
     toast.success(t("wf.signatureApplied"));
-  }, [generatedUrl, signature, signerName, stamp, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl, t]);
+  }, [generatedUrl, signature, signerName, stamp, signatureAttest, buildPdfWithViewLink, onFieldChange, signedUrl, finalUrl, t]);
 
   // ── Upload the counter-signed / finalised PDF (They Sign) ──────────────────
   const handleUploadSignedPdf = useCallback((file: File | undefined) => {
@@ -485,6 +504,8 @@ const ExportAgreementWorkflow = ({
                 <SignaturePad
                   value={formData["confirmSignature"] || ""}
                   onChange={(val) => onFieldChange("confirmSignature", val)}
+                  attestation={signatureAttest}
+                  onAttestation={setSignatureAttest}
                 />
               </div>
               <div>

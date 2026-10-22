@@ -84,8 +84,16 @@ export async function recordDocumentViewed(token: string, viewId: string): Promi
   return callSign({ action: 'view', token, viewId, geo: await geoToken() })
 }
 
-/** Sign the opened document; the server then builds the signed copy. */
-export async function submitSignature(args: { token: string; viewId: string; name: string; signature: string }): Promise<SignResult> {
+/**
+ * Sign the opened document; the server then builds the signed copy.
+ *
+ * `attest`: a Scan to sign attestation id (platform 0306) this page has
+ * already checked against its own channel and this exact image. exports-sign
+ * does not read it yet — see the backlog: to print it on the signed copy's
+ * audit page, the function must store it and re-check app + png_sha256 with
+ * verify_phone_sign_attestation; sent now so that needs no app release.
+ */
+export async function submitSignature(args: { token: string; viewId: string; name: string; signature: string; attest?: string }): Promise<SignResult> {
   return callSign({ action: 'submit', ...args, geo: await geoToken() })
 }
 
