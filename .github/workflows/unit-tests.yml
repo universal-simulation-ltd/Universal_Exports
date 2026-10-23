@@ -1,0 +1,43 @@
+# The Vitest suite and the two Node scripts (hosted paths, the build guard),
+# on every push and pull request. No server, no browser. The build-env script
+# sets its own configuration for its "a configured build" case, so no
+# .env.local is needed.
+#
+# Free: the repo is public, so ubuntu-latest minutes cost nothing.
+
+name: unit tests
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to a branch or PR cancels the older run, but not on main: main
+# moves often (several sessions push to it), and every commit there should
+# get its own result.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm test
+      - run: npm run test:hosted-paths
+      - run: npm run test:build-env
