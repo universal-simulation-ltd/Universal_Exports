@@ -17,6 +17,11 @@ const universalConfig = {
   supabaseAnonKey: import.meta.env.VITE_PLATFORM_SUPABASE_ANON_KEY,
   product: "exports" as const,
   cookieDomain: import.meta.env.PROD ? ".unisim.co.uk" : undefined,
+  // No "Sign in" in the profile menu for a guest (James, 2026-10-26: only
+  // where signing in adds little). The one thing that needs an account, the
+  // online store, asks for it in its own dialog; signed in, the account rows
+  // and Sign out are back (SDK 0.205.0).
+  signInInMenu: false,
 };
 
 createRoot(document.getElementById("root")!).render(
