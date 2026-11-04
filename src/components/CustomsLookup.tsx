@@ -548,7 +548,7 @@ const CustomsLookup = ({ allForms, onFieldChange, formData, extraProducts, origi
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs w-full mt-1"
+                  className="w-full mt-1"
                   disabled={!allResultsReady || allAlreadyApplied}
                   onClick={() => {
                     const newRules: AppliedRule[] = [];

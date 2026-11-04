@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useId } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import TooltipLabel from "@/components/TooltipLabel";
 import { Plus, Trash2, Package, ShoppingCart, Search, Pencil, Check, X } from "lucide-react";
 import {
@@ -227,7 +227,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                             </div>
                           </div>
                           <div className="flex gap-1">
-                            <Button size="sm" className="h-7 text-xs" onClick={async () => {
+                            <Button size="sm" onClick={async () => {
                               if (!editProduct.name.trim()) { toast.error(t("product.nameRequired")); return; }
                               await updateCatalogueProduct({
                                 id: p.id, code: editProduct.code, hsCode: editProduct.hsCode,
@@ -241,7 +241,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
                             }}>
                               <Check className="mr-1 h-3 w-3" /> {t("doc.save")}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditingId(null)}>{t("setup.cancel")}</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>{t("setup.cancel")}</Button>
                           </div>
                         </div>
                       ) : (
@@ -295,7 +295,7 @@ const ProductDetails = ({ formData, onFieldChange, onSave, extraCatalogue }: Pro
           </Popover>
 
           <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm} aria-controls={addFormId}>
-            <Plus className="mr-1 h-3.5 w-3.5" />
+            <Key><Plus /></Key>
             {t("product.addNew")}
           </Button>
         </div>

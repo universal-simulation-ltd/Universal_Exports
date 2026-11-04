@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useFileDrop } from "@unisim/sdk";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import { Stamp, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -64,8 +64,8 @@ const StampUpload = ({ value, onChange }: StampUploadProps) => {
           {value ? t("stamp.replace") : t("stamp.upload")}
         </Button>
         {value && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => onChange("")}>
-            <Trash2 className="mr-1 h-3.5 w-3.5" />
+          <Button type="button" variant="destructive" size="sm" onClick={() => onChange("")}>
+            <Key><Trash2 /></Key>
             {t("stamp.clear")}
           </Button>
         )}

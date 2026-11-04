@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { UniversalProvider } from "@unisim/sdk";
+import { UniversalProvider, installButtonStyles, installTabStyles } from "@unisim/sdk";
 import App from "./App.tsx";
 import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
@@ -18,6 +18,11 @@ const universalConfig = {
   product: "exports" as const,
   cookieDomain: import.meta.env.PROD ? ".unisim.co.uk" : undefined,
 };
+
+// The suite's key buttons and tray tabs (SDK 0.216), used as class strings by
+// components/ui/button.tsx and tabs.tsx.
+installButtonStyles();
+installTabStyles();
 
 createRoot(document.getElementById("root")!).render(
   <UniversalProvider config={universalConfig}>

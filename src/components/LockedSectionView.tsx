@@ -68,7 +68,6 @@ const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding
           <Button
             variant="outline"
             size="sm"
-            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
             onClick={handleDownload}
           >
             <Download className="mr-1.5 h-3.5 w-3.5" /> {t("doc.downloadPdf")}

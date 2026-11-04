@@ -22,6 +22,7 @@ vi.mock("@/lib/auditStore", () => ({
   shortHash: (s: string) => `${s.slice(0, 8)}…${s.slice(-8)}`,
 }));
 vi.mock("@unisim/sdk", () => ({
+  buttonClass: (rank?: string, size?: string) => ["u-btn", rank && `u-btn--${rank}`, size && `u-btn--${size}`].filter(Boolean).join(" "),
   UnisimQr: () => null,
   useRevealOnOpen: () => () => {},
   useLanguage: () => ({ language: "en-gb" }),

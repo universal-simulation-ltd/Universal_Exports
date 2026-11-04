@@ -7,6 +7,7 @@ vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ signIn: vi.fn(), signUp, resendConfirmation: vi.fn() }),
 }));
 vi.mock("@unisim/sdk", () => ({
+  buttonClass: (rank?: string, size?: string) => ["u-btn", rank && `u-btn--${rank}`, size && `u-btn--${size}`].filter(Boolean).join(" "),
   Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   useLanguage: () => ({ language: "en-gb" }),
   languageFallbacks: (l: string) => [l, "en"],

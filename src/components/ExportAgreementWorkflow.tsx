@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileDrop } from "@unisim/sdk";
 import { BASE_PATH } from "@/lib/basePath";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -363,7 +363,7 @@ const ExportAgreementWorkflow = ({
           disabled={!canGenerate}
           onClick={handleGenerateClick}
         >
-          <Wand2 className="mr-2 h-4 w-4" />
+          <Key><Wand2 /></Key>
           {generatedUrl ? t("wf.regenerate") : t("wf.generate")}
         </Button>
         {!canGenerate && (
@@ -397,12 +397,12 @@ const ExportAgreementWorkflow = ({
               </Button>
               <a href={previewUrl} download={previewDownloadName}>
                 <Button type="button" variant="outline" size="sm">
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  <Key><Download /></Key>
                   {t("wf.downloadPdf")}
                 </Button>
               </a>
               <Button type="button" variant="outline" size="sm" onClick={() => setStoreOpen(true)}>
-                <Save className="mr-1.5 h-3.5 w-3.5" />
+                <Key><Save /></Key>
                 {t("wf.backUp")}
               </Button>
               {qrInfo && (
@@ -477,7 +477,7 @@ const ExportAgreementWorkflow = ({
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="field"
                         className={cn(
                           "w-full justify-start text-left font-normal bg-secondary/50",
                           !formData["confirmDate"] && "text-muted-foreground"
@@ -558,7 +558,7 @@ const ExportAgreementWorkflow = ({
                 </p>
                 <input {...signedPicker.inputProps} aria-label={t("wf.uploadSigned")} className="hidden" />
                 <Button type="button" variant="outline" onClick={signedPicker.open}>
-                  <Upload className="mr-2 h-4 w-4" />
+                  <Key><Upload /></Key>
                   {t("wf.uploadSigned")}
                 </Button>
               </div>

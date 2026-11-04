@@ -26,6 +26,7 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@unisim/sdk", () => ({
+  buttonClass: (rank?: string, size?: string) => ["u-btn", rank && `u-btn--${rank}`, size && `u-btn--${size}`].filter(Boolean).join(" "),
   UnisimQr: () => null,
   useDefaultView: () => ({ defaultView: "mobile", buttonProps: () => ({}), tap: () => {} }),
   useLanguage: () => ({ language: "en-gb" }),

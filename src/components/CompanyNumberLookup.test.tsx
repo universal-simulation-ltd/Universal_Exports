@@ -5,6 +5,7 @@ import { emptyDetails, type CompanyDetails } from "@/lib/contactStore";
 
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 vi.mock("@unisim/sdk", () => ({
+  buttonClass: (rank?: string, size?: string) => ["u-btn", rank && `u-btn--${rank}`, size && `u-btn--${size}`].filter(Boolean).join(" "),
   useLanguage: () => ({ language: "en-gb" }),
   languageFallbacks: (l: string) => [l, "en"],
 }));

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRevealOnOpen } from "@unisim/sdk";
 import { Languages, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import { getSignerDocument } from "@/lib/auditStore";
 import type { AgreementViewSnapshot } from "@/lib/agreementViewStore";
 import {
@@ -166,8 +166,8 @@ const TranslationEditor = ({ token }: { token: string }) => {
               {t("translate.save")}
             </Button>
             {saved && (
-              <Button type="button" variant="ghost" size="sm" onClick={remove} disabled={!!busy}>
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" /> {t("translate.remove")}
+              <Button type="button" variant="destructive" size="sm" onClick={remove} disabled={!!busy}>
+                <Key><Trash2 /></Key> {t("translate.remove")}
               </Button>
             )}
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>{t("translate.close")}</Button>

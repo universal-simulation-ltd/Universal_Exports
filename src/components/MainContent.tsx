@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Chip, ValueChip, useFileDrop, useRevealOnOpen } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/dialog";
@@ -192,7 +192,7 @@ const CooFileAttachment = ({ field, set, onFieldChange }: { field: (k: string) =
           </button>
         </div>
       ) : (
-        <Button variant="outline" size="sm" className="text-xs" onClick={picker.open}>
+        <Button variant="outline" size="sm" onClick={picker.open}>
           <Paperclip className="mr-1 h-3.5 w-3.5" />
           {t("coo.attach")}
         </Button>
@@ -483,8 +483,8 @@ const MainContent = ({
           <Button variant="outline" onClick={() => onCancelEdit?.(sectionId)}>
             <Undo2 className="mr-1.5 h-3.5 w-3.5" /> {t("main.makeNoChanges")}
           </Button>
-          <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => { onSave(); onLockSection?.(sectionId); }}>
-            <CheckCircle2 className="mr-1.5 h-4 w-4" /> {t("lock.acceptLock")}
+          <Button onClick={() => { onSave(); onLockSection?.(sectionId); }}>
+            <Key><CheckCircle2 /></Key> {t("lock.acceptLock")}
           </Button>
         </div>
       );
@@ -492,7 +492,7 @@ const MainContent = ({
     return (
       <div className="flex gap-2 mt-2">
         <Button onClick={onSave}>{saveLabel}</Button>
-        <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => { onSave(); onLockSection?.(sectionId); }}>
+        <Button variant="outline" onClick={() => { onSave(); onLockSection?.(sectionId); }}>
           <CheckCircle2 className="mr-1.5 h-4 w-4" /> {t("lock.acceptLock")}
         </Button>
       </div>
@@ -825,24 +825,24 @@ const MainContent = ({
                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                 />
                 <div className="flex gap-1">
-                  <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
+                  <Button variant="outline" size="sm" onClick={logoPicker.open}>
                     {t("common.change")}
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
             ) : (
-              <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
-                <Upload className="mr-1 h-3.5 w-3.5" />
+              <Button variant="outline" size="sm" onClick={logoPicker.open}>
+                <Key><Upload /></Key>
                 {t("main.uploadLogo")}
               </Button>
             )}
           </div>
           {companyFields(editYourDetails, setEditYourDetails, "", true)}
           <Button onClick={handleSaveYourDetails} className="mt-4">
-            <Save className="mr-2 h-4 w-4" />
+            <Key><Save /></Key>
             {t("yourDetails.save")}
           </Button>
         </div>
@@ -981,21 +981,14 @@ const MainContent = ({
           {/* Role selection */}
           <div>
             <p className="text-sm font-medium text-foreground mb-2">{t("setup.yourRole")}</p>
-            <div className="flex gap-3">
-              <Button
-                variant={role === "seller" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setRole("seller")}
-              >
+            {/* A two-way choice, so the suite's tray tabs (SDK 0.216). */}
+            <div className="u-tabs w-full" role="group" aria-label={t("setup.yourRole")}>
+              <button type="button" className="u-tab flex-1 justify-center" aria-pressed={role === "seller"} onClick={() => setRole("seller")}>
                 {t("setup.seller")}
-              </Button>
-              <Button
-                variant={role === "buyer" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setRole("buyer")}
-              >
+              </button>
+              <button type="button" className="u-tab flex-1 justify-center" aria-pressed={role === "buyer"} onClick={() => setRole("buyer")}>
                 {t("setup.buyer")}
-              </Button>
+              </button>
             </div>
           </div>
 
@@ -1075,17 +1068,17 @@ const MainContent = ({
                                   className="h-16 w-16 object-contain rounded-md border border-border bg-secondary/30 p-1"
                                 />
                                 <div className="flex gap-1">
-                                  <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
+                                  <Button variant="outline" size="sm" onClick={logoPicker.open}>
                                     {t("common.change")}
                                   </Button>
-                                  <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
+                                  <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={handleRemoveLogo} aria-label={t("main.removeLogo")} title={t("main.removeLogo")}>
                                     <X className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
                               </div>
                             ) : (
-                              <Button variant="outline" size="sm" className="text-xs" onClick={logoPicker.open}>
-                                <Upload className="mr-1 h-3.5 w-3.5" />
+                              <Button variant="outline" size="sm" onClick={logoPicker.open}>
+                                <Key><Upload /></Key>
                                 {t("main.uploadLogo")}
                               </Button>
                             )}
@@ -1219,7 +1212,7 @@ const MainContent = ({
                           {companyFields(otherParty, setOtherParty, "")}
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={handleSaveAsContact}>
-                              <UserPlus className="mr-2 h-3.5 w-3.5" />
+                              <Key><UserPlus /></Key>
                                {t("setup.saveAsContact")}
                              </Button>
                              <Button variant="ghost" size="sm" onClick={() => { setOtherPartyMode(""); setOtherParty(emptyCompany()); }}>
@@ -1507,9 +1500,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             <div className="flex flex-wrap items-center gap-2 pl-6">
               <p className="text-xs text-muted-foreground">{t("bank.cloudCopyKept")}</p>
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
-                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                 disabled={syncBusy}
                 onClick={() => void handleRemoveCloud()}
               >
@@ -1539,16 +1531,14 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         </button>
         {yourOpen && (
           <div id={`${foldId}-your-bank`} className="px-4 pb-4 pt-2 border-t border-border space-y-4">
-            <div className="flex gap-1 rounded-lg bg-secondary/50 p-1">
+            <div className="u-tabs w-full" role="group">
               {currencies.map((cur) => (
                 <button
                   key={cur}
                   onClick={() => setYourCurrency(cur)}
-                  className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                    yourCurrency === cur
-                      ? "bg-background text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  type="button"
+                  aria-pressed={yourCurrency === cur}
+                  className="u-tab flex-1 justify-center"
                 >
                   {currencyLabel(cur)}
                   {isFilled(yourBanks[cur] || emptyBankAccount()) && (
@@ -1567,9 +1557,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <p className="text-xs text-muted-foreground">{t("bank.autoSaved")}</p>
                 {isFilled(currentYourAccount) && (
                   <Button
-                    variant="ghost"
+                    variant="destructive"
                     size="sm"
-                    className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => setConfirmDelete({ type: "your", currency: yourCurrency })}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
@@ -1600,16 +1589,14 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         </button>
         {partyOpen && (
           <div id={`${foldId}-party-bank`} className="px-4 pb-4 pt-2 border-t border-border space-y-4">
-            <div className="flex gap-1 rounded-lg bg-secondary/50 p-1">
+            <div className="u-tabs w-full" role="group">
               {currencies.map((cur) => (
                 <button
                   key={cur}
                   onClick={() => setPartyCurrency(cur)}
-                  className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                    partyCurrency === cur
-                      ? "bg-background text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  type="button"
+                  aria-pressed={partyCurrency === cur}
+                  className="u-tab flex-1 justify-center"
                 >
                   {currencyLabel(cur)}
                   {isFilled(partyBanks[cur] || emptyBankAccount()) && (
@@ -1631,9 +1618,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <p className="text-xs text-muted-foreground">{t("bank.autoSaved")}</p>
                 {isFilled(currentPartyAccount) && (
                   <Button
-                    variant="ghost"
+                    variant="destructive"
                     size="sm"
-                    className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => setConfirmDelete({ type: "party", currency: partyCurrency })}
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
@@ -1673,8 +1659,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               <Undo2 className="mr-1.5 h-3.5 w-3.5" /> {t("main.makeNoChanges")}
             </Button>
           )}
-          <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={onLock}>
-            <CheckCircle2 className="mr-1.5 h-4 w-4" /> {t("lock.acceptLock")}
+          <Button onClick={onLock}>
+            <Key><CheckCircle2 /></Key> {t("lock.acceptLock")}
           </Button>
         </div>
       )}
@@ -1836,7 +1822,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         {companyFields(yourDetails, setYourDetails, "", true)}
                         <div className="flex gap-2">
                           <Button size="sm" onClick={async () => { await saveYourDetails(yourDetails); setEditYourDetails(yourDetails); setEditingYourDetails(false); toast.success(t("proj.yoursUpdated")); }}>
-                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                            <Key><CheckCircle2 /></Key>
                             {t("save.done")}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => setEditingYourDetails(false)}>
@@ -1904,7 +1890,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                         {companyFields(otherParty, setOtherParty, "")}
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => { setEditingOtherParty(false); toast.success(t("proj.otherUpdated")); }}>
-                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                            <Key><CheckCircle2 /></Key>
                             {t("save.done")}
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => setEditingOtherParty(false)}>
@@ -1940,24 +1926,20 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 const otherDisplay = otherParty.country || "—";
                 return (
                   <div className="space-y-2">
-                    <div className="flex gap-3">
+                    <div className="u-tabs w-full" role="group">
                       <button
+                        type="button"
+                        aria-pressed={!!activeDomestic}
                         onClick={() => setTradeTypeOverride("domestic")}
-                        className={`flex-1 rounded-md px-4 py-2.5 text-center text-sm font-medium border transition-colors cursor-pointer ${
-                          activeDomestic
-                            ? "bg-primary/10 text-primary border-primary/30"
-                            : "bg-secondary/50 text-muted-foreground border-border hover:border-muted-foreground/30"
-                        }`}
+                        className="u-tab flex-1 justify-center"
                       >
                         {t("proj.domestic")}
                       </button>
                       <button
+                        type="button"
+                        aria-pressed={!!activeInternational}
                         onClick={() => setTradeTypeOverride("international")}
-                        className={`flex-1 rounded-md px-4 py-2.5 text-center text-sm font-medium border transition-colors cursor-pointer ${
-                          activeInternational
-                            ? "bg-primary/10 text-primary border-primary/30"
-                            : "bg-secondary/50 text-muted-foreground border-border hover:border-muted-foreground/30"
-                        }`}
+                        className="u-tab flex-1 justify-center"
                       >
                         {t("proj.international")}
                       </button>
@@ -1983,7 +1965,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               {bothPartiesSet && !accepted && (
                 <Button
                   onClick={onAccept}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full"
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" />
                   {t("lock.acceptLock")}
@@ -1991,13 +1973,8 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               )}
               {accepted && editingSections?.has("project-overview") && (
                 <div className="flex gap-2 mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    onClick={() => onLockSection?.("project-overview")}
-                  >
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> {t("lock.acceptLock")}
+                  <Button size="sm" onClick={() => onLockSection?.("project-overview")}>
+                    <Key><CheckCircle2 /></Key> {t("lock.acceptLock")}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => onCancelEdit?.("project-overview")}>
                     {t("setup.cancel")}
@@ -2109,7 +2086,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
               </div>
               <Button
                 size="lg"
-                className="w-full ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/30"
+                className="w-full"
                 onClick={handleUploadPdfs}
                 disabled={!potTotal.trim()}
               >
@@ -2499,7 +2476,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-base font-semibold text-foreground">{t("eboxy.title")}</h2>
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground [&[data-state=open]>svg]:rotate-180">
+                    <Button variant="ghost" size="sm" className="[&[data-state=open]>svg]:rotate-180">
                       {agreementChecklistOpen ? t("agree.hideChecklist") : t("agree.showChecklist")}
                       <ChevronDown className="ml-1.5 h-4 w-4 transition-transform" />
                     </Button>

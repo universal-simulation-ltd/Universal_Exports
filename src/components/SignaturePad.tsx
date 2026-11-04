@@ -47,13 +47,6 @@ function randomPin() {
   return String(n % 1_000_000).padStart(6, "0");
 }
 
-// The default mode is orange: filled while it is the one showing, an orange
-// outline while it is not (Jukebox's look — SDK README ▸ Default views).
-const DEFAULT_ACTIVE =
-  "data-[default-view=true]:bg-gradient-to-br data-[default-view=true]:from-[#FE8C01] data-[default-view=true]:to-[#E05504] data-[default-view=true]:text-white";
-const DEFAULT_IDLE =
-  "data-[default-view=true]:border-orange-400/70 data-[default-view=true]:text-orange-700 dark:data-[default-view=true]:text-orange-400";
-
 const SignaturePad = ({ value, onChange: onChangeProp, attestation, onAttestation }: SignaturePadProps) => {
   // When the drafter is already on a phone there's no point offering the
   // "scan a QR to sign on your phone" handoff — they can just draw directly.
@@ -244,48 +237,46 @@ const SignaturePad = ({ value, onChange: onChangeProp, attestation, onAttestatio
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* The suite's tray tabs (SDK 0.216): aria-pressed selects, and
+            buttonProps' data-default-view draws the opens-here dot. */}
+        <div className="u-tabs" role="group">
         {!isMobile && (
-          <Button
+          <button
             type="button"
-            variant={mode === "mobile" ? "default" : "outline"}
-            size="sm"
             {...dv.buttonProps("mobile", t("pad.mobile"))}
-            className={mode === "mobile" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+            className="u-tab"
             onClick={() => { dv.tap("mobile"); setMode("mobile"); }}
             aria-pressed={mode === "mobile"}
           >
             <Smartphone className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             {t("pad.mobile")}
-          </Button>
+          </button>
         )}
-        <Button
+        <button
           type="button"
-          variant={mode === "draw" ? "default" : "outline"}
-          size="sm"
           {...dv.buttonProps("draw", t("pad.draw"))}
-          className={mode === "draw" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          className="u-tab"
           onClick={() => { dv.tap("draw"); setMode("draw"); }}
           aria-pressed={mode === "draw"}
         >
           <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {t("pad.draw")}
-        </Button>
+        </button>
         {/* ⚠️ The file picker opens on the first click, so its second click
             never reaches the button on a desktop: Upload's default is set from
             Tune this app ▸ "Signature opens on" (SignatureModePreference.tsx). */}
-        <Button
+        <button
           type="button"
-          variant={mode === "upload" ? "default" : "outline"}
-          size="sm"
           {...dv.buttonProps("upload", t("pad.upload"))}
-          className={mode === "upload" ? DEFAULT_ACTIVE : DEFAULT_IDLE}
+          className="u-tab"
           onClick={() => { dv.tap("upload"); setMode("upload"); fileRef.current?.click(); }}
           aria-pressed={mode === "upload"}
         >
           <Upload className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {t("pad.upload")}
-        </Button>
+        </button>
+        </div>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
             <Trash2 className="mr-1 h-3.5 w-3.5" aria-hidden="true" />

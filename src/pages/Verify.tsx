@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFileDrop } from "@unisim/sdk";
 import { CheckCircle2, FileSearch, Fingerprint, RotateCcw, ShieldAlert, ShieldCheck, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, Key } from "@/components/ui/button";
 import {
   sha256Hex,
   verifyAgreement,
@@ -177,7 +177,7 @@ const Verify = () => {
         <p className="text-sm font-medium text-foreground">{t("verify.dropTitle")}</p>
         <p className="text-xs text-muted-foreground">{t("verify.dropBody")}</p>
         <Button type="button" variant="outline" onClick={drop.open} disabled={checking}>
-          <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
+          <Key><Upload /></Key>
           {checking ? t("verify.checking") : t("verify.choose")}
         </Button>
       </section>
