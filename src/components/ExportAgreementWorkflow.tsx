@@ -353,12 +353,17 @@ const ExportAgreementWorkflow = ({
       : t("wf.previewUnsigned");
   const previewDownloadName = (finalUrl || signedUrl) ? `signed-${downloadName}` : downloadName;
 
+  // One primary, on the step the person is on (BRANDING.md → Buttons): Generate
+  // until there is an agreement, then Confirm signature until it is signed.
+  // After that neither is the next step, so both stay secondary.
+  const step: "generate" | "sign" | "done" = !generatedUrl ? "generate" : !userHasSigned ? "sign" : "done";
+
   return (
     <div className="space-y-5 pt-2 border-t border-border">
       {/* Generate */}
       <div className="flex flex-col gap-3 max-w-xs">
         <Button
-          variant="default"
+          variant={step === "generate" ? "default" : "outline"}
           className="w-full justify-start"
           disabled={!canGenerate}
           onClick={handleGenerateClick}
@@ -519,10 +524,11 @@ const ExportAgreementWorkflow = ({
               </div>
               <Button
                 type="button"
+                variant={step === "sign" ? "default" : "outline"}
                 onClick={handleConfirmSignature}
                 disabled={!generatedUrl || !signature}
               >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <Key><CheckCircle2 /></Key>
                 {userHasSigned ? t("wf.reapply") : t("wf.confirm")}
               </Button>
               {userHasSigned && (
