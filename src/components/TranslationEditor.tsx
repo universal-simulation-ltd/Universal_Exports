@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useRevealOnOpen } from "@unisim/sdk";
+import { GrowingTextarea, useRevealOnOpen } from "@unisim/sdk";
 import { Languages, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Key } from "@/components/ui/button";
@@ -147,7 +147,7 @@ const TranslationEditor = ({ token }: { token: string }) => {
                     maxLength={300}
                     className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs"
                   />
-                  <textarea
+                  <GrowingTextarea
                     aria-label={fill(t("translate.valueIn"), { label: r.label })}
                     value={rows[r.key]?.value ?? ""}
                     onChange={(e) => edit(r.key, "value", e.target.value)}

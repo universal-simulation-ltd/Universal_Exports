@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect, useId } from "react";
 import { useNavigate } from "react-router-dom";
-import { Chip, ValueChip, useFileDrop, useRevealOnOpen } from "@unisim/sdk";
+import { Chip, GrowingTextarea, ValueChip, useFileDrop, useRevealOnOpen } from "@unisim/sdk";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button, Key } from "@/components/ui/button";
@@ -3259,7 +3259,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                </div>
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
-                 <textarea
+                 <GrowingTextarea
                    placeholder={t("cert.goodsPlaceholder")}
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
@@ -3268,7 +3268,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                </div>
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.declaration")}</label>
-                 <textarea
+                 <GrowingTextarea
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("declaration", DEFAULT_COO_DECLARATION)}
                    onChange={(e) => onFieldChange("declaration", e.target.value)}
@@ -3276,7 +3276,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                </div>
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
-                 <textarea
+                 <GrowingTextarea
                    placeholder={t("common.notesPlaceholder")}
                    className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
@@ -3392,7 +3392,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                </div>
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("cert.goods")}</label>
-                 <textarea
+                 <GrowingTextarea
                    placeholder={t("bol.goodsPlaceholder")}
                    className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={docField("goodsDescription", ship.goodsDescription || "")}
@@ -3417,7 +3417,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                </div>
                <div className="col-span-2">
                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
-                 <textarea
+                 <GrowingTextarea
                    placeholder={t("bol.notesPlaceholder")}
                    className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                    value={field("notes")}
@@ -3501,7 +3501,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              </div>
              <div className="col-span-2">
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("lc.terms")}</label>
-               <textarea
+               <GrowingTextarea
                  placeholder={t("lc.termsPlaceholder")}
                  className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("lcTerms")}
@@ -3510,7 +3510,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
              </div>
              <div className="col-span-2">
                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
-               <textarea
+               <GrowingTextarea
                  placeholder={t("common.notesPlaceholder")}
                  className="flex min-h-[60px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                  value={field("notes")}
@@ -3581,7 +3581,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                        </div>
                       <div className="col-span-2">
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
-                        <textarea
+                        <GrowingTextarea
                           placeholder={t("gdoc.notesPlaceholder")}
                           className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
@@ -3603,7 +3603,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     <div className="max-w-lg space-y-4">
                       <div>
                         <label className="text-sm font-medium text-foreground mb-1.5 block">{t("common.notes")}</label>
-                        <textarea
+                        <GrowingTextarea
                           placeholder={t("gdoc.notesPlaceholder")}
                           className="flex min-h-[80px] w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           value={field("notes")}
