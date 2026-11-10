@@ -88,6 +88,9 @@ function AppShell() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <UniversalAppsNavBar
+        // Signed in, the bar says whose it is: "Bradley’s Exports" ("James’ Exports",
+        // "My Exports" with no name), and Tune this app gets the account area (James, 2026-11-10 rollout).
+        personalTitle={(name) => (name ? `${/s$/i.test(name.trim()) ? `${name}’` : `${name}’s`} Exports` : 'My Exports')}
         product="exports"
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}
