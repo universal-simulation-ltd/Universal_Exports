@@ -414,10 +414,12 @@ const Index = () => {
   }, [forms, hasBasicData]);
 
   return (
-    // A full-width workspace (2026-11-10 redesign): the sidebar against the
-    // left edge, the work filling the rest — not a 770px card in the middle.
-    <div className="h-full flex flex-col bg-background">
-      <div className="flex w-full flex-1 min-h-0 bg-card overflow-hidden relative">
+    // The workspace sits in the middle of the screen at the navbar's width
+    // (max-w-7xl, md:px-6 — the same as CONTAINER), so its edges line up with
+    // the logo and the profile button; full height, the sidebar on its left
+    // edge. On a phone it fills the screen (James, 2026-11-10).
+    <div className="h-full w-full max-w-7xl mx-auto flex flex-col bg-background md:px-6 md:py-4">
+      <div className="flex w-full flex-1 min-h-0 bg-card overflow-hidden relative md:rounded-lg md:border md:border-border md:shadow-xs">
         <DocumentSidebar
           key={`${projectId}-${loadCounter}`}
           selected={showSavedList ? "saved-projects" : selectedDoc}
