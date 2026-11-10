@@ -13,9 +13,19 @@ Supabase, or use UNI·SIM's hosted deployment.
 - **Stack:** Vite + React + TypeScript, shadcn/ui (Radix primitives),
   Tailwind. Tests run under Vitest, with a Playwright config for end-to-end
   runs.
-- **Persistence:** unlike the purely device-local Universal Apps, Exports has
-  full per-user Supabase persistence — bank accounts, contacts, catalogue and
-  projects are keyed by user id (see the in-repo `supabase/` folder).
+- **Persistence:** signed out (since 2026-11-10, no account needed to draft),
+  projects, your details, contacts, catalogue and bank details are kept in
+  this browser (`src/lib/guestStore.ts`; banks and catalogue in their own
+  stores). Signed in, they are per-user Supabase rows keyed by user id (see
+  the in-repo `supabase/` folder), and whatever the browser held moves into
+  the account at the first sign-in. Only sending an agreement for signing
+  online (counter-sign links), the QR's online copy and Hosted storage need
+  the account.
+- **Document PDFs:** the quote, invoice, delivery note and picking list print
+  through `@unisim/doc`'s business renderer (the one Universal Invoices
+  uses) with a proper line table built from the deal's products
+  (`src/lib/businessPdf.ts`; the picking list as a `packing-list`, 0.18.0).
+  The rest still print as label/value rows (`src/lib/documentPdf.ts`).
 - **Signatures:** includes a draw-to-sign flow with a mobile hand-off — the
   desktop signature pad can show a QR that opens a `/sign-mobile/<token>`
   route so the signature is drawn on a phone. The drafter's "You sign" block
@@ -24,8 +34,9 @@ Supabase, or use UNI·SIM's hosted deployment.
   block of the generated PDF (`lib/exportAgreementPdf.ts`) — role beneath the
   signer's name, stamp beside the signature.
 
-Free and open source; the app is usable without an account (sign-in gates only
-the save-to-cloud features).
+Free and open source; the whole editor works without an account (sign-in is
+asked for only when sending an agreement to the other side to sign online,
+and for the online copies).
 
 ## Trade documents produced
 

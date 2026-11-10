@@ -95,7 +95,7 @@ Os Incoterms são um conjunto de regras comerciais padronizadas publicadas pela 
 
 ## Projetos
 
-Um projeto reúne tudo sobre um negócio: seus dados, a outra parte, os produtos, o embarque, o pagamento e cada seção de documento. Você precisa de um Universal ID para trabalhar em projetos, e eles são salvos na sua conta para que você possa retomá-los em outro computador. Criar um Universal ID e iniciar um negócio não exigem número de empresa. Mas os contratos de exportação são para um importador ou exportador do Reino Unido, então, antes de gerar um, você informa o número da Companies House nos seus dados; o app o consulta para que você confirme que a empresa é sua.
+Um projeto reúne tudo sobre um negócio: seus dados, a outra parte, os produtos, o embarque, o pagamento e cada seção de documento. Você não precisa de conta para trabalhar em projetos: sem entrar, eles ficam salvos neste navegador. Se entrar, ficam salvos na sua conta, para retomá-los em outro computador; o que você preparou neste navegador vai para a conta na primeira vez que entrar. Nenhum dos dois exige número de empresa. Mas os contratos de exportação são para um importador ou exportador do Reino Unido, então, antes de gerar um, você informa o número da Companies House nos seus dados; o app o consulta para que você confirme que a empresa é sua.
 
 Ao terminar uma seção, você pode bloqueá-la. Uma seção bloqueada é exibida como documento finalizado, e a barra lateral mostra quais seções ainda precisam de dados obrigatórios.
 
@@ -164,6 +164,8 @@ Uma assinatura desenhada e capturada dessa forma registra que uma pessoa identif
 - Seus dados bancários, apenas se você marcar **Salvar os dados bancários na minha conta** em Dados bancários. A caixa começa desmarcada; ela já vem marcada se você salvou dados bancários na sua conta antes de essa opção existir. Desmarque-a para mantê-los só neste aparelho e use **Remover da minha conta** para apagar a cópia salva lá.
 
 Esses dados ficam armazenados no banco de dados da UNI·SIM vinculados ao seu Universal ID. O banco de dados só permite que a sua conta conectada os leia ou altere. Tudo trafega por conexões criptografadas, mas não há criptografia de ponta a ponta: os dados são guardados para que o serviço possa devolvê-los a você, não trancados com uma chave que só você possui.
+
+Sem entrar, tudo desta lista fica neste navegador, neste computador, e nada é enviado à UNI·SIM. Na primeira vez que você entrar aqui, tudo vai para a sua conta.
 
 ## Mantido apenas no seu navegador
 

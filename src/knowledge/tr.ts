@@ -95,7 +95,7 @@ Incoterms, Milletlerarası Ticaret Odası tarafından yayımlanan standart ticar
 
 ## Projeler
 
-Bir proje, bir anlaşmayla ilgili her şeyi içerir: sizin bilgileriniz, karşı taraf, ürünler, sevkiyat, ödeme ve her belge bölümü. Projeler üzerinde çalışmak için bir Universal ID'ye ihtiyacınız vardır ve projeler, başka bir bilgisayarda kaldığınız yerden devam edebilmeniz için hesabınıza kaydedilir. Universal ID oluşturmak ve bir anlaşma başlatmak için şirket numarası gerekmez. Ancak ihracat sözleşmeleri Birleşik Krallık'taki bir ithalatçı ya da ihracatçı içindir; bu yüzden bir sözleşme oluşturmadan önce Companies House numaranızı bilgilerinize eklersiniz. Uygulama, şirketin size ait olduğunu teyit edebilmeniz için bu numarayı sorgular.
+Bir proje, bir anlaşmayla ilgili her şeyi içerir: sizin bilgileriniz, karşı taraf, ürünler, sevkiyat, ödeme ve her belge bölümü. Projeler üzerinde çalışmak için hesap gerekmez: giriş yapmadan bu tarayıcıya kaydedilirler. Giriş yaparsanız başka bir bilgisayarda devam edebilmeniz için hesabınıza kaydedilirler; bu tarayıcıda hazırladıklarınız ilk girişinizde hesabınıza taşınır. İkisi için de şirket numarası gerekmez. Ancak ihracat sözleşmeleri Birleşik Krallık'taki bir ithalatçı ya da ihracatçı içindir; bu yüzden bir sözleşme oluşturmadan önce Companies House numaranızı bilgilerinize eklersiniz. Uygulama, şirketin size ait olduğunu teyit edebilmeniz için bu numarayı sorgular.
 
 Bir bölümü bitirdiğinizde onu kilitleyebilirsiniz. Kilitli bir bölüm tamamlanmış bir belge olarak gösterilir ve kenar çubuğu hangi bölümlerde hâlâ zorunlu bilgilerin eksik olduğunu gösterir.
 
@@ -164,6 +164,8 @@ Bu şekilde alınan çizilmiş bir imza, adı belirli bir kişinin belirli bir z
 - Banka bilgileriniz, yalnızca Banka bilgileri bölümünde **Banka bilgilerini hesabıma kaydet** kutusunu işaretlerseniz. Kutu başlangıçta işaretsizdir; bu seçenek eklenmeden önce banka bilgilerini hesabınıza kaydettiyseniz zaten işaretlidir. Yalnızca bu cihazda tutmak için işareti kaldırın ve oradaki kopyayı silmek için **Hesabımdan kaldır** düğmesini kullanın.
 
 Bunlar, UNI·SIM'in veritabanında Universal ID'nize bağlı olarak saklanır. Veritabanı, bunları yalnızca oturum açmış hesabınızın okumasına veya değiştirmesine izin verir. Her şey şifreli bağlantılar üzerinden iletilir, ancak uçtan uca şifreleme yoktur: veriler, yalnızca sizde bulunan bir anahtarla kilitlenmek için değil, hizmetin onları size geri verebilmesi için tutulur.
+
+Giriş yapmadan bu listedeki her şey bu bilgisayardaki bu tarayıcıda tutulur ve UNI·SIM'e hiçbir şey gönderilmez. Burada ilk kez giriş yaptığınızda hesabınıza taşınır.
 
 ## Yalnızca tarayıcınızda tutulanlar
 

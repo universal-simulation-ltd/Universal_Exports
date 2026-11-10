@@ -46,6 +46,7 @@ export const agreementTr: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Sözleşmenin bir kopyasını çevrimiçi saklar. Kodu olan herkes görüntüleyebilir; böylece alıcı veya gümrük memuru belgeleri kontrol edebilir. Koli etiketleri için de gereklidir.",
   "cs.loading": "Karşı imza durumu yükleniyor…",
   "cs.saveFirst": "Karşı imza bağlantısını projeye ekleyebilmemiz için önce projeyi kaydedin.",
+  "cs.signInFirst": "Karşı taraf çevrimiçi saklanan bir kopyayı imzalar, bu yüzden göndermek için Universal ID gerekir. Giriş yapın ya da ücretsiz oluşturun — bu işlem sizinle birlikte hesabınıza taşınır.",
   "cs.linkReady": "Karşı imza bağlantısı hazır — QR kodunu veya bağlantıyı karşı tarafla paylaşın.",
   "cs.linkFailed": "Bağlantı oluşturulamadı. Projenin kaydedildiğinden emin olup yeniden deneyin.",
   "cs.copied": "Bağlantı panoya kopyalandı.",

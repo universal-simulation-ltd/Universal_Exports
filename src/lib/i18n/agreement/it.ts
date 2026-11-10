@@ -46,6 +46,7 @@ export const agreementIt: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Salva una copia dell'accordo online. Chiunque abbia il codice può visualizzarla, così un acquirente o un funzionario doganale può verificare i documenti. Serve anche per le etichette dei colli.",
   "cs.loading": "Caricamento dello stato della controfirma…",
   "cs.saveFirst": "Salva prima il progetto, così possiamo collegarvi il link per la controfirma.",
+  "cs.signInFirst": "L'altra parte firma una copia conservata online, quindi per inviarla serve un Universal ID. Accedi o creane uno gratis: questa operazione passa nel tuo account con te.",
   "cs.linkReady": "Link per la controfirma pronto: condividi il codice QR o il link con l'altra parte.",
   "cs.linkFailed": "Impossibile generare un link. Verifica che il progetto sia salvato e riprova.",
   "cs.copied": "Link copiato negli appunti.",

@@ -46,6 +46,7 @@ export const agreementEs: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Guarda una copia del acuerdo en línea. Cualquiera que tenga el código puede verla, para que un comprador o un agente de aduanas pueda comprobar la documentación. Las etiquetas de las cajas también la necesitan.",
   "cs.loading": "Cargando el estado de la contrafirma…",
   "cs.saveFirst": "Guarda primero el proyecto para que podamos vincularle el enlace de contrafirma.",
+  "cs.signInFirst": "La otra parte firma una copia guardada en línea, así que enviarla requiere un Universal ID. Inicia sesión o crea uno gratis: esta operación pasa a tu cuenta contigo.",
   "cs.linkReady": "Enlace de contrafirma listo: comparte el código QR o el enlace con la otra parte.",
   "cs.linkFailed": "No se ha podido generar un enlace. Comprueba que el proyecto está guardado e inténtalo de nuevo.",
   "cs.copied": "Enlace copiado al portapapeles.",

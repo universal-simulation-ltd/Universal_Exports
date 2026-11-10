@@ -46,6 +46,7 @@ export const agreementPtPT: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Guarda uma cópia do acordo online. Qualquer pessoa com o código pode vê-la, para que um comprador ou um funcionário aduaneiro verifique a documentação. As etiquetas das caixas também precisam dela.",
   "cs.loading": "A carregar o estado da contra-assinatura…",
   "cs.saveFirst": "Guarde primeiro o projeto para podermos associar-lhe a ligação de contra-assinatura.",
+  "cs.signInFirst": "A outra parte assina uma cópia guardada online, por isso enviá-la exige um Universal ID. Inicie sessão ou crie um grátis — este negócio passa para a sua conta consigo.",
   "cs.linkReady": "Ligação de contra-assinatura pronta — partilhe o código QR ou a ligação com a outra parte.",
   "cs.linkFailed": "Não foi possível gerar uma ligação. Confirme que o projeto está guardado e tente novamente.",
   "cs.copied": "Ligação copiada para a área de transferência.",

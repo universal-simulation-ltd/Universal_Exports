@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { translate, type MessageKey } from "@/lib/i18n";
 import { useDrafterI18n } from "@/lib/i18n/drafter/useDrafterI18n";
 import type { DocPdfParty } from "@/lib/documentPdf";
+import type { BusinessDoc } from "@unisim/doc";
 
 export interface DocBranding {
   from?: DocPdfParty | null;
@@ -22,6 +23,9 @@ interface LockedSectionViewProps {
   /** When provided, shows a "Download PDF" button that exports this document,
    *  stamped with the issuer's logo + company details. */
   branding?: DocBranding;
+  /** The quote, invoice, delivery note or packing list as a line-item
+   *  document (lib/businessPdf.ts): Download PDF prints that instead of the rows. */
+  businessDoc?: BusinessDoc | null;
 }
 
 // Titles and labels are message keys so the screen can show them in the app's
@@ -29,11 +33,16 @@ interface LockedSectionViewProps {
 // generated documents stay in English on purpose (see documentPdf.ts).
 const english = (key: MessageKey) => translate("en", key);
 
-const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding }: LockedSectionViewProps) => {
+const LockedSectionView = ({ title, fields, onEdit, colSpanFields = [], branding, businessDoc }: LockedSectionViewProps) => {
   const { t, date } = useDrafterI18n();
 
   // jsPDF loads on the first download, not with the editor.
   const handleDownload = async () => {
+    if (businessDoc) {
+      const { downloadBusinessPdf } = await import("@/lib/businessPdf");
+      await downloadBusinessPdf(businessDoc, english(title), branding?.logoDataUrl);
+      return;
+    }
     const { downloadDocumentPdf } = await import("@/lib/documentPdf");
     await downloadDocumentPdf({
       title: english(title),

@@ -147,10 +147,24 @@ export interface LoadedBanks extends BankBooks {
   signedIn: boolean
 }
 
+// Signed out, the details are kept in this browser under this key (drafting
+// needs no account, 2026-11-10); the first sign-in here takes them over.
+const GUEST = 'guest'
+
 export async function loadBanks(): Promise<LoadedBanks> {
   const userId = await currentUserId()
-  if (!userId) return { your: {}, party: {}, cloudSync: false, cloudCopy: false, signedIn: false }
+  if (!userId) return { ...readLocal(GUEST), cloudSync: false, cloudCopy: false, signedIn: false }
 
+  const guest = readLocal(GUEST)
+  if (hasAny(guest)) {
+    const mine = readLocal(userId)
+    writeLocal(userId, { your: { ...guest.your, ...mine.your }, party: { ...guest.party, ...mine.party } })
+    try {
+      localStorage.removeItem(LOCAL_PREFIX + GUEST)
+    } catch {
+      /* stays; read again next time */
+    }
+  }
   const local = readLocal(userId)
   const choice = readChoice(userId)
   // Unticked on this device: the details come from this device only. The
@@ -180,7 +194,10 @@ export async function loadBanks(): Promise<LoadedBanks> {
 /** Save one side's details: always to this device, and to the account when ticked. */
 export async function saveBanks(type: BankType, banks: BankBook): Promise<void> {
   const userId = await currentUserId()
-  if (!userId) return
+  if (!userId) {
+    writeLocal(GUEST, { ...readLocal(GUEST), [type]: banks })
+    return
+  }
   const local = readLocal(userId)
   writeLocal(userId, { ...local, [type]: banks })
   if (readChoice(userId) === '1') await writeCloud(userId, type, banks)

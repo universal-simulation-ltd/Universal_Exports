@@ -43,6 +43,19 @@ async function isAuthenticated(): Promise<boolean> {
 
 export async function loadCatalogue(): Promise<CatalogueProduct[]> {
   if (!(await isAuthenticated())) return getLocal()
+  // Products added signed out in this browser move into the account the
+  // first time it is signed in (drafting needs no account, 2026-11-10).
+  const local = getLocal()
+  if (local.length) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { error } = await supabase.from('exports_product_catalogue').upsert(
+        local.map((p) => ({ id: p.id, user_id: user.id, code: p.code, hs_code: p.hsCode, name: p.name, description: p.description, unit_price: p.unitPrice, vat_percent: p.vatPercent })),
+      )
+      if (error) console.error('Error moving this browser\'s catalogue to the account:', error)
+      else setLocal([])
+    }
+  }
 
   const { data, error } = await supabase
     .from('exports_product_catalogue')

@@ -46,6 +46,7 @@ export const agreementFr: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Enregistre une copie de l'accord en ligne. Toute personne disposant du code peut la consulter, afin qu'un acheteur ou un agent des douanes puisse vérifier les documents. Les étiquettes de colis en ont aussi besoin.",
   "cs.loading": "Chargement de l'état de la contresignature…",
   "cs.saveFirst": "Enregistrez d'abord le projet pour que nous puissions y rattacher le lien de contresignature.",
+  "cs.signInFirst": "L'autre partie signe une copie conservée en ligne : l'envoyer nécessite donc un Universal ID. Connectez-vous ou créez-en un gratuitement — cette opération passe dans votre compte avec vous.",
   "cs.linkReady": "Lien de contresignature prêt — partagez le QR code ou le lien avec l'autre partie.",
   "cs.linkFailed": "Impossible de générer un lien. Vérifiez que le projet est enregistré et réessayez.",
   "cs.copied": "Lien copié dans le presse-papiers.",

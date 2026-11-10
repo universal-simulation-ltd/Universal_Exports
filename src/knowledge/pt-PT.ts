@@ -95,7 +95,7 @@ Os Incoterms são um conjunto de regras comerciais normalizadas publicadas pela 
 
 ## Projetos
 
-Um projeto reúne tudo sobre um negócio: os seus dados, a outra parte, os produtos, a expedição, o pagamento e cada secção de documento. Precisa de um Universal ID para trabalhar em projetos, e estes são guardados na sua conta para que os possa retomar noutro computador. Criar um Universal ID e iniciar um negócio não exigem número de empresa. Mas os acordos de exportação destinam-se a um importador ou exportador do Reino Unido, por isso, antes de gerar um, indica o número da Companies House nos seus dados; a aplicação consulta-o para que possa confirmar que a empresa é sua.
+Um projeto reúne tudo sobre um negócio: os seus dados, a outra parte, os produtos, a expedição, o pagamento e cada secção de documento. Não precisa de conta para trabalhar em projetos: sem sessão iniciada, ficam guardados neste navegador. Se iniciar sessão, ficam guardados na sua conta, para os retomar noutro computador; o que preparou neste navegador passa para a conta na primeira vez que iniciar sessão. Nenhum dos dois exige número de empresa. Mas os acordos de exportação destinam-se a um importador ou exportador do Reino Unido, por isso, antes de gerar um, indica o número da Companies House nos seus dados; a aplicação consulta-o para que possa confirmar que a empresa é sua.
 
 Quando termina uma secção, pode bloqueá-la. Uma secção bloqueada é apresentada como documento concluído, e a barra lateral mostra que secções ainda precisam de dados obrigatórios.
 
@@ -164,6 +164,8 @@ Uma assinatura desenhada e captada desta forma regista que uma pessoa identifica
 - Os seus dados bancários, apenas se marcar **Guardar os dados bancários na minha conta** em Dados bancários. A caixa começa desmarcada; já vem marcada se guardou dados bancários na sua conta antes de esta opção existir. Desmarque-a para os manter apenas neste dispositivo e use **Remover da minha conta** para apagar a cópia aí guardada.
 
 Estes dados são armazenados na base de dados da UNI·SIM associados ao seu Universal ID. A base de dados só permite que a sua conta com sessão iniciada os leia ou altere. Tudo circula através de ligações encriptadas, mas não há encriptação ponto a ponto: os dados são guardados para que o serviço lhos possa devolver, e não trancados com uma chave que só o utilizador possui.
+
+Sem sessão iniciada, tudo desta lista fica neste navegador, neste computador, e nada é enviado à UNI·SIM. Na primeira vez que iniciar sessão aqui, tudo passa para a sua conta.
 
 ## Mantido apenas no seu navegador
 

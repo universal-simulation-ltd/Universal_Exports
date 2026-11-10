@@ -41,6 +41,8 @@ import { saveAgreementView } from "@/lib/agreementViewStore";
 import { listSignatureTokens } from "@/lib/signatureStore";
 import { downloadDealXml } from "@/lib/dealXml";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 import type { AgreementPdfInput, AgreementSignatureBlock, CounterpartyBox } from "@/lib/exportAgreementPdf";
 import { attestationForPrint, parseStoredAttestation, type PhoneAttestation } from "@/lib/phoneAttest";
 
@@ -90,6 +92,8 @@ const ExportAgreementWorkflow = ({
   counterparty,
 }: Props) => {
   const { t } = useI18n();
+  // Drafting needs no account; the other side signing online does (their copy is kept online).
+  const { user } = useAuth();
   // Unsigned overview, signed-by-drafter copy, and the uploaded finalised copy.
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [generatedBlob, setGeneratedBlob] = useState<Blob | null>(null);
@@ -541,7 +545,14 @@ const ExportAgreementWorkflow = ({
 
             {/* ── They Sign — only reachable once the drafter has signed ──── */}
             <TabsContent value="them" className="space-y-5 pt-4">
-              {projectId ? (
+              {!user && !projectId.startsWith("demo-") ? (
+                <div className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">
+                  <p className="text-sm text-foreground max-w-md">{t("cs.signInFirst")}</p>
+                  <Button asChild>
+                    <Link to="/auth">{t("auth.signIn")}</Link>
+                  </Button>
+                </div>
+              ) : projectId ? (
                 <CounterSignPanel
                   projectId={projectId}
                   projectName={projectName}

@@ -1,12 +1,11 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nRoot, useI18n } from "@/lib/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { grantDemoAccess, hasDemoAccess } from "@/lib/demoAccess";
 import { BASE_PATH } from "@/lib/basePath";
 import { UniversalAppsNavBar, type AboutAppConfig } from "@unisim/sdk";
 // Generated — `npm run credits` after any dependency change. Never edit it by
@@ -47,21 +46,14 @@ const ABOUT: AboutAppConfig = {
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-  if (loading) return null;
-  // The /demo bypass (sessionStorage flag) lets demos in without a Universal ID.
-  if (user || hasDemoAccess()) return <>{children}</>;
-  // Stash the intercepted navigation state (e.g. the project name typed on the
-  // landing page) so Auth can restore it after sign-in.
-  return <Navigate to="/auth" replace state={{ appState: location.state }} />;
-}
+// The editor needs no account (James, 2026-11-10: "make drafting local"):
+// signed out, deals are kept in this browser (lib/guestStore.ts) and move into
+// the account at the first sign-in. Only sending an agreement for signing
+// online, and the online copies, ask for a Universal ID.
 
-// Hidden demo entry — opensource.unisim.co.uk/exports/demo. Grants this tab
-// gate-free access and drops straight into the pre-filled example project.
+// Hidden demo entry — opensource.unisim.co.uk/exports/demo: straight into the
+// pre-filled example project.
 function DemoEntry() {
-  grantDemoAccess();
   return <Navigate to="/app" replace state={{ loadDemo: true }} />;
 }
 
@@ -79,7 +71,7 @@ function AppShell() {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
   const { t } = useI18n();
-  const inDemoBypass = !loading && !user && hasDemoAccess() && pathname === "/app";
+  const signedOutEditor = !loading && !user && pathname === "/app";
   // Language is the SDK's (2026-09-29): App preferences / Global preferences in
   // the profile menu set it, and `useI18n()` translates this app from the same
   // value. The old Actions rows in the profile pill were only Exports' own
@@ -106,9 +98,12 @@ function AppShell() {
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />
-      {inDemoBypass && (
-        <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/30 text-center text-xs text-foreground py-1 px-4">
-          {t("app.demoBanner")}
+      {signedOutEditor && (
+        <div className="shrink-0 border-b border-border bg-secondary/60 px-4 py-1.5 text-center text-xs text-muted-foreground">
+          {t("app.demoBanner")}{" "}
+          <Link to="/auth" className="font-medium text-primary underline-offset-2 hover:underline">
+            {t("auth.signIn")}
+          </Link>
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-auto">
@@ -116,7 +111,7 @@ function AppShell() {
           <Routes>
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route path="/" element={<Landing />} />
-            <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/app" element={<Index />} />
             {/* Hidden gate bypass for demos — not linked from anywhere. */}
             <Route path="/demo" element={<DemoEntry />} />
             {/* Public counter-sign route — no auth gate. The uuid token

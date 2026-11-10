@@ -95,7 +95,7 @@ Incoterms are a set of standard trade rules published by the International Chamb
 
 ## Projects
 
-A project holds everything about one deal: your details, the other party, products, shipment, payment and every document section. You need a Universal ID to work on projects, and they are saved to your account so you can pick them up again on another computer. Creating a Universal ID and starting a deal don't need a company number. Export agreements are for a UK importer or exporter, though, so before you generate one you add your Companies House number in Your details; the app looks it up so you can confirm the company is yours.
+A project holds everything about one deal: your details, the other party, products, shipment, payment and every document section. You don't need an account to work on projects: signed out, they are saved in this browser. Sign in and they are saved to your account instead, so you can pick them up on another computer; anything drafted in this browser moves there the first time you sign in. Neither needs a company number. Export agreements are for a UK importer or exporter, though, so before you generate one you add your Companies House number in Your details; the app looks it up so you can confirm the company is yours.
 
 As you finish a section you can lock it. A locked section is shown as a finished document, and the sidebar shows which sections still need required details.
 
@@ -164,6 +164,8 @@ A drawn signature captured this way records that a named person signed at a part
 - Your bank details, only if you tick **Save bank details to my account** under Bank Details. The box starts unticked; it is already ticked if you saved bank details to your account before this choice existed. Untick it to keep them on this device only, and use **Remove it from my account** to delete the copy saved there.
 
 These are stored in UNI·SIM's database under your Universal ID. The database only lets your signed-in account read or change them. Everything travels over encrypted connections, but it is not end-to-end encrypted: the data is held so the service can give it back to you, not locked with a key only you hold.
+
+Signed out, everything in this list is kept in this browser on this computer instead, and nothing is sent to UNI·SIM. The first time you sign in here, it moves into your account.
 
 ## Kept only in your browser
 

@@ -26,8 +26,6 @@ import {
   Anchor,
 } from "lucide-react";
 import { Check } from "lucide-react";
-import ueLogo from "@/assets/universal-exports-logo.svg";
-import ueIconWhite from "@/assets/universal-exports-icon-white.svg";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import BrandFooter from "@/components/BrandFooter";
@@ -52,6 +50,8 @@ interface DocumentSidebarProps {
   lockedSections?: Set<string>;
   savedSections?: Set<string>;
   forceExpandSections?: boolean;
+  /** Why each disabled item is waiting, shown under it ("Add your products first"). */
+  disabledReasons?: Record<string, string>;
 }
 
 // Required fields per document (notes excluded)
@@ -111,7 +111,7 @@ function getDocStatus(formData: Record<string, string> | undefined, docId: strin
   return "partial";
 }
 
-const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], incompleteSections = [], projectStarted, accepted, hasDocsCreated, hasProductData, hasAnyDocFilled, allForms = {}, role = "", onNewProject, onLoadProjects, collapsed = false, onToggleCollapse, lockedSections = new Set(), savedSections = new Set(), forceExpandSections = false }: DocumentSidebarProps) => {
+const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], incompleteSections = [], projectStarted, accepted, hasDocsCreated, hasProductData, hasAnyDocFilled, allForms = {}, role = "", onNewProject, onLoadProjects, collapsed = false, onToggleCollapse, lockedSections = new Set(), savedSections = new Set(), forceExpandSections = false, disabledReasons = {} }: DocumentSidebarProps) => {
   const { t } = useI18n();
   const [userLogo, setUserLogo] = useState<string>(() => localStorage.getItem("ebill-logo") || "");
 
@@ -185,25 +185,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     (item) => lockedSections.has(item.id)
   );
 
-  // Auto-collapse project details when all locked or products are filled
-  useEffect(() => {
-    if (hasProductData && !forceExpandSections) {
-      setProjectDetailsOpen(false);
-    }
-  }, [hasProductData, forceExpandSections]);
 
-  useEffect(() => {
-    if (allProjectDetailsComplete && !forceExpandSections) {
-      setProjectDetailsOpen(false);
-    }
-  }, [allProjectDetailsComplete, forceExpandSections]);
-
-  // Auto-collapse product details when a document is filled or all product details complete
-  useEffect(() => {
-    if (hasAnyDocFilled && !forceExpandSections) {
-      setProductDetailsOpen(false);
-    }
-  }, [hasAnyDocFilled, forceExpandSections]);
 
   // Getting Started checklist (in Handy Tools) is "done" when every item is
   // ticked — drives the Handy Tools item turning green.
@@ -225,6 +207,12 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     return status === "complete";
   };
 
+  // Groups no longer fold themselves away as the deal moves on (2026-11-10
+  // redesign: "the document list is hidden inside collapsed sidebar groups"):
+  // every document stays in sight, and its status shows beside it.
+  void hasProductData;
+  void hasAnyDocFilled;
+
   const btnClass = (id: string) => {
     const complete = isComplete(id);
     return `w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
@@ -235,7 +223,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         : complete
         ? "bg-success/10 text-foreground hover:bg-success/15"
         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-    } disabled:opacity-40 disabled:cursor-not-allowed`;
+    } disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-transparent`;
   };
 
   const primaryBtnClass = (id: string) => {
@@ -275,12 +263,31 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     { id: "coo", label: t("sidebar.cooOrigin"), icon: Globe },
   ];
 
+  // Each item's status at a glance: a tick when done, an amber dot once started.
+  const done = <span className="flex items-center shrink-0" title={t("sidebar.statusDone")}><Check className="h-3.5 w-3.5 text-success" aria-hidden /><span className="sr-only">{t("sidebar.statusDone")}</span></span>;
   const statusIndicator = (id: string) => {
-    if (lockedSections.has(id)) return <Check className="h-3.5 w-3.5 text-success shrink-0" />;
+    if (lockedSections.has(id)) return done;
     const status = getDocStatus(allForms[id], id, role, savedSections);
-    if (status === "complete") return <Check className="h-3.5 w-3.5 text-success shrink-0" />;
-    if (status === "partial") return <Check className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />;
+    if (status === "complete") return done;
+    if (status === "partial") {
+      return (
+        <span className="flex items-center shrink-0" title={t("sidebar.statusStarted")}>
+          <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden />
+          <span className="sr-only">{t("sidebar.statusStarted")}</span>
+        </span>
+      );
+    }
     return null;
+  };
+  // A disabled item's label, with what it is waiting for under it.
+  const itemLabel = (id: string, label: string) => {
+    const reason = disabledDocs.includes(id) ? disabledReasons[id] : undefined;
+    return (
+      <span className="flex-1 min-w-0 text-left">
+        {label}
+        {reason && <span className="block text-[11px] leading-snug text-muted-foreground">{reason}</span>}
+      </span>
+    );
   };
 
   // Check if all items in a group are complete
@@ -296,15 +303,10 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
     (item) => disabledDocs.includes(item.id) || lockedSections.has(item.id) || getDocStatus(allForms[item.id], item.id, role, savedSections) === "complete"
   ) && paymentItems.some((item) => !disabledDocs.includes(item.id));
 
-  useEffect(() => {
-    if (allProductDetailsComplete && !forceExpandSections) {
-      setProductDetailsOpen(false);
-    }
-  }, [allProductDetailsComplete, forceExpandSections]);
 
   if (collapsed) {
     return (
-      <aside className="w-12 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col items-center py-3 gap-3">
+      <aside className="w-12 shrink-0 border-r border-border bg-card flex flex-col items-center py-3 gap-3">
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
@@ -313,18 +315,15 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shadow-xs">
-          <img src={ueIconWhite} alt="Universal Exports" className="w-5 h-5 object-contain" />
-        </div>
       </aside>
     );
   }
 
   return (
-    <aside className="w-full md:w-56 shrink-0 border-r border-border bg-card rounded-l-lg flex flex-col min-h-0 relative">
+    <aside className="w-full md:w-64 lg:w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 relative">
       <div className="flex-1 min-h-0 relative">
       {/* Scroll fade overlays */}
-      <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-card to-transparent transition-opacity duration-300 z-10 rounded-tl-lg ${fadeTop ? "opacity-100" : "opacity-0"}`} />
+      <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-card to-transparent transition-opacity duration-300 z-10 ${fadeTop ? "opacity-100" : "opacity-0"}`} />
       <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-card to-transparent transition-opacity duration-300 z-10 ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
       <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden">
       <div className="px-4 pt-2 pb-0 flex justify-end">
@@ -337,9 +336,13 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
           <PanelLeftClose className="h-4 w-4" />
         </button>
       </div>
-      <div className="px-4 pt-0 pb-2">
-        <img src={userLogo || ueLogo} alt={t("nav.logoAlt")} className="w-full max-h-24 object-contain" />
-      </div>
+      {/* The app's own logo is in the bar above; a company's own logo, once
+          uploaded, still heads the sidebar. */}
+      {userLogo && (
+        <div className="px-4 pt-0 pb-2">
+          <img src={userLogo} alt={t("nav.logoAlt")} className="w-full max-h-16 object-contain object-left" />
+        </div>
+      )}
       <div className="px-4 pb-4 space-y-5">
         {/* eboxy AI - always visible */}
         <div>
@@ -453,8 +456,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   <nav id={`${foldId}-product-details`} className="space-y-1">
                     {productDetailItems.map((item) => (
                       <button key={item.id} onClick={() => onSelect(item.id)} disabled={disabledDocs.includes(item.id)} className={btnClass(item.id)}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1 text-left">{item.label}</span>
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {itemLabel(item.id, item.label)}
                         {!disabledDocs.includes(item.id) && incompleteSections.includes(item.id) && !statusIndicator(item.id) && (
                           <span className="relative flex h-2.5 w-2.5 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -486,8 +489,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   <nav id={`${foldId}-documents`} className="space-y-1">
                     {documentTypes.map((doc) => (
                       <button key={doc.id} onClick={() => onSelect(doc.id)} disabled={disabledDocs.includes(doc.id)} className={btnClass(doc.id)}>
-                        <doc.icon className="h-4 w-4" />
-                        <span className="flex-1 text-left">{doc.label}</span>
+                        <doc.icon className="h-4 w-4 shrink-0" />
+                        {itemLabel(doc.id, doc.label)}
                         {!disabledDocs.includes(doc.id) && statusIndicator(doc.id)}
                       </button>
                     ))}
@@ -549,8 +552,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                   <nav id={`${foldId}-payment`} className="space-y-1">
                     {paymentItems.map((item) => (
                       <button key={item.id} onClick={() => onSelect(item.id)} disabled={disabledDocs.includes(item.id)} className={btnClass(item.id)}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1 text-left">{item.label}</span>
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {itemLabel(item.id, item.label)}
                         {!disabledDocs.includes(item.id) && statusIndicator(item.id)}
                       </button>
                     ))}
@@ -574,8 +577,8 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
                 {ebillOpen && (
                   <nav id={`${foldId}-customs`} className="space-y-1">
                     <button onClick={() => onSelect("customs")} disabled={disabledDocs.includes("customs")} className={btnClass("customs")}>
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>{t("sidebar.tariffs")}</span>
+                      <ShieldCheck className="h-4 w-4 shrink-0" />
+                      {itemLabel("customs", t("sidebar.tariffs"))}
                     </button>
                     <button onClick={() => onSelect("handy-tools")} className={btnClass("handy-tools")}>
                       <Sparkles className="h-4 w-4" />
@@ -603,7 +606,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
       </div>
       </div>{/* end scroll wrapper */}
       </div>{/* end scrollable region */}
-      <div className="px-4 py-3 border-t border-border bg-card rounded-bl-lg">
+      <div className="px-4 py-3 border-t border-border bg-card">
         <BrandFooter variant="sidebar" />
       </div>
     </aside>

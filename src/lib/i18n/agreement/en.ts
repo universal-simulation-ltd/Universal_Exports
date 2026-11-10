@@ -49,6 +49,7 @@ export const agreementEn = {
   // They Sign panel (drafter)
   "cs.loading": "Loading counter-sign status…",
   "cs.saveFirst": "Save the project first so we can attach the counter-sign link to it.",
+  "cs.signInFirst": "The other party signs a copy kept online, so sending it needs a Universal ID. Sign in or create one free — this deal moves into your account with you.",
   "cs.linkReady": "Counter-sign link ready — share the QR code or link with the other party.",
   "cs.linkFailed": "Could not generate a link. Make sure the project is saved and try again.",
   "cs.copied": "Link copied to clipboard.",

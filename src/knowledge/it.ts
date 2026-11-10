@@ -95,7 +95,7 @@ Gli Incoterms sono un insieme di regole commerciali standard pubblicate dalla Ca
 
 ## Progetti
 
-Un progetto contiene tutto ciò che riguarda un'operazione: i tuoi dati, l'altra parte, i prodotti, la spedizione, il pagamento e ogni sezione dei documenti. Ti serve un Universal ID per lavorare ai progetti, che vengono salvati nel tuo account così puoi riprenderli su un altro computer. Per creare un Universal ID e avviare un'operazione non serve un numero di impresa. Gli accordi di esportazione però sono per un importatore o esportatore del Regno Unito, quindi prima di generarne uno aggiungi il tuo numero Companies House nei tuoi dati; l'app lo cerca così puoi confermare che l'azienda è tua.
+Un progetto contiene tutto ciò che riguarda un'operazione: i tuoi dati, l'altra parte, i prodotti, la spedizione, il pagamento e ogni sezione dei documenti. Non serve un account per lavorare ai progetti: senza accesso, vengono salvati in questo browser. Se accedi, vengono salvati nel tuo account, così puoi riprenderli su un altro computer; ciò che hai preparato in questo browser passa nell'account al primo accesso. In nessuno dei due casi serve un numero di impresa. Gli accordi di esportazione però sono per un importatore o esportatore del Regno Unito, quindi prima di generarne uno aggiungi il tuo numero Companies House nei tuoi dati; l'app lo cerca così puoi confermare che l'azienda è tua.
 
 Quando finisci una sezione puoi bloccarla. Una sezione bloccata viene mostrata come documento finito e la barra laterale indica quali sezioni richiedono ancora dati obbligatori.
 
@@ -164,6 +164,8 @@ Una firma disegnata raccolta in questo modo attesta che una persona identificata
 - Le tue coordinate bancarie, solo se selezioni **Salva le coordinate bancarie nel mio account** in Coordinate bancarie. La casella parte non selezionata; risulta già selezionata se avevi salvato coordinate bancarie nel tuo account prima che esistesse questa scelta. Deselezionala per tenerle solo su questo dispositivo e usa **Rimuovila dal mio account** per cancellare la copia salvata lì.
 
 Questi dati sono archiviati nel database di UNI·SIM, associati al tuo Universal ID. Il database consente solo al tuo account con accesso effettuato di leggerli o modificarli. Tutto viaggia su connessioni cifrate, ma non con crittografia end-to-end: i dati sono conservati perché il servizio possa restituirteli, non bloccati con una chiave che possiedi solo tu.
+
+Senza accesso, tutto ciò che è in questo elenco resta in questo browser su questo computer e nulla viene inviato a UNI·SIM. Al primo accesso qui, passa nel tuo account.
 
 ## Conservato solo nel browser
 

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { CompanyDetails } from "@/lib/contactStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const location = useLocation();
@@ -56,10 +57,13 @@ const Index = () => {
     if (isMobile) setSidebarOpen(false);
   }, [isMobile]);
 
-  // Load saved projects on mount
+  // Saved projects: this browser's signed out, the account's signed in —
+  // read again when that changes (a sign-in from Tune this app moves this
+  // browser's deals into the account; lib/guestStore.ts).
+  const { user } = useAuth();
   useEffect(() => {
     loadProjects().then(setSavedProjects);
-  }, []);
+  }, [user?.id]);
 
   // Handle navigation state from the landing page (preset project name or demo load)
   useEffect(() => {
@@ -382,6 +386,20 @@ const Index = () => {
     return [...new Set(disabled)];
   }, [hasBasicData, hasProductData, hasDocsCreated, hasAnyDocFilled]);
 
+  // Why each disabled item is waiting, shown under it in the sidebar (2026-11-10
+  // redesign: documents showed greyed out with no reason given).
+  const disabledReasons = useMemo(() => {
+    const why: Record<string, string> = {};
+    for (const id of disabledDocs) {
+      if (!hasBasicData && (id === "product-details" || id === "coo")) why[id] = t("sidebar.needsTransaction");
+      else if (!hasProductData && ["estimate-quote", "purchase-order", "invoice", "picking-list", "delivery-note", "certificate-of-origin", "bill-of-lading", "shipment"].includes(id)) why[id] = t("sidebar.needsProducts");
+      else if (!hasDocsCreated && lockedDocs.includes(id)) why[id] = t("sidebar.needsInvoiceOrPo");
+      else if (!hasAnyDocFilled && (id === "eboxy" || id === "customs")) why[id] = t("sidebar.needsDocument");
+    }
+    return why;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- lockedDocs is a constant list
+  }, [disabledDocs, hasBasicData, hasProductData, hasDocsCreated, hasAnyDocFilled, t]);
+
   // Compute which project detail sections have data — only show pulsing for unblocked items
   const incompleteSections = useMemo(() => {
     const check = (key: string) => {
@@ -396,8 +414,10 @@ const Index = () => {
   }, [forms, hasBasicData]);
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-background p-3 md:p-6">
-      <div className="flex w-full max-w-3xl h-[700px] rounded-lg border border-border bg-card shadow-xs overflow-hidden relative">
+    // A full-width workspace (2026-11-10 redesign): the sidebar against the
+    // left edge, the work filling the rest — not a 770px card in the middle.
+    <div className="h-full flex flex-col bg-background">
+      <div className="flex w-full flex-1 min-h-0 bg-card overflow-hidden relative">
         <DocumentSidebar
           key={`${projectId}-${loadCounter}`}
           selected={showSavedList ? "saved-projects" : selectedDoc}
@@ -419,6 +439,7 @@ const Index = () => {
           lockedSections={lockedSections}
           savedSections={savedSections}
           forceExpandSections={demoExpand}
+          disabledReasons={disabledReasons}
         />
         <div className={`flex-1 flex min-h-0 min-w-0 ${isMobile && sidebarOpen ? "hidden" : ""}`}>
         <MainContent

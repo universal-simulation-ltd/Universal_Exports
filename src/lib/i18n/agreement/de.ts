@@ -46,6 +46,7 @@ export const agreementDe: Record<keyof typeof agreementEn, string> = {
   "wf.shareOnlineHint": "Speichert eine Kopie der Vereinbarung online. Jeder mit dem Code kann sie ansehen, damit etwa ein Käufer oder der Zoll die Unterlagen prüfen kann. Die Kartonetiketten benötigen sie ebenfalls.",
   "cs.loading": "Status der Gegenzeichnung wird geladen…",
   "cs.saveFirst": "Speichern Sie zuerst das Projekt, damit wir den Link zur Gegenzeichnung daran anhängen können.",
+  "cs.signInFirst": "Die Gegenseite unterschreibt eine online gespeicherte Kopie, daher braucht das Senden eine Universal ID. Melden Sie sich an oder erstellen Sie kostenlos eine – dieses Geschäft zieht mit in Ihr Konto.",
   "cs.linkReady": "Link zur Gegenzeichnung bereit — teilen Sie den QR-Code oder den Link mit der anderen Partei.",
   "cs.linkFailed": "Link konnte nicht erstellt werden. Prüfen Sie, ob das Projekt gespeichert ist, und versuchen Sie es erneut.",
   "cs.copied": "Link in die Zwischenablage kopiert.",

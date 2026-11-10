@@ -509,9 +509,15 @@ export const drafterPtPT: DrafterMessages = {
   "nav.openMenu": "Abrir menu",
   "nav.collapseMenu": "Recolher menu",
   "nav.logoAlt": "Logótipo do Universal Exports",
+  "sidebar.statusDone": "Concluído",
+  "sidebar.statusStarted": "Iniciado",
+  "sidebar.needsTransaction": "Preencha primeiro a transação",
+  "sidebar.needsProducts": "Adicione primeiro os seus produtos",
+  "sidebar.needsInvoiceOrPo": "Faça primeiro a fatura ou a encomenda",
+  "sidebar.needsDocument": "Preencha primeiro um documento",
 
-  // Demo-access banner
-  "app.demoBanner": "Acesso de demonstração — não tem sessão iniciada, pelo que as alterações não serão guardadas.",
+  // Signed-out banner on /app (drafting needs no account, 2026-11-10)
+  "app.demoBanner": "Guardado neste navegador — não é preciso conta. Inicie sessão para enviar acordos para assinatura online e manter os seus negócios na sua conta.",
 
   // Footer
   "brand.withLove": "Com {heart} de {link}",
@@ -546,7 +552,7 @@ export const drafterPtPT: DrafterMessages = {
   "landing.createFolder": "Comece um novo negócio",
   "landing.binding": "O acordo, a fatura e a guia de remessa de uma venda",
   "landing.dealName": "Nome do negócio",
-  "landing.signInNote": "Para criar o seu, precisa de um Universal ID — inicie sessão ou crie um grátis. O seu número da Companies House é pedido mais tarde, antes do seu primeiro acordo.",
+  "landing.signInNote": "Não é preciso conta: os seus negócios ficam guardados neste navegador. Inicie sessão apenas para enviar um acordo para assinatura online ou para manter os seus negócios na sua conta.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Ícone do Universal Exports",

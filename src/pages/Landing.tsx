@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BrandFooter from "@/components/BrandFooter";
 import WorkflowAnimation from "@/components/WorkflowAnimation";
-import { grantDemoAccess } from "@/lib/demoAccess";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import { CONTAINER } from "@/lib/layout";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -37,11 +36,6 @@ export default function Landing() {
   };
 
   const handleDemo = () => {
-    // The example project must be viewable WITHOUT signing in. /app is gated by
-    // ProtectedRoute, which bounces guests to /auth unless they're signed in OR
-    // have demo access — so grant the (tab-scoped) demo flag first, exactly as
-    // the hidden /demo route does, then drop into the pre-filled example.
-    grantDemoAccess();
     navigate("/app", { state: { loadDemo: true } });
   };
 

@@ -80,12 +80,24 @@ describe("bank details", () => {
     expect(db.rows).toEqual([]);
   });
 
-  it("are not kept at all when signed out", async () => {
+  it("are kept in this browser when signed out, never sent anywhere", async () => {
     session.user = null;
     await saveBanks("your", { GBP: gbp });
     const loaded = await loadBanks();
     expect(loaded.signedIn).toBe(false);
-    expect(loaded.your).toEqual({});
+    expect(loaded.your.GBP.accountNumber).toBe("12345678");
     expect(db.writes).toEqual([]);
+  });
+
+  it("move to the account's device copy at the first sign-in, still not online", async () => {
+    session.user = null;
+    await saveBanks("your", { GBP: gbp });
+    session.user = { id: "user-1" };
+    const loaded = await loadBanks();
+    expect(loaded.your.GBP.accountNumber).toBe("12345678");
+    expect(loaded.cloudSync).toBe(false);
+    expect(db.writes).toEqual([]);
+    session.user = null;
+    expect((await loadBanks()).your).toEqual({});
   });
 });

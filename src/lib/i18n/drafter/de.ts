@@ -509,9 +509,15 @@ export const drafterDe: DrafterMessages = {
   "nav.openMenu": "Menü öffnen",
   "nav.collapseMenu": "Menü einklappen",
   "nav.logoAlt": "Universal Exports-Logo",
+  "sidebar.statusDone": "Fertig",
+  "sidebar.statusStarted": "Begonnen",
+  "sidebar.needsTransaction": "Zuerst die Transaktion ausfüllen",
+  "sidebar.needsProducts": "Zuerst Ihre Produkte hinzufügen",
+  "sidebar.needsInvoiceOrPo": "Zuerst Rechnung oder Bestellung erstellen",
+  "sidebar.needsDocument": "Zuerst ein Dokument ausfüllen",
 
-  // Demo-access banner
-  "app.demoBanner": "Demozugang – Sie sind nicht angemeldet, daher werden Änderungen nicht gespeichert.",
+  // Signed-out banner on /app (drafting needs no account, 2026-11-10)
+  "app.demoBanner": "In diesem Browser gespeichert – kein Konto nötig. Melden Sie sich an, um Vereinbarungen online zur Unterschrift zu senden und Ihre Geschäfte in Ihrem Konto zu behalten.",
 
   // Footer
   "brand.withLove": "Mit {heart} von {link}",
@@ -546,7 +552,7 @@ export const drafterDe: DrafterMessages = {
   "landing.createFolder": "Ein neues Geschäft beginnen",
   "landing.binding": "Vereinbarung, Rechnung und Lieferschein für einen Verkauf",
   "landing.dealName": "Name des Geschäfts",
-  "landing.signInNote": "Für ein eigenes Projekt brauchen Sie eine Universal ID – melden Sie sich an oder erstellen Sie kostenlos eine. Ihre Companies House-Nummer geben Sie später an, vor Ihrer ersten Vereinbarung.",
+  "landing.signInNote": "Kein Konto nötig: Ihre Geschäfte werden in diesem Browser gespeichert. Melden Sie sich nur an, um eine Vereinbarung online zur Unterschrift zu senden oder Ihre Geschäfte in Ihrem Konto zu behalten.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Universal Exports-Symbol",

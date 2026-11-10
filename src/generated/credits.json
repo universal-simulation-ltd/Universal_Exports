@@ -1,8 +1,8 @@
 {
   "app": "universal-exports",
   "appVersion": "0.0.0",
-  "generated": "2026-10-10",
-  "noticesCount": 157,
+  "generated": "2026-11-10",
+  "noticesCount": 158,
   "ships": [
     {
       "name": "@hookform/resolvers",

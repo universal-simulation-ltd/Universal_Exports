@@ -95,7 +95,7 @@ Les Incoterms sont un ensemble de règles commerciales normalisées publiées pa
 
 ## Projets
 
-Un projet regroupe tout ce qui concerne une opération : vos coordonnées, l'autre partie, les produits, l'expédition, le paiement et chaque section de document. Il vous faut un Universal ID pour travailler sur des projets, et ceux-ci sont enregistrés dans votre compte afin que vous puissiez les reprendre sur un autre ordinateur. Créer un Universal ID et démarrer une opération ne demandent aucun numéro d'entreprise. Les accords d'exportation sont toutefois destinés à un importateur ou exportateur britannique : avant d'en générer un, vous ajoutez votre numéro Companies House dans vos coordonnées ; l'application le recherche pour que vous puissiez confirmer que l'entreprise est bien la vôtre.
+Un projet regroupe tout ce qui concerne une opération : vos coordonnées, l'autre partie, les produits, l'expédition, le paiement et chaque section de document. Aucun compte n'est nécessaire pour travailler sur des projets : sans connexion, ils sont enregistrés dans ce navigateur. Connectez-vous et ils sont enregistrés dans votre compte, pour que vous puissiez les reprendre sur un autre ordinateur ; ce que vous avez préparé dans ce navigateur y passe lors de votre première connexion. Aucun des deux ne demande de numéro d'entreprise. Les accords d'exportation sont toutefois destinés à un importateur ou exportateur britannique : avant d'en générer un, vous ajoutez votre numéro Companies House dans vos coordonnées ; l'application le recherche pour que vous puissiez confirmer que l'entreprise est bien la vôtre.
 
 Une fois une section terminée, vous pouvez la verrouiller. Une section verrouillée s'affiche comme un document finalisé, et la barre latérale indique les sections dans lesquelles il manque encore des informations obligatoires.
 
@@ -164,6 +164,8 @@ Une signature dessinée recueillie de cette manière atteste qu'une personne nom
 - Vos coordonnées bancaires, uniquement si vous cochez **Enregistrer les coordonnées bancaires dans mon compte** dans Coordonnées bancaires. La case est décochée au départ ; elle est déjà cochée si vous aviez enregistré des coordonnées bancaires dans votre compte avant que ce choix n'existe. Décochez-la pour les garder uniquement sur cet appareil, et utilisez **La supprimer de mon compte** pour effacer la copie qui y est enregistrée.
 
 Ces données sont stockées dans la base de données d'UNI·SIM, rattachées à votre Universal ID. La base de données ne permet qu'à votre compte connecté de les lire ou de les modifier. Tout circule par des connexions chiffrées, mais sans chiffrement de bout en bout : les données sont conservées pour que le service puisse vous les restituer, et ne sont pas verrouillées par une clé que vous seul détiendriez.
+
+Sans connexion, tout ce qui figure dans cette liste est conservé dans ce navigateur, sur cet ordinateur, et rien n'est envoyé à UNI·SIM. À votre première connexion ici, tout passe dans votre compte.
 
 ## Conservé uniquement dans votre navigateur
 

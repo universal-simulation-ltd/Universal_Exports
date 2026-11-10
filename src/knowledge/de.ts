@@ -95,7 +95,7 @@ Incoterms sind eine Reihe standardisierter Handelsregeln, die von der Internatio
 
 ## Projekte
 
-Ein Projekt enthält alles zu einem Geschäft: Ihre Angaben, die andere Partei, Produkte, Versand, Zahlung und jeden Dokumentabschnitt. Sie brauchen eine Universal ID, um an Projekten zu arbeiten, und diese werden in Ihrem Konto gespeichert, sodass Sie sie auf einem anderen Computer wieder aufnehmen können. Für eine Universal ID und ein neues Geschäft brauchen Sie keine Unternehmensnummer. Exportvereinbarungen sind jedoch für einen britischen Importeur oder Exporteur, daher tragen Sie vor dem Generieren Ihre Companies-House-Nummer in Ihre Daten ein; die App schlägt sie nach, damit Sie bestätigen können, dass das Unternehmen Ihres ist.
+Ein Projekt enthält alles zu einem Geschäft: Ihre Angaben, die andere Partei, Produkte, Versand, Zahlung und jeden Dokumentabschnitt. Für Projekte brauchen Sie kein Konto: Ohne Anmeldung werden sie in diesem Browser gespeichert. Melden Sie sich an, werden sie stattdessen in Ihrem Konto gespeichert, sodass Sie sie auf einem anderen Computer weiterführen können; was Sie in diesem Browser entworfen haben, zieht bei der ersten Anmeldung dorthin um. Für beides brauchen Sie keine Unternehmensnummer. Exportvereinbarungen sind jedoch für einen britischen Importeur oder Exporteur, daher tragen Sie vor dem Generieren Ihre Companies-House-Nummer in Ihre Daten ein; die App schlägt sie nach, damit Sie bestätigen können, dass das Unternehmen Ihres ist.
 
 Wenn Sie einen Abschnitt fertiggestellt haben, können Sie ihn sperren. Ein gesperrter Abschnitt wird als fertiges Dokument angezeigt, und die Seitenleiste zeigt, in welchen Abschnitten noch Pflichtangaben fehlen.
 
@@ -164,6 +164,8 @@ Eine auf diese Weise erfasste gezeichnete Unterschrift belegt, dass eine namentl
 - Ihre Bankdaten, nur wenn Sie unter Bankdaten **Bankdaten in meinem Konto speichern** ankreuzen. Das Kästchen ist zunächst nicht angekreuzt; es ist bereits angekreuzt, wenn Sie Bankdaten in Ihrem Konto gespeichert hatten, bevor es diese Wahl gab. Entfernen Sie das Häkchen, um sie nur auf diesem Gerät zu behalten, und löschen Sie die dort gespeicherte Kopie mit **Aus meinem Konto entfernen**.
 
 Diese Daten werden in der Datenbank von UNI·SIM unter Ihrer Universal ID gespeichert. Die Datenbank erlaubt nur Ihrem angemeldeten Konto, sie zu lesen oder zu ändern. Alles wird über verschlüsselte Verbindungen übertragen, aber nicht Ende-zu-Ende-verschlüsselt: Die Daten werden aufbewahrt, damit der Dienst sie Ihnen zurückgeben kann, und nicht mit einem Schlüssel verschlossen, den nur Sie besitzen.
+
+Ohne Anmeldung bleibt alles in dieser Liste stattdessen in diesem Browser auf diesem Computer, und nichts wird an UNI·SIM gesendet. Bei der ersten Anmeldung hier zieht es in Ihr Konto um.
 
 ## Nur in Ihrem Browser gespeichert
 

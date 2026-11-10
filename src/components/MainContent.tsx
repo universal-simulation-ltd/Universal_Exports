@@ -19,6 +19,7 @@ import { agreementCompanyNumberStatus, normalizeCompanyNumber } from "@/lib/comp
 import LockedSectionView from "@/components/LockedSectionView";
 import ueIcon from "@/assets/universal-exports-icon.svg";
 import ScrollFadeWrapper from "@/components/ScrollFadeWrapper";
+import { toBusinessDoc } from "@/lib/businessPdf";
 import { ProjectData, saveProject, createProjectId, deleteProject } from "@/lib/projectStore";
 import { CompanyDetails, loadYourDetails, saveYourDetails, loadContacts, saveContact, deleteContact, emptyDetails } from "@/lib/contactStore";
 import { loadCatalogue, catalogueDisplayTitle } from "@/lib/productCatalogueStore";
@@ -657,6 +658,20 @@ const MainContent = ({
     () => ({ from: yourDetails, to: otherParty, logoDataUrl: logoDataUrl || undefined, projectName }),
     [yourDetails, otherParty, logoDataUrl, projectName],
   );
+
+  // A completed quote, invoice, delivery note or packing list as a line-item
+  // document for its Download PDF (lib/businessPdf.ts); null keeps the rows.
+  const businessDocFor = (docId: string) =>
+    toBusinessDoc({
+      docId,
+      fields: allForms[docId] ?? {},
+      fallbackCurrency: txn.currency,
+      productLines: allForms["product-details"]?.productLines,
+      catalogue,
+      from: yourDetails,
+      to: otherParty,
+      today: preDate,
+    });
 
   // Dynamic counterparty label: if I'm seller, other party is buyer and vice versa
   const counterpartyKey: MessageKey = role === "seller" ? "doc.buyer" : role === "buyer" ? "doc.seller" : "doc.counterparty";
@@ -3106,7 +3121,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         )
        ) : selectedDoc === "picking-list" ? (
          lockedSections.has("picking-list") ? (
-           <LockedSectionView title="sidebar.pickingList" fields={[["pick.pickedBy", field("pickedBy")], ["pick.datePicked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} branding={docBranding} />
+           <LockedSectionView title="sidebar.pickingList" fields={[["pick.pickedBy", field("pickedBy")], ["pick.datePicked", field("datePicked")]]} onEdit={() => onUnlockSection?.("picking-list")} branding={docBranding} businessDoc={businessDocFor("picking-list")} />
          ) :
          (() => {
            const productLines = (() => {
@@ -3533,7 +3548,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
          )
        ) : isDocumentType ? (
           lockedSections.has(selectedDoc!) ? (
-            <LockedSectionView title={DOC_TITLE_KEYS[selectedDoc!] ?? "sidebar.documents"} fields={[["doc.referenceNo", field("referenceNo")], ["doc.date", field("date") || preDate], ["gdoc.issuedBy", field("issuedBy") || preFrom], [counterpartyKey, field("counterparty") || preCounterparty], ["doc.amount", field("amount") || preAmount], ["doc.currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["common.notes", field("notes")] as [MessageKey, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["common.notes"]} branding={docBranding} />
+            <LockedSectionView title={DOC_TITLE_KEYS[selectedDoc!] ?? "sidebar.documents"} fields={[["doc.referenceNo", field("referenceNo")], ["doc.date", field("date") || preDate], ["gdoc.issuedBy", field("issuedBy") || preFrom], [counterpartyKey, field("counterparty") || preCounterparty], ["doc.amount", field("amount") || preAmount], ["doc.currency", field("docCurrency") || preCurrency || "GBP"], ...(field("notes") ? [["common.notes", field("notes")] as [MessageKey, string]] : [])]} onEdit={() => onUnlockSection?.(selectedDoc!)} colSpanFields={["common.notes"]} branding={docBranding} businessDoc={businessDocFor(selectedDoc!)} />
           ) :
           (() => {
             // Determine if this doc is upload-only based on role

@@ -517,9 +517,15 @@ export const drafterEn = {
   "nav.openMenu": "Open menu",
   "nav.collapseMenu": "Collapse menu",
   "nav.logoAlt": "Universal Exports logo",
+  "sidebar.statusDone": "Done",
+  "sidebar.statusStarted": "Started",
+  "sidebar.needsTransaction": "Fill in the transaction first",
+  "sidebar.needsProducts": "Add your products first",
+  "sidebar.needsInvoiceOrPo": "Make the invoice or purchase order first",
+  "sidebar.needsDocument": "Fill in one document first",
 
-  // Demo-access banner
-  "app.demoBanner": "Demo access — you're not signed in, so changes won't be saved.",
+  // Signed-out banner on /app (drafting needs no account, 2026-11-10)
+  "app.demoBanner": "Saved in this browser — no account needed. Sign in to send agreements for signing online and keep your deals in your account.",
 
   // Footer
   "brand.withLove": "With {heart} from {link}",
@@ -554,7 +560,7 @@ export const drafterEn = {
   "landing.createFolder": "Start a new deal",
   "landing.binding": "The agreement, invoice and delivery note for one sale",
   "landing.dealName": "Deal name",
-  "landing.signInNote": "Starting your own needs a Universal ID — sign in, or create one free. You add your Companies House number later, before your first agreement.",
+  "landing.signInNote": "No account needed: your deals are saved in this browser. Sign in only to send an agreement for signing online, or to keep your deals in your account.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Universal Exports icon",

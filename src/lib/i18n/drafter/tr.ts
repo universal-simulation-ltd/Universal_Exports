@@ -509,9 +509,15 @@ export const drafterTr: DrafterMessages = {
   "nav.openMenu": "Menüyü aç",
   "nav.collapseMenu": "Menüyü daralt",
   "nav.logoAlt": "Universal Exports logosu",
+  "sidebar.statusDone": "Tamam",
+  "sidebar.statusStarted": "Başlandı",
+  "sidebar.needsTransaction": "Önce işlemi doldurun",
+  "sidebar.needsProducts": "Önce ürünlerinizi ekleyin",
+  "sidebar.needsInvoiceOrPo": "Önce faturayı veya siparişi hazırlayın",
+  "sidebar.needsDocument": "Önce bir belge doldurun",
 
-  // Demo-access banner
-  "app.demoBanner": "Demo erişimi — oturum açmadınız, bu yüzden değişiklikler kaydedilmeyecek.",
+  // Signed-out banner on /app (drafting needs no account, 2026-11-10)
+  "app.demoBanner": "Bu tarayıcıya kaydedildi — hesap gerekmez. Sözleşmeleri çevrimiçi imzaya göndermek ve işlemlerinizi hesabınızda tutmak için giriş yapın.",
 
   // Footer
   "brand.withLove": "{link} tarafından {heart} ile yapıldı",
@@ -546,7 +552,7 @@ export const drafterTr: DrafterMessages = {
   "landing.createFolder": "Yeni bir satış başlatın",
   "landing.binding": "Tek bir satış için sözleşme, fatura ve irsaliye",
   "landing.dealName": "Satışın adı",
-  "landing.signInNote": "Kendi projenizi başlatmak için bir Universal ID gerekir — giriş yapın ya da ücretsiz bir tane oluşturun. Companies House numaranızı daha sonra, ilk sözleşmenizden önce eklersiniz.",
+  "landing.signInNote": "Hesap gerekmez: işlemleriniz bu tarayıcıya kaydedilir. Yalnızca bir sözleşmeyi çevrimiçi imzaya göndermek veya işlemlerinizi hesabınızda tutmak için giriş yapın.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Universal Exports simgesi",

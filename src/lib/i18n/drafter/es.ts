@@ -509,9 +509,15 @@ export const drafterEs: DrafterMessages = {
   "nav.openMenu": "Abrir menú",
   "nav.collapseMenu": "Contraer menú",
   "nav.logoAlt": "Logotipo de Universal Exports",
+  "sidebar.statusDone": "Hecho",
+  "sidebar.statusStarted": "Empezado",
+  "sidebar.needsTransaction": "Rellena primero la transacción",
+  "sidebar.needsProducts": "Añade primero tus productos",
+  "sidebar.needsInvoiceOrPo": "Haz primero la factura o el pedido",
+  "sidebar.needsDocument": "Rellena primero un documento",
 
-  // Demo-access banner
-  "app.demoBanner": "Acceso de demostración: no has iniciado sesión, así que los cambios no se guardarán.",
+  // Signed-out banner on /app (drafting needs no account, 2026-11-10)
+  "app.demoBanner": "Guardado en este navegador: no hace falta cuenta. Inicia sesión para enviar acuerdos a firmar en línea y guardar tus operaciones en tu cuenta.",
 
   // Footer
   "brand.withLove": "Hecho con {heart} por {link}",
@@ -546,7 +552,7 @@ export const drafterEs: DrafterMessages = {
   "landing.createFolder": "Empieza una nueva operación",
   "landing.binding": "El acuerdo, la factura y el albarán de una venta",
   "landing.dealName": "Nombre de la operación",
-  "landing.signInNote": "Para crear el tuyo necesitas un Universal ID: inicia sesión o crea uno gratis. Tu número de Companies House lo añades más tarde, antes de tu primer acuerdo.",
+  "landing.signInNote": "No hace falta cuenta: tus operaciones se guardan en este navegador. Inicia sesión solo para enviar un acuerdo a firmar en línea o para guardar tus operaciones en tu cuenta.",
 
   // Sign-in / sign-up
   "auth.iconAlt": "Icono de Universal Exports",
