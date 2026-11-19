@@ -229,3 +229,12 @@ All colors MUST be HSL.
     font-size: 16px !important;
   }
 }
+
+/* The phone's menu bar sits at the foot of the editor (pages/Index.tsx,
+   `PhoneMenuBar`; owner rule 2026-11-19, navigation at the bottom on a phone).
+   A toast rises above it instead of covering it for its few seconds. */
+@media (max-width: 767.98px) {
+  body:has([data-phone-menubar]) [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+}

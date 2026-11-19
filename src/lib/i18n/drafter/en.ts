@@ -516,6 +516,7 @@ export const drafterEn = {
   // Sidebar leftovers
   "nav.openMenu": "Open menu",
   "nav.collapseMenu": "Collapse menu",
+  "nav.menu": "Menu", // the phone's menu bar at the foot of the editor, and the sheet it opens
   "nav.logoAlt": "Universal Exports logo",
   "sidebar.statusDone": "Done",
   "sidebar.statusStarted": "Started",

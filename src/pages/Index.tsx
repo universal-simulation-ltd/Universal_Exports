@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DocumentSidebar from "@/components/DocumentSidebar";
+import { sidebarItemLabel } from "@/lib/sidebarLabels";
+import { BottomSheet } from "@unisim/sdk";
+import { ChevronUp, Menu } from "lucide-react";
 import MainContent from "@/components/MainContent";
 import UnsavedChangesDialog from "@/components/UnsavedChangesDialog";
 import { ProjectData, loadProjects, saveProject, createProjectId } from "@/lib/projectStore";
@@ -22,7 +25,9 @@ const Index = () => {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [showSavedList, setShowSavedList] = useState(false);
   const [loadCounter, setLoadCounter] = useState(0);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // On a phone the menu is a sheet from the foot of the screen, and it starts
+  // shut: the editor comes first, the menu bar under it (`PhoneMenuBar`).
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window === "undefined" || window.innerWidth >= 768);
   const [accepted, setAccepted] = useState(false);
 
   // All form data keyed by section: { transaction: { drawer: "..." }, invoice: { ... } }
@@ -54,6 +59,11 @@ const Index = () => {
 
   // On mobile, collapse the menu after a selection so the content takes over the screen
   const closeMenuOnMobile = useCallback(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
+  // A window narrowed to a phone's width shuts the menu rather than opening
+  // its sheet over the editor.
+  useEffect(() => {
     if (isMobile) setSidebarOpen(false);
   }, [isMobile]);
 
@@ -131,11 +141,13 @@ const Index = () => {
   const tryNavigate = useCallback((action: () => void) => {
     if (hasUnsavedChanges()) {
       pendingAction.current = action;
+      // On a phone the question would open under the menu's sheet: shut it.
+      closeMenuOnMobile();
       setDialogOpen(true);
     } else {
       action();
     }
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, closeMenuOnMobile]);
 
   // On the import page you can't move on until the documents are uploaded —
   // we want the user to confirm the total deal price and import first.
@@ -420,6 +432,12 @@ const Index = () => {
     // edge. On a phone it fills the screen (James, 2026-11-10).
     <div className="h-full w-full max-w-7xl mx-auto flex flex-col bg-background md:px-6 md:py-4">
       <div className="flex w-full flex-1 min-h-0 bg-card overflow-hidden relative md:rounded-lg md:border md:border-border md:shadow-xs">
+        {/* Wider screens: the sidebar on the workspace's left edge, folding
+            to a rail. A phone: the same list in a sheet from the foot of the
+            screen, opened from the menu bar at the bottom (owner rule
+            2026-11-19, BRANDING.md → "On a phone, navigation sits at the
+            bottom"), so the editor keeps the whole width. */}
+        {!isMobile && (
         <DocumentSidebar
           key={`${projectId}-${loadCounter}`}
           selected={showSavedList ? "saved-projects" : selectedDoc}
@@ -443,7 +461,8 @@ const Index = () => {
           forceExpandSections={demoExpand}
           disabledReasons={disabledReasons}
         />
-        <div className={`flex-1 flex min-h-0 min-w-0 ${isMobile && sidebarOpen ? "hidden" : ""}`}>
+        )}
+        <div className="flex-1 flex min-h-0 min-w-0">
         <MainContent
           key={resetKey}
           projectId={projectId}
@@ -481,6 +500,40 @@ const Index = () => {
         </div>
       </div>
 
+      {isMobile && (
+        <PhoneMenuBar
+          current={showSavedList ? "saved-projects" : selectedDoc}
+          open={sidebarOpen}
+          onOpen={() => setSidebarOpen(true)}
+        />
+      )}
+      {isMobile && sidebarOpen && (
+        <BottomSheet label={t("nav.menu")} title={t("nav.menu")} onClose={() => setSidebarOpen(false)}>
+          <DocumentSidebar
+            key={`${projectId}-${loadCounter}`}
+            selected={showSavedList ? "saved-projects" : selectedDoc}
+            onSelect={handleSelectDoc}
+            disabled={!started || !accepted}
+            disabledDocs={disabledDocs}
+            incompleteSections={started ? incompleteSections : []}
+            projectStarted={started}
+            accepted={accepted}
+            hasDocsCreated={hasDocsCreated}
+            hasProductData={hasProductData}
+            hasAnyDocFilled={hasAnyDocFilled}
+            onNewProject={handleNewProject}
+            onLoadProjects={handleLoadProjects}
+            allForms={forms}
+            role={role}
+            lockedSections={lockedSections}
+            savedSections={savedSections}
+            forceExpandSections={demoExpand}
+            disabledReasons={disabledReasons}
+            inSheet
+          />
+        </BottomSheet>
+      )}
+
       <UnsavedChangesDialog
         open={dialogOpen}
         onCancel={() => setDialogOpen(false)}
@@ -505,3 +558,35 @@ const Index = () => {
 };
 
 export default Index;
+
+/**
+ * The phone's way into the menu: a bar across the foot of the editor, in
+ * thumb reach, saying where you are. It opens the menu as a sheet from the
+ * bottom. Replaces the hamburger rail that sat at the top left and took 48px
+ * off the editor's width.
+ */
+function PhoneMenuBar({ current, open, onOpen }: { current: string | null; open: boolean; onOpen: () => void }) {
+  const { t } = useI18n();
+  const here = sidebarItemLabel(current, t);
+  return (
+    <div data-phone-menubar className="shrink-0 border-t border-border bg-card px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        title={t("nav.openMenu")}
+        className="flex w-full min-h-12 items-center gap-3 rounded-lg bg-secondary px-4 py-2 text-left text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        <Menu className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className={here ? "block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" : "block text-sm font-medium"}>
+            {t("nav.menu")}
+          </span>
+          {here && <span className="block truncate text-sm font-medium">{here}</span>}
+        </span>
+        <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      </button>
+    </div>
+  );
+}

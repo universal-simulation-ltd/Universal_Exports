@@ -52,6 +52,11 @@ interface DocumentSidebarProps {
   forceExpandSections?: boolean;
   /** Why each disabled item is waiting, shown under it ("Add your products first"). */
   disabledReasons?: Record<string, string>;
+  /**
+   * Inside the phone's bottom sheet (pages/Index.tsx): no collapse button, no
+   * width or scroller of its own — the sheet scrolls and closes it.
+   */
+  inSheet?: boolean;
 }
 
 // Required fields per document (notes excluded)
@@ -111,7 +116,7 @@ function getDocStatus(formData: Record<string, string> | undefined, docId: strin
   return "partial";
 }
 
-const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], incompleteSections = [], projectStarted, accepted, hasDocsCreated, hasProductData, hasAnyDocFilled, allForms = {}, role = "", onNewProject, onLoadProjects, collapsed = false, onToggleCollapse, lockedSections = new Set(), savedSections = new Set(), forceExpandSections = false, disabledReasons = {} }: DocumentSidebarProps) => {
+const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], incompleteSections = [], projectStarted, accepted, hasDocsCreated, hasProductData, hasAnyDocFilled, allForms = {}, role = "", onNewProject, onLoadProjects, collapsed = false, onToggleCollapse, lockedSections = new Set(), savedSections = new Set(), forceExpandSections = false, disabledReasons = {}, inSheet = false }: DocumentSidebarProps) => {
   const { t } = useI18n();
   const [userLogo, setUserLogo] = useState<string>(() => localStorage.getItem("ebill-logo") || "");
 
@@ -304,7 +309,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   ) && paymentItems.some((item) => !disabledDocs.includes(item.id));
 
 
-  if (collapsed) {
+  if (collapsed && !inSheet) {
     return (
       <aside className="w-12 shrink-0 border-r border-border bg-card flex flex-col items-center py-3 gap-3">
         <button
@@ -320,13 +325,15 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
   }
 
   return (
-    <aside className="w-full md:w-64 lg:w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 relative">
-      <div className="flex-1 min-h-0 relative">
+    <aside className={inSheet ? "w-full flex flex-col" : "w-full md:w-64 lg:w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 relative"}>
+      <div className={inSheet ? "relative" : "flex-1 min-h-0 relative"}>
       {/* Scroll fade overlays */}
+      {!inSheet && <>
       <div className={`pointer-events-none absolute top-0 left-0 right-0 h-10 bg-linear-to-b from-card to-transparent transition-opacity duration-300 z-10 ${fadeTop ? "opacity-100" : "opacity-0"}`} />
       <div className={`pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-card to-transparent transition-opacity duration-300 z-10 ${fadeBottom ? "opacity-100" : "opacity-0"}`} />
-      <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden">
-      <div className="px-4 pt-2 pb-0 flex justify-end">
+      </>}
+      <div ref={scrollRef} className={inSheet ? "" : "h-full overflow-y-auto overflow-x-hidden"}>
+      {!inSheet && <div className="px-4 pt-2 pb-0 flex justify-end">
         <button
           onClick={onToggleCollapse}
           className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
@@ -335,7 +342,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
         >
           <PanelLeftClose className="h-4 w-4" />
         </button>
-      </div>
+      </div>}
       {/* The app's own logo is in the bar above; a company's own logo, once
           uploaded, still heads the sidebar. */}
       {userLogo && (
@@ -606,7 +613,7 @@ const DocumentSidebar = ({ selected, onSelect, disabled, disabledDocs = [], inco
       </div>
       </div>{/* end scroll wrapper */}
       </div>{/* end scrollable region */}
-      <div className="px-4 py-3 border-t border-border bg-card">
+      <div className={`px-4 py-3 border-t border-border ${inSheet ? "" : "bg-card"}`}>
         <BrandFooter variant="sidebar" />
       </div>
     </aside>

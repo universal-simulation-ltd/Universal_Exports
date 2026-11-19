@@ -33,8 +33,9 @@ describe("translate", () => {
     for (const lang of ["fr", "de", "es", "it", "pt-BR", "pt-PT", "tr"]) {
       const same = keys.filter((k) => translate(lang, k) === en[k]);
       // Brand names and codes (Incoterms, "Universal Exports AI", "Project")
-      // legitimately match; a missing dictionary would match all 150.
-      expect(same.length, `${lang}: ${same.join(", ")}`).toBeLessThan(10);
+      // and words the languages share ("Menu") legitimately match; a missing
+      // dictionary would match all 150.
+      expect(same.length, `${lang}: ${same.join(", ")}`).toBeLessThan(12);
     }
   });
 });

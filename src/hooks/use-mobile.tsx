@@ -3,7 +3,11 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+  // Right from the first render, so a phone never paints one frame of the
+  // wider screens' layout (the editor's sidebar, pages/Index.tsx).
+  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(() =>
+    typeof window === "undefined" ? undefined : window.innerWidth < MOBILE_BREAKPOINT,
+  );
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);

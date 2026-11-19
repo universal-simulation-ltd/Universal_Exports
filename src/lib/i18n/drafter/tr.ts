@@ -508,6 +508,7 @@ export const drafterTr: DrafterMessages = {
   // Sidebar leftovers
   "nav.openMenu": "Menüyü aç",
   "nav.collapseMenu": "Menüyü daralt",
+  "nav.menu": "Menü",
   "nav.logoAlt": "Universal Exports logosu",
   "sidebar.statusDone": "Tamam",
   "sidebar.statusStarted": "Başlandı",

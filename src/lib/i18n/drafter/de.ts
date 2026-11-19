@@ -508,6 +508,7 @@ export const drafterDe: DrafterMessages = {
   // Sidebar leftovers
   "nav.openMenu": "Menü öffnen",
   "nav.collapseMenu": "Menü einklappen",
+  "nav.menu": "Menü",
   "nav.logoAlt": "Universal Exports-Logo",
   "sidebar.statusDone": "Fertig",
   "sidebar.statusStarted": "Begonnen",
