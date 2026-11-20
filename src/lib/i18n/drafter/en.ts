@@ -527,6 +527,8 @@ export const drafterEn = {
 
   // Signed-out banner on /app (drafting needs no account, 2026-11-10)
   "app.demoBanner": "Saved in this browser — no account needed. Sign in to send agreements for signing online and keep your deals in your account.",
+  "app.personalTitle": "{name}’s Exports", // the bar's name for the app once signed in; {name} is the person's first name
+  "app.personalTitleMine": "My Exports", // signed in, no name known
 
   // Footer
   "brand.withLove": "With {heart} from {link}",

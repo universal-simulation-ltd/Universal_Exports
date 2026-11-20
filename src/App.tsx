@@ -82,7 +82,12 @@ function AppShell() {
       <UniversalAppsNavBar
         // Signed in, the bar says whose it is: "Bradley’s Exports" ("James’ Exports",
         // "My Exports" with no name), and Tune this app gets the account area (James, 2026-11-10 rollout).
-        personalTitle={(name) => (name ? `${/s$/i.test(name.trim()) ? `${name}’` : `${name}’s`} Exports` : 'My Exports')}
+        // In the app's language; only English says “’s”, and a name ending in s takes the apostrophe alone.
+        personalTitle={(name) => {
+          if (!name) return t("app.personalTitleMine");
+          const title = t("app.personalTitle").replace("{name}", name);
+          return /s$/i.test(name.trim()) ? title.replace(`${name}’s`, `${name}’`) : title;
+        }}
         product="exports"
         productLogo={<ProductLogo />}
         productHomeHref={`${BASE_PATH}/`}

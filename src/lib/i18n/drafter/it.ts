@@ -519,6 +519,8 @@ export const drafterIt: DrafterMessages = {
 
   // Signed-out banner on /app (drafting needs no account, 2026-11-10)
   "app.demoBanner": "Salvato in questo browser: nessun account necessario. Accedi per inviare accordi da firmare online e conservare le tue operazioni nel tuo account.",
+  "app.personalTitle": "Le esportazioni di {name}",
+  "app.personalTitleMine": "Le mie esportazioni",
 
   // Footer
   "brand.withLove": "Con {heart} da {link}",

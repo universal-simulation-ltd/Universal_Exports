@@ -519,6 +519,8 @@ export const drafterTr: DrafterMessages = {
 
   // Signed-out banner on /app (drafting needs no account, 2026-11-10)
   "app.demoBanner": "Bu tarayıcıya kaydedildi — hesap gerekmez. Sözleşmeleri çevrimiçi imzaya göndermek ve işlemlerinizi hesabınızda tutmak için giriş yapın.",
+  "app.personalTitle": "{name} · İhracatlar",
+  "app.personalTitleMine": "İhracatlarım",
 
   // Footer
   "brand.withLove": "{link} tarafından {heart} ile yapıldı",
