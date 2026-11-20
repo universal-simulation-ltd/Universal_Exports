@@ -129,10 +129,13 @@ const AgreementView = () => {
         </section>
       )}
 
+      {/* The record, section by section: each a Key box (BRANDING.md →
+          Boxes, C), its tab the section's heading. */}
+
       {/* Transaction overview */}
       {snap.fields && snap.fields.length > 0 && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("view.overview")}</h2>
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-3">
+          <h2 className="u-box__key">{t("view.overview")}</h2>
           <dl className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-x-4 gap-y-1.5 text-sm">
             {snap.fields.map((f) => (
               <div key={f.label} className="contents">
@@ -146,8 +149,8 @@ const AgreementView = () => {
 
       {/* Products */}
       {snap.products && snap.products.length > 0 && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("view.products")}</h2>
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-3">
+          <h2 className="u-box__key">{t("view.products")}</h2>
           <div className="overflow-x-auto -mx-1 px-1">
           <table className="w-full min-w-[420px] text-sm">
             <thead>
@@ -185,8 +188,8 @@ const AgreementView = () => {
 
       {/* Documents provided */}
       {snap.documents && snap.documents.length > 0 && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("view.documents")}</h2>
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-3">
+          <h2 className="u-box__key">{t("view.documents")}</h2>
           <div className="overflow-x-auto -mx-1 px-1">
           <table className="w-full min-w-[420px] text-sm">
             <thead>
@@ -214,8 +217,8 @@ const AgreementView = () => {
 
       {/* Expected tariffs */}
       {snap.tariffs && snap.tariffs.length > 0 && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("view.tariffs")}</h2>
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-3">
+          <h2 className="u-box__key">{t("view.tariffs")}</h2>
           <div className="overflow-x-auto -mx-1 px-1">
           <table className="w-full min-w-[420px] text-sm">
             <thead>
@@ -242,8 +245,8 @@ const AgreementView = () => {
       )}
 
       {/* Signature status */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-2">
-        <h2 className="text-sm font-semibold text-foreground">{t("view.signedBy")}</h2>
+      <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-2">
+        <h2 className="u-box__key">{t("view.signedBy")}</h2>
         {snap.signedBy ? (
           <p className="text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />

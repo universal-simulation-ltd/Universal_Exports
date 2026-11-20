@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { UniversalProvider, installButtonStyles, installTabStyles } from "@unisim/sdk";
+import { UniversalProvider, installBoxStyles, installButtonStyles, installTabStyles } from "@unisim/sdk";
 import App from "./App.tsx";
 import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
@@ -23,6 +23,9 @@ const universalConfig = {
 // components/ui/button.tsx and tabs.tsx.
 installButtonStyles();
 installTabStyles();
+// The suite's box marks (BRANDING.md → Boxes), also as class strings
+// (u-box u-box--orbit / --key / --frame): the sheet goes in once.
+installBoxStyles();
 
 createRoot(document.getElementById("root")!).render(
   <UniversalProvider config={universalConfig}>

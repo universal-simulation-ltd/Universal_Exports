@@ -208,7 +208,10 @@ const EboxyCheckItem = ({ check, onNavigate }: {
   onNavigate?: (docId: string) => void;
 }) => {
   const [accepted, setAccepted] = useState(false);
-  const { t } = useDrafterI18n();
+  const { t, tp } = useDrafterI18n();
+  // What the tab says: the line's status in words. The tab itself stays
+  // neutral; the red tint and the icon carry the colour.
+  const statusWord = check.status === "pass" ? t("agree.passed") : check.status === "warn" ? tp("agree.discrepancies", 1) : t("agree.missing");
   const icon = check.status === "pass" || accepted
     ? <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
     : check.status === "warn"
@@ -216,7 +219,9 @@ const EboxyCheckItem = ({ check, onNavigate }: {
     : <Circle className="h-4 w-4 text-muted-foreground shrink-0" />;
 
   return (
-    <div className={`rounded-lg border p-3 ${check.status === "warn" && !accepted ? "border-destructive/40 bg-destructive/5" : check.status === "missing" ? "border-border bg-muted/30" : "border-border"}`}>
+    // A legal-check line: the suite's Key box (BRANDING.md → Boxes, C).
+    <div className={`u-box u-box--key border px-3 pb-3 pt-5 ${check.status === "warn" && !accepted ? "border-destructive/40 bg-destructive/5" : check.status === "missing" ? "border-border bg-muted/30" : "border-border bg-card"}`}>
+      <span className="u-box__key">{statusWord}</span>
       <div className="flex items-start gap-2.5">
         {icon}
         <div className="flex-1 min-w-0">
@@ -256,7 +261,9 @@ const ToolLink = ({ label, url, desc }: { label: string; url: string; desc: stri
     href={url}
     target="_blank"
     rel="noopener noreferrer"
-    className="flex flex-col gap-1 rounded-lg border border-border p-4 hover:bg-accent/50 transition-colors"
+    // A card that opens something: the suite's Orbit corner (BRANDING.md →
+    // Boxes, A).
+    className="u-box u-box--orbit u-box--row flex flex-col gap-1 border-border bg-card p-4 hover:bg-accent/50 transition-colors"
   >
     <span className="text-sm font-medium text-foreground flex items-center gap-2">
       <ExternalLink className="h-4 w-4 text-primary" />
@@ -346,18 +353,20 @@ const SavedProjectsList = ({
         </div>
       )}
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{search ? t("main.noMatchingProjects") : t("saved.empty")}</p>
+        // Nothing to show: an empty Viewfinder (BRANDING.md → Boxes, D ·
+        // empty), all four corners muted and no outline.
+        <p className="u-box u-box--frame u-box--empty max-w-md text-sm text-muted-foreground">{search ? t("main.noMatchingProjects") : t("saved.empty")}</p>
       ) : (
         <>
           <div className="space-y-2 max-w-md flex-1 min-h-0 overflow-y-auto">
             {pageProjects.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-2 px-4 py-3 rounded-md border border-border hover:bg-secondary/50 transition-colors"
-              >
+              // Each project is a row you tap to open it: the suite's Orbit
+              // corner (BRANDING.md → Boxes, A). Duplicate and Delete sit over
+              // the row's trailing end, so the row stays one button.
+              <div key={p.id} className="relative">
                 <button
                   onClick={() => onLoadProject(p)}
-                  className="flex-1 flex items-center justify-between text-left"
+                  className="u-box u-box--orbit u-box--row flex items-center justify-between gap-2 border-border bg-card py-3 pl-4 pr-24 text-left hover:bg-secondary/50 transition-colors"
                 >
                   <div>
                     <p className="text-sm font-medium text-foreground">{p.name}</p>
@@ -365,6 +374,7 @@ const SavedProjectsList = ({
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </button>
+                <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -405,6 +415,7 @@ const SavedProjectsList = ({
                 >
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -2066,7 +2077,10 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                   {t("ai.uploadBody")}
                 </p>
               </div>
-              <div className="w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/3 px-4 py-4 text-left space-y-2">
+              {/* The documents waiting to go in: the suite's Viewfinder
+                  (BRANDING.md → Boxes, D), its leading corner lit because
+                  something is in frame. */}
+              <div className="u-box u-box--frame w-full bg-primary/3 px-4 py-4 text-left space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("ai.ready")}</p>
                 {DEMO_IMPORT_DOCS.map((doc) => (
                   <div key={doc.key} className="flex items-center gap-2 text-sm text-foreground">
@@ -2122,7 +2136,9 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
             {t("ai.body")}
           </p>
           <div className="flex flex-col gap-3 max-w-md">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center space-y-3">
+            {/* Where documents will go in, nothing in frame yet: an empty
+                Viewfinder (BRANDING.md → Boxes, D · empty). */}
+            <div className="u-box u-box--frame u-box--empty p-8 space-y-3">
               <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("ai.drop")}</p>
               <Button variant="outline" size="sm" disabled>
@@ -2511,7 +2527,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
 
               {/* Non-passed items */}
               {(warnings.length > 0 || missing.length > 0) && (
-                <div className="space-y-2 max-w-lg">
+                <div className="space-y-4 pt-2 max-w-lg">
                   {checks.filter(c => c.status !== "pass").map((check, i) => (
                     <EboxyCheckItem key={i} check={check} onNavigate={onNavigate} />
                   ))}
@@ -2525,7 +2541,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                     <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                     {tp("agree.passedChecks", passed.length)}
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 pt-2">
+                  <CollapsibleContent className="space-y-4 pt-4">
                     {checks.filter(c => c.status === "pass").map((check, i) => (
                       <EboxyCheckItem key={i} check={check} onNavigate={onNavigate} />
                     ))}

@@ -138,6 +138,7 @@ export const agreementEn = {
   "verify.openRecord": "Open its record",
   "verify.fileHash": "Fingerprint (SHA-256) of {name}:",
   "verify.fingerprints": "Recorded fingerprints (SHA-256)",
+  "verify.result": "Result",
   "verify.fpFinal": "Signed copy:",
   "verify.fpDocument": "Agreement as signed:",
   // Sign together, live

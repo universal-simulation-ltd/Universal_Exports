@@ -133,6 +133,7 @@ export const agreementPtBR: Record<keyof typeof agreementEn, string> = {
   "verify.openRecord": "Abrir o registro",
   "verify.fileHash": "Impressão digital (SHA-256) de {name}:",
   "verify.fingerprints": "Impressões digitais registradas (SHA-256)",
+  "verify.result": "Resultado",
   "verify.fpFinal": "Cópia assinada:",
   "verify.fpDocument": "Contrato como assinado:",
   // Sign together, live

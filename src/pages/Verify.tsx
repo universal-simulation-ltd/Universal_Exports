@@ -148,8 +148,10 @@ const Verify = () => {
       )}
 
       {record && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("verify.timeline")}</h2>
+        // The record of what happened: the suite's Key box (BRANDING.md →
+        // Boxes, C), the tab its heading.
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-3">
+          <h2 className="u-box__key">{t("verify.timeline")}</h2>
           <ol className="space-y-2 text-sm">
             {events.map((e) => (
               <li key={e.label} className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-x-4">
@@ -170,7 +172,10 @@ const Verify = () => {
 
       <section
         {...drop.dropzoneProps}
-        className={`rounded-xl border-2 border-dashed p-6 text-center space-y-3 transition-colors ${drop.over ? "border-primary bg-primary/5" : "border-border bg-card"}`}
+        // Where the file is put to be checked: the suite's Viewfinder
+        // (BRANDING.md → Boxes, D). Nothing in frame, all four corners muted,
+        // until a file is dragged over it and the leading corner lights.
+        className={`u-box u-box--frame p-6 text-center space-y-3 transition-colors ${drop.over ? "bg-primary/5" : "u-box--empty bg-card"}`}
       >
         <input {...drop.inputProps} aria-label={t("verify.choose")} className="hidden" />
         <FileSearch className="h-8 w-8 mx-auto text-muted-foreground" aria-hidden="true" />
@@ -184,8 +189,11 @@ const Verify = () => {
 
       <div aria-live="polite">
         {file && outcome && (
+          // The check's outcome: a Key box (BRANDING.md → Boxes, C). The tab
+          // stays neutral; green, amber or red stays on the card, and the
+          // heading says it in words.
           <section
-            className={`rounded-xl border p-5 space-y-2 ${
+            className={`u-box u-box--key border px-5 pb-5 pt-7 space-y-2 ${
               outcome.kind === "final" || outcome.kind === "signed_document"
                 ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40"
                 : outcome.kind === "none"
@@ -193,6 +201,7 @@ const Verify = () => {
                   : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40"
             }`}
           >
+            <span className="u-box__key">{t("verify.result")}</span>
             <div className="flex items-center gap-2 font-semibold">
               {outcome.kind === "final" || outcome.kind === "signed_document"
                 ? <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
@@ -229,8 +238,8 @@ const Verify = () => {
       </div>
 
       {record && (record.document_sha256 || record.final_sha256) && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-2 text-xs">
-          <h2 className="text-sm font-semibold text-foreground">{t("verify.fingerprints")}</h2>
+        <section className="u-box u-box--key border-border bg-card px-5 pb-5 pt-7 space-y-2 text-xs">
+          <h2 className="u-box__key">{t("verify.fingerprints")}</h2>
           {record.final_sha256 && (
             <p className="break-all"><span className="text-muted-foreground">{t("verify.fpFinal")}</span> <code className="font-mono">{record.final_sha256}</code></p>
           )}

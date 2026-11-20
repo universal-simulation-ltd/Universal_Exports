@@ -133,6 +133,7 @@ export const agreementDe: Record<keyof typeof agreementEn, string> = {
   "verify.openRecord": "Eintrag öffnen",
   "verify.fileHash": "Fingerabdruck (SHA-256) von {name}:",
   "verify.fingerprints": "Erfasste Fingerabdrücke (SHA-256)",
+  "verify.result": "Ergebnis",
   "verify.fpFinal": "Unterschriebene Fassung:",
   "verify.fpDocument": "Vereinbarung wie unterschrieben:",
   // Sign together, live

@@ -133,6 +133,7 @@ export const agreementTr: Record<keyof typeof agreementEn, string> = {
   "verify.openRecord": "Kaydını aç",
   "verify.fileHash": "{name} dosyasının parmak izi (SHA-256):",
   "verify.fingerprints": "Kayıtlı parmak izleri (SHA-256)",
+  "verify.result": "Sonuç",
   "verify.fpFinal": "İmzalı kopya:",
   "verify.fpDocument": "İmzalandığı haliyle sözleşme:",
   // Sign together, live

@@ -155,11 +155,15 @@ export default function Landing() {
                     </span>
                     <div className="flex-1 border-t border-border" />
                   </div>
-                  <div className="relative rounded-lg">
-                    <div className="absolute inset-[-2px] rounded-lg bg-linear-to-br from-primary/60 via-primary/20 to-primary/60 animate-pulse" />
+                  {/* The worked example: a tile you tap to open it, so the
+                      suite's Orbit corner (BRANDING.md → Boxes, A), and the box
+                      this page steers a newcomer to, so it is the `next` box,
+                      its light running along the top border. That replaced a
+                      pulsing gradient halo of the app's own. */}
+                  <div>
                     <button
                       onClick={handleDemo}
-                      className="relative w-full flex items-center gap-3 rounded-lg px-4 py-3.5 bg-card border border-primary/20 hover:bg-primary/5 transition-colors text-left group"
+                      className="u-box u-box--orbit u-box--row u-box--next flex items-center gap-3 border-border bg-card px-4 py-3.5 hover:bg-primary/5 transition-colors text-left group"
                     >
                       <img
                         src={ueIcon}

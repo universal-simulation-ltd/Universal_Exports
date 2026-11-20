@@ -404,8 +404,14 @@ ${t("cs.mailThanks")}`;
         <>
           <p className="text-sm text-muted-foreground max-w-md">{t("cs.shareIntro")}</p>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="rounded-2xl border border-border bg-white p-2">
-              <UnisimQr value={signUrl} size={192} label={t("cs.qrLabel")} />
+            {/* The square is there to be framed by the other party's camera:
+                the suite's Viewfinder (BRANDING.md → Boxes, D), its leading
+                corner lit because the code is in frame. The code keeps a
+                white plate of its own, which scanning needs. */}
+            <div className="u-box u-box--frame shrink-0 bg-transparent p-3">
+              <div className="rounded-md bg-white p-2">
+                <UnisimQr value={signUrl} size={192} label={t("cs.qrLabel")} />
+              </div>
             </div>
             <div className="flex-1 space-y-2 min-w-0">
               <label htmlFor="cs-link" className="text-xs text-muted-foreground block">{t("cs.link")}</label>
