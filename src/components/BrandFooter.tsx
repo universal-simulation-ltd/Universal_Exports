@@ -30,7 +30,7 @@ const BrandFooter = ({ variant = "sidebar", className = "" }: BrandFooterProps) 
         {fillNodes(t("brand.withLove"), {
           heart: (
             <>
-              <span aria-hidden="true" className="text-orange-600">
+              <span aria-hidden="true" className="text-orange-600 dark:text-primary">
                 &hearts;
               </span>
               <span className="sr-only">{t("brand.love")}</span>

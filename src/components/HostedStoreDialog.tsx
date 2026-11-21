@@ -188,40 +188,40 @@ export default function HostedStoreDialog({
   // own Close button.
   return createPortal(
     <div
-      className="fixed inset-0 z-1100 flex items-center justify-center bg-slate-900/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
+      className="fixed inset-0 z-1100 flex items-center justify-center bg-slate-900/50 dark:bg-black/70 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}
     >
       {/* One box that scrolls would take the title and the Close button with
           it — this dialog is far taller than a 390x844 screen. It is a flex
           column capped at the viewport instead, with the title row pinned
           OUTSIDE the scrolling body. */}
-      <div className="flex max-h-[min(100%,100dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-bold text-slate-900">{t("hosted.title")}</h2>
-          <button onClick={close} aria-label={t("common.close")} className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+      <div className="flex max-h-[min(100%,100dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="text-base font-bold text-foreground">{t("hosted.title")}</h2>
+          <button onClick={close} aria-label={t("common.close")} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
             <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /></svg>
           </button>
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
           {/* Tier 1 — Download the finished PDF (free, on-device). */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-border bg-muted/60 p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">{t("hosted.download")}</span>
+              <span className="text-sm font-semibold text-foreground">{t("hosted.download")}</span>
               <Chip size="sm">{t("hosted.free")}</Chip>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t("hosted.downloadDesc")}
             </p>
           </div>
 
           {/* Tier 2 — Save to desktop: a re-importable backup of the whole project. */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">{t("hosted.desktop")}</span>
+              <span className="text-sm font-semibold text-foreground">{t("hosted.desktop")}</span>
               <Chip size="sm">{t("hosted.reimport")}</Chip>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t("hosted.desktopDesc")}
             </p>
 
@@ -253,23 +253,23 @@ export default function HostedStoreDialog({
               </button>
               <input {...importPicker.inputProps} className="hidden" />
             </div>
-            {!hasProject && <p className="mt-2 text-xs text-slate-400">{t("hosted.fillFirst")}</p>}
-            {importErr && <p className="mt-2 text-sm text-rose-600">{importErr}</p>}
+            {!hasProject && <p className="mt-2 text-xs text-muted-foreground">{t("hosted.fillFirst")}</p>}
+            {importErr && <p className="mt-2 text-sm text-rose-600 dark:text-destructive">{importErr}</p>}
           </div>
 
           {/* Tier 3 — Universal subscription: paid "Hosted by UNI·SIM" cloud (the PDF). */}
-          <div className="rounded-xl border border-orange-200 bg-white p-4">
+          <div className="rounded-xl border border-orange-200 dark:border-primary/40 bg-card p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-900">{t("hosted.hostedTitle")}</span>
+              <span className="text-sm font-semibold text-foreground">{t("hosted.hostedTitle")}</span>
               <Chip size="sm">{t("hosted.freeWithId")}</Chip>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t("hosted.hostedDesc")}
             </p>
 
             {!signedIn ? (
-              <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                <p className="text-sm text-slate-700">{fillNodes(t("hosted.createId"), { id: <strong>Universal ID</strong> })}</p>
+              <div className="mt-3 rounded-lg bg-muted/60 p-3">
+                <p className="text-sm text-foreground">{fillNodes(t("hosted.createId"), { id: <strong>Universal ID</strong> })}</p>
                 <button type="button" onClick={() => setSignInOpen(true)} className={`${buttonClass("primary")} mt-2`}>
                   {t("hosted.signIn")}
                 </button>
@@ -277,10 +277,10 @@ export default function HostedStoreDialog({
               </div>
             ) : (
               <div className="mt-3">
-                <div className="flex items-center justify-between rounded-lg bg-orange-50/60 px-3 py-2 text-sm">
-                  <span className="text-slate-600">{user?.email}</span>
+                <div className="flex items-center justify-between rounded-lg bg-orange-50/60 dark:bg-accent px-3 py-2 text-sm">
+                  <span className="text-muted-foreground">{user?.email}</span>
                   {tokens > 0 && (
-                    <span className="font-semibold text-orange-700">
+                    <span className="font-semibold text-orange-700 dark:text-primary">
                       {tp("hosted.tokens", tokens)}
                     </span>
                   )}
@@ -288,7 +288,7 @@ export default function HostedStoreDialog({
 
                 {noCompany ? (
                   <div className="mt-3" data-testid="hosted-no-company">
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       {t("hosted.noCompany")}
                     </p>
                     <a href={withReturnUrl(SET_UP_COMPANY_URL)} target="_blank" rel="noreferrer" className={`${buttonClass("primary")} mt-2`}>
@@ -305,45 +305,45 @@ export default function HostedStoreDialog({
                       {busy ? t("hosted.backingUp") : justStored ? `✓ ${t("hosted.backedUp")}` : t("hosted.backUpOnline")}
                     </button>
                   ) : freeToken === null ? null : (
-                    <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                      <p className="text-sm text-amber-800">
+                    <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 p-3">
+                      <p className="text-sm text-amber-800 dark:text-amber-200">
                         {limitMessage(freeToken)}
                       </p>
-                      <a href={NEED_MORE_URL} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-xs text-amber-800 underline underline-offset-2 hover:text-amber-950">
+                      <a href={NEED_MORE_URL} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-xs text-amber-800 underline underline-offset-2 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-100">
                         {t("hosted.needMore")}
                       </a>
                     </div>
                   )
                 ) : (
-                  <p className="mt-3 text-xs text-slate-500">{t("hosted.generateFirst")}</p>
+                  <p className="mt-3 text-xs text-muted-foreground">{t("hosted.generateFirst")}</p>
                 )}
 
                 {near && (
-                  <p className="mt-2 text-xs text-slate-500" data-testid="free-storage-near-limit">
+                  <p className="mt-2 text-xs text-muted-foreground" data-testid="free-storage-near-limit">
                     {tf("hosted.near", { used: near.usedMb, limit: near.limitMb })}
                   </p>
                 )}
 
-                {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
+                {error && <p className="mt-2 text-sm text-rose-600 dark:text-destructive">{error}</p>}
 
                 {/* The user's hosted agreements */}
                 <div className="mt-4">
-                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-500">{t("hosted.yourBackups")}</p>
+                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("hosted.yourBackups")}</p>
                   {listLoading ? (
-                    <p className="text-xs text-slate-400">{t("hosted.loading")}</p>
+                    <p className="text-xs text-muted-foreground">{t("hosted.loading")}</p>
                   ) : uploads.length === 0 ? (
-                    <p className="text-xs text-slate-400">{t("hosted.noneYet")}</p>
+                    <p className="text-xs text-muted-foreground">{t("hosted.noneYet")}</p>
                   ) : (
                     <ul className="space-y-2">
                       {uploads.map((u) => (
-                        <li key={u.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                        <li key={u.id} className="rounded-lg border border-border bg-muted/60 p-2">
                           <div className="flex items-center gap-2">
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-xs font-medium text-slate-700">{u.file_name || "export-agreement.pdf"}</span>
-                              <span className="block text-[10px] text-slate-400">{shortDate(u.created_at)}</span>
+                              <span className="block truncate text-xs font-medium text-foreground">{u.file_name || "export-agreement.pdf"}</span>
+                              <span className="block text-[10px] text-muted-foreground">{shortDate(u.created_at)}</span>
                             </span>
                             <button onClick={() => onOpen(u)} disabled={busy} className={`${buttonClass(undefined, "sm")} shrink-0`}>{t("hosted.open")}</button>
-                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 disabled:opacity-50" title={t("hosted.deleteTitle")}>{t("common.delete")}</button>
+                            <button onClick={() => onDelete(u)} disabled={busy} className="shrink-0 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-rose-600 dark:hover:text-destructive disabled:opacity-50" title={t("hosted.deleteTitle")}>{t("common.delete")}</button>
                           </div>
 
                           {/* A backup with nothing behind it. Say which file,
@@ -357,9 +357,9 @@ export default function HostedStoreDialog({
                             <div
                               role="alert"
                               data-testid="hosted-missing"
-                              className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2"
+                              className="mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 p-2"
                             >
-                              <p className="text-[11px] leading-snug text-amber-900">
+                              <p className="text-[11px] leading-snug text-amber-900 dark:text-amber-100">
                                 {fillNodes(t("hosted.missing"), {
                                   file: <strong className="font-semibold">{u.file_name || "export-agreement.pdf"}</strong>,
                                 })}

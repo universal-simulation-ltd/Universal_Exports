@@ -110,6 +110,25 @@ never did — while the real file sat safely in the bucket the whole time.
 The same landmine was fixed in Universal PDF (`ffae15b`), Images, QR and
 Recorder — all five had copies of the identical three-step flow.
 
+## Colour scheme — Light / Dark / Match my device (2026-11-21)
+
+**Tune this app** offers the colour scheme (the SDK draws the row because the
+navbar gets `themeStore`). Light is the default and stays so until somebody
+chooses; with no choice made here the app follows the account's Global
+preference (`universal:color-scheme`).
+
+* **Store:** `src/stores/themeStore.ts`, `createThemeStore('unisim-exports-theme')`.
+  The key is every user's saved choice — never rename it.
+* **No light flash:** `index.html` carries a pre-paint script that adds `.dark`
+  before the bundle runs. It names the same key; `npm run test:theme` fails if
+  the two drift (also run in CI).
+* **Palette:** the `.dark` block in `src/index.css` maps the shadcn tokens onto
+  the suite's dark theme tokens (ground `#0A0E16`, cards `#121A2A`, fills
+  `#182236`, text `#E6EAF2` / `#9FB0C6`, accent `#FF9A1F` under ink, never
+  white). Style new UI through those tokens, not raw colours. The signature pad,
+  signature previews and QR codes stay white on purpose: dark ink and QR modules
+  need a light ground.
+
 ## Language — the SDK's, since 2026-09-29
 
 There is one language setting, and it is the suite's: **Tune this app**

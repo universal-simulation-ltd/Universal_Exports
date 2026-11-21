@@ -683,7 +683,7 @@ const TariffResultCard = ({ result, filterMeasure }: { result: TariffResult; fil
     <div>
       <p className="text-xs text-muted-foreground">{t("customs.commodity")}</p>
       <p className="text-foreground font-medium">{result.description}</p>
-      {!result.declarable && <p className="text-xs text-amber-600 font-medium mt-0.5">⚠ {t("customs.notDeclarable")}</p>}
+      {!result.declarable && <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-0.5">⚠ {t("customs.notDeclarable")}</p>}
     </div>
     {visibleMeasures.length > 0 && (
       <div>

@@ -1,4 +1,5 @@
-# The Vitest suite and the two Node scripts (hosted paths, the build guard),
+# The Vitest suite and the Node scripts (hosted paths, the build guard, the
+# theme key),
 # on every push and pull request. No server, no browser. The build-env script
 # sets its own configuration for its "a configured build" case, so no
 # .env.local is needed.
@@ -41,3 +42,4 @@ jobs:
       - run: npm test
       - run: npm run test:hosted-paths
       - run: npm run test:build-env
+      - run: npm run test:theme

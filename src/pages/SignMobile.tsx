@@ -102,7 +102,7 @@ const SignMobile = () => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4">
-          <div className="mx-auto h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <div className="mx-auto h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
           <h1 className="text-lg font-semibold">{t("mobileSign.sentTitle")}</h1>

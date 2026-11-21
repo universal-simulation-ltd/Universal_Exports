@@ -11,6 +11,25 @@
     <title>Universal Exports — open-source trade finance &amp; Export Agreements</title>
     <meta name="description" content="Universal Exports — a fully open-source platform for Export Agreements and trade finance documents. Self-host for free, or store online in your enterprise account." />
     <meta name="author" content="UNI SIM" />
+    <!-- Dark mode before the first paint. The theme store (src/stores/themeStore.ts)
+         applies the same class, but only once the module bundle has parsed — a
+         dark-mode user would see one light frame first. This only ever ADDS
+         `dark`: light is the default, so there is nothing to take away.
+         The app's key is its OVERRIDE (Tune this app); absent, it follows
+         Global preferences' `universal:color-scheme`.
+         ⚠️ The key must match the store's; `npm run test:theme` checks it. -->
+    <script>
+      try {
+        var pref = localStorage.getItem('unisim-exports-theme')
+          || localStorage.getItem('universal:color-scheme') || 'light'
+        if (pref === 'dark' || (pref === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = 'dark'
+        }
+      } catch (e) {
+        /* private mode, storage disabled: light, exactly as the store falls back. */
+      }
+    </script>
     <meta name="theme-color" content="#F76A1F" />
     <!-- universalexports.app is the primary domain; the same build is also
          served at opensource.unisim.co.uk/exports/ (portal Worker), which this

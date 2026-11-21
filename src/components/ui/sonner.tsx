@@ -1,14 +1,16 @@
-import { useTheme } from "next-themes";
+import { useThemeStore } from "@/stores/themeStore";
 import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  // The app's own theme store (Tune this app), not next-themes: there is no
+  // next-themes provider here, so it only ever answered "system".
+  const theme = useThemeStore((s) => s.effective);
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme}
       className="toaster group"
       toastOptions={{
         classNames: {

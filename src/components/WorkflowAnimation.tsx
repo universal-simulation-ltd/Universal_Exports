@@ -31,7 +31,7 @@ const WorkflowAnimation = () => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-5/3 bg-linear-to-br from-primary/4 via-background to-primary/6"
+      className="ue-anim relative w-full aspect-5/3 bg-linear-to-br from-primary/4 via-background to-primary/6"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -93,6 +93,28 @@ const WorkflowAnimation = () => {
               22% { opacity: 1; transform: scale(1.25); }
               30%, 100% { opacity: 1; transform: scale(1); }
             }
+            /* Light/dark: CSS beats the presentation attributes above, which
+               stay as the light values. The variables are set on the
+               container (.ue-anim) for light and under .dark. */
+            .ue-anim {
+              --ue-paper: #ffffff; --ue-paper-edge: hsl(24 14% 85%);
+              --ue-fold: hsl(24 14% 92%); --ue-rule: hsl(24 12% 88%);
+              --ue-rule-strong: hsl(20 30% 75%); --ue-caption: hsl(24 10% 44%);
+              --ue-accent-text: hsl(20 90% 36%);
+            }
+            .dark .ue-anim {
+              --ue-paper: hsl(var(--card)); --ue-paper-edge: hsl(var(--input));
+              --ue-fold: hsl(var(--border)); --ue-rule: hsl(var(--border));
+              --ue-rule-strong: hsl(32.9 60% 40%); --ue-caption: hsl(var(--muted-foreground));
+              --ue-accent-text: hsl(var(--primary));
+            }
+            .ue-paper { fill: var(--ue-paper); stroke: var(--ue-paper-edge); }
+            .ue-fold { fill: var(--ue-fold); }
+            .ue-rule { fill: var(--ue-rule); }
+            .ue-rule-strong { fill: var(--ue-rule-strong); }
+            .ue-caption { fill: var(--ue-caption); }
+            .ue-accent-text { fill: var(--ue-accent-text); }
+            .ue-accent-text-soft { fill: var(--ue-accent-text); fill-opacity: 0.65; }
             .ue-flow {
               stroke-dasharray: 6 6;
               animation: ue-flow-dash 1.2s linear infinite;
@@ -148,14 +170,14 @@ const WorkflowAnimation = () => {
 
         {/* INPUT DOCUMENT */}
         <g filter="url(#softShadow)">
-          <rect x="50" y="110" width="100" height="140" rx="8" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" />
-          <path d="M 130 110 L 150 130 L 130 130 Z" fill="hsl(24 14% 92%)" />
-          <rect className="ue-line ue-line-1" x="62" y="130" width="60" height="6" rx="2" fill="hsl(20 30% 75%)" />
-          <rect className="ue-line ue-line-2" x="62" y="148" width="76" height="5" rx="2" fill="hsl(24 12% 88%)" />
-          <rect className="ue-line ue-line-3" x="62" y="163" width="68" height="5" rx="2" fill="hsl(24 12% 88%)" />
-          <rect className="ue-line ue-line-4" x="62" y="178" width="50" height="5" rx="2" fill="hsl(24 12% 88%)" />
+          <rect className="ue-paper" x="50" y="110" width="100" height="140" rx="8" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" />
+          <path className="ue-fold" d="M 130 110 L 150 130 L 130 130 Z" fill="hsl(24 14% 92%)" />
+          <rect className="ue-line ue-line-1 ue-rule-strong" x="62" y="130" width="60" height="6" rx="2" fill="hsl(20 30% 75%)" />
+          <rect className="ue-line ue-line-2 ue-rule" x="62" y="148" width="76" height="5" rx="2" fill="hsl(24 12% 88%)" />
+          <rect className="ue-line ue-line-3 ue-rule" x="62" y="163" width="68" height="5" rx="2" fill="hsl(24 12% 88%)" />
+          <rect className="ue-line ue-line-4 ue-rule" x="62" y="178" width="50" height="5" rx="2" fill="hsl(24 12% 88%)" />
           <rect x="62" y="200" width="36" height="36" rx="3" fill="none" stroke="hsl(20 93% 54% / 0.35)" strokeWidth="1.2" strokeDasharray="3 3" />
-          <text x="80" y="222" textAnchor="middle" fontSize="9" fontFamily="ui-sans-serif, system-ui" fill="hsl(20 90% 36% / 0.65)" fontWeight="600">PDF</text>
+          <text className="ue-accent-text-soft" x="80" y="222" textAnchor="middle" fontSize="9" fontFamily="ui-sans-serif, system-ui" fill="hsl(20 90% 36% / 0.65)" fontWeight="600">PDF</text>
         </g>
 
         {/* FLOW IN — arrow + SMIL animated packets */}
@@ -206,7 +228,7 @@ const WorkflowAnimation = () => {
             <circle cx="300" cy="160" r="2" fill="#ffffff" stroke="none" />
             <circle cx="300" cy="200" r="2" fill="#ffffff" stroke="none" />
           </g>
-          <text x="300" y="252" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="600" fill="hsl(20 90% 36%)">
+          <text className="ue-accent-text" x="300" y="252" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="600" fill="hsl(20 90% 36%)">
             Universal Exports AI
           </text>
 
@@ -246,12 +268,12 @@ const WorkflowAnimation = () => {
         {/* OUTPUT DOCUMENTS */}
         <g>
           <g className="ue-doc-out ue-doc-out-3" filter="url(#softShadow)">
-            <rect x="500" y="78" width="84" height="116" rx="7" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" transform="rotate(6 542 136)" />
+            <rect className="ue-paper" x="500" y="78" width="84" height="116" rx="7" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" transform="rotate(6 542 136)" />
             <g transform="rotate(6 542 136)">
-              <rect x="510" y="96" width="50" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="510" y="108" width="62" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="510" y="120" width="56" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="510" y="132" width="46" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="510" y="96" width="50" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="510" y="108" width="62" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="510" y="120" width="56" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="510" y="132" width="46" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
               <g className="ue-check ue-check-3" transform="translate(560 170)">
                 <circle r="11" fill="hsl(142 71% 45%)" />
                 <path d="M -4 0 L -1 3 L 5 -3" stroke="#ffffff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -260,13 +282,13 @@ const WorkflowAnimation = () => {
           </g>
 
           <g className="ue-doc-out ue-doc-out-2" filter="url(#softShadow)">
-            <rect x="475" y="110" width="88" height="124" rx="7" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" transform="rotate(-3 519 172)" />
+            <rect className="ue-paper" x="475" y="110" width="88" height="124" rx="7" fill="#ffffff" stroke="hsl(24 14% 85%)" strokeWidth="1" transform="rotate(-3 519 172)" />
             <g transform="rotate(-3 519 172)">
-              <rect x="486" y="130" width="54" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="486" y="142" width="66" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="486" y="154" width="60" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="486" y="166" width="48" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-              <rect x="486" y="178" width="56" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="486" y="130" width="54" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="486" y="142" width="66" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="486" y="154" width="60" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="486" y="166" width="48" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+              <rect className="ue-rule" x="486" y="178" width="56" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
               <g className="ue-check ue-check-2" transform="translate(540 210)">
                 <circle r="11" fill="hsl(142 71% 45%)" />
                 <path d="M -4 0 L -1 3 L 5 -3" stroke="#ffffff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -275,14 +297,14 @@ const WorkflowAnimation = () => {
           </g>
 
           <g className="ue-doc-out ue-doc-out-1" filter="url(#softShadow)">
-            <rect x="460" y="130" width="92" height="130" rx="8" fill="#ffffff" stroke="hsl(24 14% 80%)" strokeWidth="1.2" />
-            <path d="M 532 130 L 552 150 L 532 150 Z" fill="hsl(24 14% 92%)" />
-            <rect x="472" y="150" width="58" height="5" rx="2" fill="hsl(20 30% 75%)" />
-            <rect x="472" y="164" width="68" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-            <rect x="472" y="176" width="60" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-            <rect x="472" y="188" width="52" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-            <rect x="472" y="200" width="64" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
-            <rect x="472" y="212" width="44" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+            <rect className="ue-paper" x="460" y="130" width="92" height="130" rx="8" fill="#ffffff" stroke="hsl(24 14% 80%)" strokeWidth="1.2" />
+            <path className="ue-fold" d="M 532 130 L 552 150 L 532 150 Z" fill="hsl(24 14% 92%)" />
+            <rect className="ue-rule-strong" x="472" y="150" width="58" height="5" rx="2" fill="hsl(20 30% 75%)" />
+            <rect className="ue-rule" x="472" y="164" width="68" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+            <rect className="ue-rule" x="472" y="176" width="60" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+            <rect className="ue-rule" x="472" y="188" width="52" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+            <rect className="ue-rule" x="472" y="200" width="64" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
+            <rect className="ue-rule" x="472" y="212" width="44" height="4" rx="1.5" fill="hsl(24 12% 88%)" />
             <path d="M 472 232 C 480 226, 488 238, 496 230 S 510 234, 522 228" stroke="hsl(20 93% 54%)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
             <g className="ue-check ue-check-1" transform="translate(532 244)">
               <circle r="12" fill="hsl(142 71% 45%)" />
@@ -291,10 +313,10 @@ const WorkflowAnimation = () => {
           </g>
         </g>
 
-        <text x="100" y="280" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
+        <text className="ue-caption" x="100" y="280" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
           {t("anim.upload")}
         </text>
-        <text x="506" y="290" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
+        <text className="ue-caption" x="506" y="290" textAnchor="middle" fontSize="11" fontFamily="ui-sans-serif, system-ui" fontWeight="500" fill="hsl(24 10% 44%)">
           {t("anim.signed")}
         </text>
       </svg>

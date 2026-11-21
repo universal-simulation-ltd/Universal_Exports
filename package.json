@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:hosted-paths": "node --experimental-strip-types scripts/hostedPath.test.mjs",
     "test:build-env": "node --experimental-strip-types scripts/buildEnv.test.mjs",
+    "test:theme": "node scripts/theme.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

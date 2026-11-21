@@ -1712,7 +1712,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
         </div>
         {role && (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            role === "seller" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+            role === "seller" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
           }`}>
             {role === "seller" ? t("main.export") : t("main.import")}
           </span>
@@ -1971,7 +1971,7 @@ const BankDetailsSection = ({ txnCurrency, locked, onLock, onUnlock, isReEditing
                       </button>
                     </div>
                     {isOverridden && (
-                      <p className="text-xs text-amber-600 flex items-center gap-1">
+                      <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
                         ⚠️ {tf("proj.mismatch", {
                           roleA: role === "buyer" ? t("doc.buyer") : t("doc.seller"),
                           countryA: yourDisplay,

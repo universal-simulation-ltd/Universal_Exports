@@ -143,7 +143,7 @@ export default function CompanyNumberLookup({
 
       {confirmed && company && (
         <div className="flex items-start gap-2 rounded-md border border-green-600/30 bg-green-600/10 p-3 text-sm">
-          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
           <div className="min-w-0">
             <p className="font-medium text-foreground">{company.company_name}</p>
             <p className="text-xs text-muted-foreground">{tf("auth.confirmed", { number: company.company_number })}</p>

@@ -16,6 +16,7 @@ import credits from "./generated/credits.json";
 import { CONTAINER } from "@/lib/layout";
 import ProductLogo from "@/components/ProductLogo";
 import { SignatureModePreference } from "@/components/SignatureModePreference";
+import { useThemeStore } from "@/stores/themeStore";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -71,6 +72,7 @@ function AppShell() {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
   const { t } = useI18n();
+  const theme = useThemeStore((s) => s.effective);
   const signedOutEditor = !loading && !user && pathname === "/app";
   // Language is the SDK's (2026-09-29): App preferences / Global preferences in
   // the profile menu set it, and `useI18n()` translates this app from the same
@@ -100,6 +102,11 @@ function AppShell() {
         // Exports keeps no preferences of its own; the SDK's Reset clears the
         // default view and the language.
         appPreferences={<SignatureModePreference />}
+        // Tune this app ▸ colour scheme (Follow global / Light / Dark / Match my
+        // device). Light until somebody chooses otherwise; `theme` is the
+        // RESOLVED value the bar paints with.
+        theme={theme}
+        themeStore={useThemeStore}
         suiteSwitcherIconSrc={`${BASE_PATH}/unisim-icon.png`}
         contentClassName={CONTAINER}
       />

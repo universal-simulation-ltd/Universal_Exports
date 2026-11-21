@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import logo from '@/assets/universal-exports-logo.svg'
+// The same wordmark with light ink, for the dark theme (the dark-ink
+// "UNIVERSAL" is invisible on the dark ground).
+import logoDark from '@/assets/universal-exports-logo-dark.svg'
 import iconWhite from '@/assets/universal-exports-icon-white.svg'
 import BrandFooter from '@/components/BrandFooter'
 import { fillNodes } from '@/lib/i18n/format'
@@ -93,7 +96,8 @@ export default function Auth() {
           <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
             <img src={iconWhite} alt={t('auth.iconAlt')} className="h-9 w-9 object-contain" />
           </div>
-          <img src={logo} alt="Universal Exports" className="h-10 object-contain" />
+          <img src={logo} alt="Universal Exports" className="h-10 object-contain dark:hidden" />
+          <img src={logoDark} alt="Universal Exports" className="hidden h-10 object-contain dark:block" />
         </div>
 
         {/* Free-for-UK-businesses badge — shown in both modes so it's the

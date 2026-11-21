@@ -2,7 +2,7 @@
 
 @plugin 'tailwindcss-animate';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @utility container {
   margin-inline: auto;
@@ -148,45 +148,56 @@ All colors MUST be HSL.
     --sidebar-ring: 20 93% 54%;
   }
 
+  /* Dark: the suite's dark theme tokens (Docs BRANDING.md → "Theme tokens",
+     "Semantic", buttons' "Dark ground"). Ground --surface #0A0E16, cards and
+     popovers on the #121A2A step the websites use, --surface-2 #182236 for
+     secondary/muted fills, text #E6EAF2 / soft #9FB0C6, borders slate #334155.
+     The accent lifts to #FF9A1F and carries INK (#0F172A), never white —
+     "no white text on orange". Field outlines (--input) take slate 500 so a
+     text box's edge reaches 3:1 on every dark ground; --border stays the
+     quieter hairline for dividers. Every text pair here is ≥ 4.5:1 (measured:
+     text on ground 16.0, soft on card 7.9, accent on ground 9.1, ink on
+     accent 8.4, critical on card 5.5). */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 220 37.5% 6.3%;
+    --foreground: 220 31.6% 92.5%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 40% 11.8%;
+    --card-foreground: 220 31.6% 92.5%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 40% 11.8%;
+    --popover-foreground: 220 31.6% 92.5%;
 
-    --primary: 210 40% 98%;
+    --primary: 32.9 100% 56.1%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 38.5% 15.3%;
+    --secondary-foreground: 220 31.6% 92.5%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 38.5% 15.3%;
+    --muted-foreground: 213.8 25.5% 70%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 31 50.9% 11.2%;
+    --accent-foreground: 32.9 100% 56.1%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 83.3% 64.7%;
+    --destructive-foreground: 222.2 47.4% 11.2%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215.3 25% 26.7%;
+    --input: 215.4 16.3% 46.9%;
+    --ring: 32.9 100% 56.1%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 143.3 47.5% 52.2%;
+    --success-foreground: 222.2 47.4% 11.2%;
+
+    --sidebar-background: 221.1 38.8% 9.6%;
+    --sidebar-foreground: 220 31.6% 92.5%;
+    --sidebar-primary: 32.9 100% 56.1%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 31 50.9% 11.2%;
+    --sidebar-accent-foreground: 32.9 100% 56.1%;
+    --sidebar-border: 215.3 25% 26.7%;
+    --sidebar-ring: 32.9 100% 56.1%;
   }
 }
 
