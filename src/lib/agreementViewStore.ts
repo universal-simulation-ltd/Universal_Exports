@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { accountReady } from './twoStepGate'
 import { isUuid } from './signatureStore'
 import type { AgreementPdfInput, CounterpartyBox } from './exportAgreementPdf'
 
@@ -59,6 +60,8 @@ export async function saveAgreementView(args: {
   // /demo walkthrough — the insert can only be refused with a 401. Don't send
   // it: the caller already builds a QR-less PDF when this returns false.
   if (!user) return false
+  // Owing the two-step code, the insert is refused (platform 0343): wait for it.
+  await accountReady(user.id)
 
   const { signature, qr: _qr, ...rest } = args.input
   const snapshot: AgreementViewSnapshot = {

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { accountReady } from './twoStepGate'
 
 export interface CatalogueProduct {
   id: string
@@ -36,8 +37,11 @@ function rowToProduct(row: Record<string, string | number>): CatalogueProduct {
   }
 }
 
+// Signed in, this also waits until the session owes no two-step code, before
+// any read or write of exports_product_catalogue (twoStepGate.ts).
 async function isAuthenticated(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser()
+  if (user) await accountReady(user.id)
   return !!user
 }
 

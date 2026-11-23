@@ -5,6 +5,7 @@ import { UsageTracker } from "@unisim/sdk";
 import "./index.css";
 import { migrateLegacyLanguage } from "./lib/i18n/migrate";
 import SuiteClientBridge from "./components/SuiteClientBridge";
+import TwoStepGateBridge from "./components/TwoStepGateBridge";
 
 // Before the provider mounts, so its first read of the language already sees an
 // old `eboxy-lang` choice carried across as this app's override.
@@ -31,6 +32,8 @@ createRoot(document.getElementById("root")!).render(
   <UniversalProvider config={universalConfig}>
     {/* First child, always: binds the one Supabase client (src/lib/supabase.ts). */}
     <SuiteClientBridge />
+    {/* The stores hold the account's rows until the two-step code is in (src/lib/twoStepGate.ts). */}
+    <TwoStepGateBridge />
     <UsageTracker />
     <App />
   </UniversalProvider>,

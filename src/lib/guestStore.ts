@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { accountReady } from './twoStepGate'
 
 // Drafting needs no account (James, 2026-11-10: "make drafting local"). Signed
 // out, projects, your details, contacts and bank details are kept in this
@@ -13,15 +14,24 @@ export const GUEST_KEYS = {
   contacts: 'exports.guest.contacts.v1',
 } as const
 
-/** The signed-in user's id, or null when signed out (or an anonymous session). */
+/**
+ * The signed-in user's id, or null when signed out (or an anonymous session).
+ *
+ * Signed in, it resolves only once the session owes no two-step code
+ * (twoStepGate.ts): every store asks this before touching the account's rows,
+ * which platform 0343 refuses — as an EMPTY answer — until the code is in.
+ */
 export async function signedInUserId(): Promise<string | null> {
+  let id: string | null = null
   try {
     const { data } = await supabase.auth.getSession()
     const user = data.session?.user
-    return user && user.is_anonymous !== true ? user.id : null
+    id = user && user.is_anonymous !== true ? user.id : null
   } catch {
     return null
   }
+  if (id) await accountReady(id)
+  return id
 }
 
 export function readGuest<T>(key: string, fallback: T): T {

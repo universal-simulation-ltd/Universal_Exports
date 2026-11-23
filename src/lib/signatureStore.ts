@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { accountReady } from './twoStepGate'
 
 /** The tokens in /sign and /view links are uuids; anything else can't match a row. */
 export function isUuid(value: string): boolean {
@@ -52,6 +53,8 @@ export async function createSignatureToken(args: {
   projectName: string
 }): Promise<AgreementSignature | null> {
   const { data: { user } } = await supabase.auth.getUser()
+  // Owing the two-step code, the insert is refused (platform 0343): wait for it.
+  if (user) await accountReady(user.id)
 
   const { data, error } = await supabase
     .from('exports_agreement_signatures')
@@ -85,6 +88,10 @@ export async function createSignatureToken(args: {
  * because anonymous drafting can't produce a persisted token anyway.
  */
 export async function listSignatureTokens(projectId: string): Promise<AgreementSignature[]> {
+  // Owing the two-step code, the read is refused as an EMPTY list (platform
+  // 0343) — "no links sent yet" when there are. Wait for the code.
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.user && session.user.is_anonymous !== true) await accountReady(session.user.id)
   const { data, error } = await supabase
     .from('exports_agreement_signatures')
     .select('*')

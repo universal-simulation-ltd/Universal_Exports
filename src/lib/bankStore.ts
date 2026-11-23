@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { accountReady } from './twoStepGate'
 
 // Bank details (sort code, account number, IBAN…) for you and the other party,
 // one account per currency.
@@ -37,13 +38,19 @@ export function emptyBankAccount(currency = ''): BankAccount {
 const LOCAL_PREFIX = 'exports.banks.v1.'
 const CHOICE_PREFIX = 'exports.banks.cloud.v1.'
 
+// Signed in, this waits until the session owes no two-step code: platform 0343
+// refuses exports_bank_accounts until then, and an empty answer here would read
+// as "nothing saved to the account" (twoStepGate.ts).
 async function currentUserId(): Promise<string | null> {
+  let id: string | null = null
   try {
     const { data } = await supabase.auth.getSession()
-    return data.session?.user?.id ?? null
+    id = data.session?.user?.id ?? null
   } catch {
     return null
   }
+  if (id) await accountReady(id)
+  return id
 }
 
 // ── This device ─────────────────────────────────────────────────────────────
